@@ -1,0 +1,15 @@
+{
+  "name": "ap-catalogo-enrich",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline de enriquecimiento del catalogo de Aceros Penascal con la API de Claude (Batch API + structured outputs).",
+  "scripts": {
+    "smoke": "node enrich.mjs smoke",
+    "run": "node enrich.mjs run",
+    "poll": "node enrich.mjs poll"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0"
+  }
+}

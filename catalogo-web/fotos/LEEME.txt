@@ -1,0 +1,31 @@
+LLENADO DE FOTOS — Catálogo Aceros Peñascal
+============================================
+
+El catálogo ya está programado para mostrar la foto de cada producto en cuanto
+exista. Mientras no haya foto, se muestra un marcador "Sin foto". No hay que
+tocar código: solo agregar las imágenes en esta carpeta.
+
+CÓMO AGREGAR FOTOS
+------------------
+1. Cada producto tiene un nombre de archivo de foto esperado, basado en su código.
+   La lista completa está en:
+   ..\datos\plantilla_fotos.csv   (columnas: codigo, descripcion, categoria, archivo_foto)
+
+2. Guarda la imagen de cada producto en ESTA carpeta (catalogo-web\fotos\) con
+   exactamente ese nombre de archivo. Ejemplos:
+       COMP23LTBYP.webp
+       CORDEWALT.jpg
+       D48-40-4515.png
+
+3. Formatos aceptados: .webp (recomendado, más ligero), .jpg, .jpeg o .png.
+   Tamaño sugerido: 800x800 px, fondo neutro, producto centrado (ver estándar de
+   los catálogos de proveedor: Ternium, Papalotes Steel, DMT).
+
+4. Recarga el catálogo: la foto aparece automáticamente.
+
+RECOMENDACIÓN PARA EL OPERATIVO FOTOGRÁFICO
+-------------------------------------------
+- Trabajen por categoría (es más rápido fotografiar lote por lote del mismo tipo).
+- Usen plantilla_fotos.csv como lista de pendientes: pueden marcar avance ahí.
+- Cuando se conecte la base de datos (Supabase), las fotos se podrán subir desde
+  el panel de administración con el mismo nombre por código, sin perder este trabajo.

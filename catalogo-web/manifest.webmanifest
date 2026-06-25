@@ -1,0 +1,14 @@
+{
+  "name": "Aceros Peñascal · Catálogo Digital",
+  "short_name": "AP Catálogo",
+  "description": "Catálogo digital de materiales de Aceros Peñascal.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#15191C",
+  "theme_color": "#15191C",
+  "icons": [
+    { "src": "assets/logo-ap.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

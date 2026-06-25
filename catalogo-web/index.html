@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#15191C" />
+<title>Aceros Peñascal · Catálogo Digital</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="assets/logo-ap.jpg" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<!-- ===== Encabezado ===== -->
+<header class="topbar">
+  <div class="brand">
+    <img src="assets/logo-ap.jpg" alt="Aceros Peñascal" class="brand-logo" />
+    <div class="brand-text">
+      <strong>ACEROS PEÑASCAL</strong>
+      <span>Catálogo Digital</span>
+    </div>
+  </div>
+
+  <div class="search">
+    <input id="q" type="search" placeholder="Buscar por nombre, código, medida…" autocomplete="off" />
+  </div>
+
+  <div class="topbar-actions">
+    <label class="suc">
+      <span>Sucursal</span>
+      <select id="sucursal"></select>
+    </label>
+    <button id="btnAdmin" class="btn-ghost" title="Modo edición (autorizados)">Admin</button>
+    <button id="btnCart" class="btn-cart">
+      Pedido <span id="cartCount" class="badge">0</span>
+    </button>
+  </div>
+</header>
+
+<div id="adminBanner" class="admin-banner" hidden>
+  Modo edición activo (demo local) · doble clic en un campo de la ficha para editarlo. Los cambios se guardan en este navegador hasta conectar la base de datos.
+</div>
+
+<!-- ===== Cuerpo ===== -->
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="content">
+    <div class="toolbar">
+      <div id="crumbs" class="crumbs">Todas las categorías</div>
+      <div id="count" class="count"></div>
+    </div>
+    <div id="subchips" class="subchips"></div>
+    <section id="grid" class="grid"></section>
+    <div class="more-wrap">
+      <button id="btnMore" class="btn-more" hidden>Cargar más</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===== Ficha de producto ===== -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ===== Carrito / Pedido ===== -->
+<div id="cart" class="cart" hidden>
+  <div class="cart-head">
+    <strong>Mi pedido</strong>
+    <button class="modal-close" id="cartClose" aria-label="Cerrar">×</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-foot">
+    <label class="suc suc-block">
+      <span>Enviar a sucursal</span>
+      <select id="sucursalCart"></select>
+    </label>
+    <a id="sucDir" class="suc-dir" target="_blank" rel="noopener" title="Abrir ubicación en Google Maps"></a>
+    <button id="btnWhats" class="btn-whats">Enviar pedido por WhatsApp</button>
+    <p class="cart-note">No se muestran precios: el equipo te cotiza al recibir el pedido.</p>
+  </div>
+</div>
+<div id="overlay" class="overlay" hidden></div>
+
+<script src="data/productos.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
