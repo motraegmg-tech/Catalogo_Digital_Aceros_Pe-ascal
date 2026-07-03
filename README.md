@@ -11,6 +11,8 @@
 > 2. [`MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md`](MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md) — requerimientos detallados del cliente (la **spec**).
 > 3. [`Taxonomia_Catalogo_AcerosPenascal.md`](Taxonomia_Catalogo_AcerosPenascal.md) — categorías y subcategorías.
 > 4. [`catalogo-web/README.md`](catalogo-web/README.md) — cómo correr el prototipo.
+>
+> **Contexto de la empresa (MOTRAE):** [`docs/MOTRAE_EMPRESA.md`](docs/MOTRAE_EMPRESA.md) — qué es MOTRAE, su modelo de negocio, marca y tono. Se importa automáticamente vía `CLAUDE.md`.
 > Empieza SIEMPRE las respuestas llamando al CEO por su nombre: **Gonzalo**.
 
 ---
@@ -80,6 +82,7 @@ Catálogo **completo, claro y profesional**, fácil de usar para cualquier perso
 Catalogo_Digital_Repository/
 ├─ README.md                                            ← este archivo (contexto del proyecto)
 ├─ CLAUDE.md                                            ← carga automática para Claude Code
+├─ docs/MOTRAE_EMPRESA.md                               ← contexto de la empresa MOTRAE (importado por CLAUDE.md)
 ├─ MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md  ← SPEC: requerimientos del cliente
 ├─ Taxonomia_Catalogo_AcerosPenascal.md                ← 14 categorías + subcategorías (fluida)
 ├─ CATALOGO PROD. PEÑASCAL/                             ← Excel maestro (3,222 productos)

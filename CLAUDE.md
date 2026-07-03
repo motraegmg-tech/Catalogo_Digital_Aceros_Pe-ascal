@@ -14,3 +14,8 @@
 ## Notas técnicas
 - `ConvertTo-Json` (PowerShell 5.1) colapsa arreglos de 1 elemento → en el JS se coercen con `asArray()`.
 - Correr prototipo: doble clic en `catalogo-web/index.html`, o `npx serve` para PWA instalable.
+
+## Contexto de la empresa (MOTRAE)
+Este proyecto lo desarrolla **MOTRAE** para el cliente. El contexto completo de la empresa (qué es, modelo de negocio, marca, tono) se importa automáticamente a continuación:
+
+@docs/MOTRAE_EMPRESA.md
