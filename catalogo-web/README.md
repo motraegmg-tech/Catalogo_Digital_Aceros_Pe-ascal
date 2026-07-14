@@ -20,6 +20,44 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
 - **Paleta industrial**: grises/plata/negro/platino/blanco + acentos rojo óxido, verde zintro,
   verde oscuro, aqua oscuro y beige arena.
 
+## Clasificador de catálogo (herramienta interna)
+`clasificador.html` es la herramienta de curación manual: permite revisar y mover
+cada uno de los 3,222 productos entre categorías/subcategorías viendo los conteos
+y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
+
+- **Árbol de taxonomía editable de 3 niveles** (categoría → subcategoría →
+  **sub-subcategoría**): crear (＋), renombrar/fusionar (✎) y eliminar (✕) en
+  cualquier nivel; los productos afectados se reubican de forma segura (nunca se
+  pierden: a lo sumo vuelven a POR CLASIFICAR o al nivel superior).
+- **Clasificación**: selección múltiple (clic, Shift+clic, **barrido** manteniendo
+  el clic izquierdo y arrastrando sobre las filas, o "seleccionar todos"),
+  barra de asignación, **arrastrar y soltar** las filas seleccionadas al árbol,
+  y ficha individual con edición de nombre/medidas/proveedor.
+- **Mover en bloque (⇄ en el árbol)**: mueve TODOS los productos de una categoría,
+  subcategoría o sub-subcategoría a otro destino en una sola operación (el origen
+  se conserva vacío en la taxonomía por si quieres reutilizarlo); reversible con
+  Deshacer.
+- **Sugerencias**: reglas por palabra clave (port de `categorizar_v1.ps1`) +
+  similitud contra lo ya clasificado (marcadas con `≈`). Se aplican con un clic;
+  nada es automático.
+- **Seguridad del trabajo**: autoguardado en localStorage (solo deltas), botón
+  Deshacer (Ctrl+Z), bitácora de cambios, exportar/importar avance (.json, formato
+  v2 con 3 niveles; los respaldos v1 se migran solos al importarlos).
+- **Conexión directa con el catálogo**: con el botón "🔗 Conectar con el catálogo"
+  (barra superior) eliges UNA vez la carpeta `catalogo-web/data/`; desde entonces
+  **cada cambio reescribe solo `productos.js` y `productos.json`** ahí mismo — los
+  cambios viven en el código original y el catálogo se actualiza al refrescarlo.
+  El permiso queda recordado (IndexedDB); al reabrir, el navegador puede pedir
+  reconfirmar con un clic ("Reconectar"). Requiere Edge/Chrome (File System
+  Access API).
+- **Entregables (respaldo manual)**: exporta `catalogo_categorizado.csv` (columnas
+  del pipeline + `subtipo` para el 3er nivel) y `productos.js` / `productos.json`
+  regenerados (incluyen campo `sub2`), por si prefieres reemplazar a mano.
+- **Vista catálogo**: alterna la lista de trabajo por una cuadrícula de tarjetas
+  para ver cómo va quedando cada categoría.
+- Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
+- Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie).
+
 ## Llenado de fotos (operativa posterior)
 Ver `fotos\LEEME.txt`. Resumen: guardar cada imagen en `fotos\` con el nombre por
 código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen solas.
@@ -27,9 +65,10 @@ código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen
 ## Estructura
 ```
 catalogo-web/
-  index.html
+  index.html          catálogo público (prototipo)
+  clasificador.html   herramienta interna de clasificación
   manifest.webmanifest
-  assets/   styles.css · app.js · logo-ap.png
+  assets/   styles.css · app.js · clasificador.css · clasificador.js · logo-ap.png
   data/     productos.js (app) · productos.json (import futuro)
   fotos/    imágenes por código (LEEME.txt)
 ```

@@ -14,6 +14,7 @@
 ## Notas técnicas
 - `ConvertTo-Json` (PowerShell 5.1) colapsa arreglos de 1 elemento → en el JS se coercen con `asArray()`.
 - Correr prototipo: doble clic en `catalogo-web/index.html`, o `npx serve` para PWA instalable.
+- **Clasificador interno**: `catalogo-web/clasificador.html` (doble clic) — curación manual de la clasificación con taxonomía editable, sugerencias, deshacer y exportadores (CSV / productos.js). Avance en localStorage (`ap_clasificador_v1`), autoprueba con `?selftest=1`. Detalles en `catalogo-web/README.md`.
 
 ## Contexto de la empresa (MOTRAE)
 Este proyecto lo desarrolla **MOTRAE** para el cliente. El contexto completo de la empresa (qué es, modelo de negocio, marca, tono) se importa automáticamente a continuación:

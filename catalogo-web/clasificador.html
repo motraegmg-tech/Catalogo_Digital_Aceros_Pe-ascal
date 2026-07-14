@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#15191C" />
+<title>Clasificador · Aceros Peñascal</title>
+<link rel="icon" href="assets/logo-ap.jpg" />
+<link rel="stylesheet" href="assets/clasificador.css" />
+</head>
+<body>
+
+<!-- ===== Encabezado ===== -->
+<header class="topbar">
+  <div class="brand">
+    <img src="assets/logo-ap.jpg" alt="Aceros Peñascal" class="brand-logo" />
+    <div class="brand-text">
+      <strong>CLASIFICADOR DE CATÁLOGO</strong>
+      <span>Aceros Peñascal · herramienta interna</span>
+    </div>
+  </div>
+
+  <div class="progress-block">
+    <div class="progress-nums" id="progNums"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <div class="topbar-actions">
+    <button id="btnUndo" class="btn-ghost" title="Deshacer último cambio (Ctrl+Z)">↩ Deshacer</button>
+    <button id="btnLog" class="btn-ghost" title="Historial de cambios">Bitácora</button>
+    <button id="btnDatos" class="btn-primary" title="Guardar avance, importar y exportar">Guardar / Exportar</button>
+    <a href="index.html" target="_blank" class="btn-ghost btn-link" title="Abre el catálogo público (muestra los datos exportados, no el avance en vivo)">Ver catálogo ↗</a>
+  </div>
+</header>
+
+<div class="autosave-note">
+  <button id="fsBtn" class="fs-btn" hidden></button>
+  <span id="fsTxt"></span>
+  <span class="sep-dot">·</span>
+  <span>Avance local autoguardado en este navegador; respáldalo con <b>Guardar / Exportar</b>.</span>
+  <span id="saveHint" class="save-hint"></span>
+</div>
+
+<!-- ===== Cuerpo ===== -->
+<div class="layout">
+
+  <!-- Árbol de taxonomía -->
+  <aside class="taxpanel" id="taxpanel">
+    <div id="tax"></div>
+    <button id="btnNewCat" class="btn-newcat">＋ Nueva categoría</button>
+  </aside>
+
+  <!-- Lista de productos -->
+  <main class="main">
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Buscar por nombre, código, medida…  ( / )" autocomplete="off" />
+      <select id="fProv" title="Filtrar por proveedor"></select>
+      <div class="chips" id="chipsEstado"></div>
+      <button id="btnVista" class="btn-vista" title="Alternar entre lista de trabajo y vista previa del catálogo">🗂 Vista catálogo</button>
+    </div>
+
+    <div class="listhead" id="listhead">
+      <label class="selall" title="Seleccionar todos los productos del filtro actual">
+        <input type="checkbox" id="selAll" /> <span id="countTxt"></span>
+      </label>
+      <span class="listhead-cols"><i>Código</i><i>Producto</i><i>Medida</i><i>Clasificación</i><i>Sugerencia</i></span>
+    </div>
+
+    <div id="lista" class="lista"></div>
+    <section id="previewGrid" class="preview-grid" hidden></section>
+
+    <div class="more-wrap"><button id="btnMore" class="btn-more" hidden>Cargar más</button></div>
+  </main>
+</div>
+
+<!-- ===== Barra de asignación (aparece con selección) ===== -->
+<div id="selbar" class="selbar" hidden>
+  <span id="selTxt" class="sel-txt"></span>
+  <label>Mover a <select id="selCat"></select></label>
+  <label class="sublab">Sub <select id="selSub"></select></label>
+  <button id="btnAsignar" class="btn-asignar">Aplicar</button>
+  <button id="btnSugSel" class="btn-sug" title="Aplica a cada producto seleccionado su propia sugerencia">✓ Usar sugerencias</button>
+  <button id="btnSelClear" class="btn-clear" title="Quitar selección (Esc)">✕</button>
+</div>
+
+<!-- ===== Ficha de producto ===== -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ===== Bitácora ===== -->
+<div id="modalLog" class="modal" hidden>
+  <div class="modal-card modal-slim">
+    <button class="modal-close" id="logClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title">Bitácora de cambios</h3>
+    <div id="logBody" class="log-body"></div>
+  </div>
+</div>
+
+<!-- ===== Guardar / Exportar ===== -->
+<div id="modalDatos" class="modal" hidden>
+  <div class="modal-card modal-slim">
+    <button class="modal-close" id="datosClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title">Guardar, importar y exportar</h3>
+    <div id="datosStats" class="datos-stats"></div>
+    <div class="datos-sec">Conexión directa con el catálogo</div>
+    <div id="fsDatosTxt" class="datos-stats"></div>
+    <div class="datos-row">
+      <button id="btnFsConectar" class="btn-datos">🔗 Conectar carpeta data/</button>
+      <button id="btnFsGuardar" class="btn-datos">⟳ Guardar en el catálogo ahora</button>
+      <button id="btnFsDesconectar" class="btn-datos btn-danger">Desconectar</button>
+    </div>
+    <div class="datos-sec">Avance de trabajo</div>
+    <div class="datos-row">
+      <button id="expAvance" class="btn-datos">💾 Guardar avance (.json)</button>
+      <button id="impAvance" class="btn-datos">📂 Importar avance</button>
+    </div>
+    <div class="datos-sec">Entregables</div>
+    <div class="datos-row">
+      <button id="expCSV" class="btn-datos">📄 catalogo_categorizado.csv</button>
+      <button id="expJS" class="btn-datos">🧩 productos.js (catálogo)</button>
+      <button id="expJSON" class="btn-datos">🗄 productos.json (Supabase)</button>
+    </div>
+    <p class="datos-nota">Con la <b>conexión directa</b> activa, <code>productos.js</code> y <code>productos.json</code> se reescriben solos en <code>catalogo-web/data/</code> tras cada cambio (el catálogo se actualiza al refrescarlo). Los exportadores de abajo quedan como respaldo manual.</p>
+    <div class="datos-sec danger">Zona de riesgo</div>
+    <div class="datos-row">
+      <button id="btnReset" class="btn-datos btn-danger">Reiniciar trabajo (borrar avance)</button>
+    </div>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden />
+  </div>
+</div>
+
+<!-- ===== Diálogo genérico ===== -->
+<div id="dlg" class="modal" hidden>
+  <div class="modal-card modal-mini">
+    <h3 class="modal-title" id="dlgTitle"></h3>
+    <div id="dlgBody" class="dlg-body"></div>
+    <div class="dlg-foot">
+      <button id="dlgCancel" class="btn-datos">Cancelar</button>
+      <button id="dlgOk" class="btn-asignar">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="data/productos.js"></script>
+<script src="assets/clasificador.js"></script>
+</body>
+</html>
