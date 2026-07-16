@@ -3177,4 +3177,5 @@ Downloading data from 'https://github.com/danielgatis/rembg/releases/download/v0
 [ERROR] Falló FLECA7-50MGA7525.webp: https://duckduckgo.com TimeoutError: error sending request for url (https://duckduckgo.com/?q=FLEXOMETRO+CADENA+7.50+MTS.+MOD.MGA7525+Herramienta+manual+aceros) > operation timed out
 [SKIP] FLECA9.webp ya existe.
 [SKIP] FLECA5-5C.webp ya existe.
-[SKIP] GAR-12.webp ya existe.
+[SKIP] GAR-12.webp ya existe./usr/lib64/python3.14/multiprocessing/resource_tracker.py:475: UserWarning: resource_tracker: There appear to be 2 leaked semaphore objects to clean up at shutdown: {'/mp-94os1fwc', '/mp-nmmxnh5s'}
+  warnings.warn(
