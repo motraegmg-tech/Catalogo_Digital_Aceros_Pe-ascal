@@ -1,6 +1,7 @@
 /* ===== Aceros Peñascal · Catálogo Digital · app.js =====
    Prototipo autocontenido (datos en data/productos.js). Diseñado para migrar
    despues a Supabase sin reescribir la interfaz. */
+import { fetchCatalogo } from '../api/catalogService.js';
 
 const CONFIG = {
   // 5 sucursales con su WhatsApp (formato wa.me: solo digitos, lada 52) y ubicacion
@@ -15,7 +16,8 @@ const CONFIG = {
   pageSize: 48,
 };
 
-const DATA = window.CATALOGO || { productos:[], categorias:[] };
+//const DATA = window.CATALOGO || { productos:[], categorias:[] };
+let DATA = { productos:[], categorias:[], total: 0 };
 const LS_CART = 'ap_cart', LS_OVR = 'ap_overrides';
 
 const state = {
@@ -256,10 +258,23 @@ function toggleAdmin(){
 }
 
 /* ---------- init ---------- */
-function init(){
+async function init(){
   fillSucursales();
   refreshCart();
+
+  const supabaseData = await fetchCatalogo();
+  if(supabaseData.productos.length > 0) {
+    DATA = supabaseData;
+    
+    DATA.productos.forEach(p => {
+      const o = state.overrides[p.id];
+      if (o) Object.assign(p, o);
+    });
+  }
+
   renderAll();
+
+  // Tus listeners originales intactos
   let t; $('#q').addEventListener('input', e=>{ clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; state.page=1; renderGrid(); },140); });
   $('#btnMore').onclick = ()=>{ state.page++; renderGrid(); };
   $('#btnCart').onclick = openCart;
