@@ -1,7 +1,7 @@
 /* ===== Aceros Peñascal · Catálogo Digital · app.js =====
    Prototipo autocontenido (datos en data/productos.js). Diseñado para migrar
    despues a Supabase sin reescribir la interfaz. */
-import { fetchCatalogo } from '../api/catalogService.js';
+import { fetchCatalogo } from '../core/catalogService.js';
 
 const CONFIG = {
   // 5 sucursales con su WhatsApp (formato wa.me: solo digitos, lada 52) y ubicacion
