@@ -78,7 +78,13 @@ catalogo-web/
   index.html          catálogo público (prototipo)
   clasificador.html   herramienta interna de clasificación
   manifest.webmanifest
-  assets/   styles.css · app.js · clasificador.css · clasificador.js · logo-ap.png
+  assets/   styles.css · app.js · clasificador.css · clasificador.js
+            logo-ap-oficial.jpg  logo oficial completo (azul marino + cuadro rojo óxido)
+            logo-ap-marca.png    solo el monograma — encabezado e iconos
+            og-cover.jpg         vista previa al compartir el enlace (1200×630)
+            icon-192 / 512 / maskable-512.png   iconos PWA
+            logo-ap.jpg/.png     versión metalizada, ya NO se usa en el catálogo
+                                 (sigue en clasificador.html)
   data/     productos.js (app) · productos.json (import futuro)
   fotos/    imágenes por código (LEEME.txt)
 ```
