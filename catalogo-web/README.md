@@ -27,8 +27,11 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
   en el navegador (`ap_view`). El carrito ocupa la pantalla completa y respeta el notch
   (`env(safe-area-inset-*)`).
 - **Vista previa al compartir el enlace** (WhatsApp/Facebook/Telegram): etiquetas Open Graph
-  en `index.html` con `assets/og-cover.jpg` (1200×630, 58 KB). ⚠️ `og:url` y `og:image` deben
-  ser **absolutas**: si cambia el dominio, actualiza las 5 líneas marcadas con `[DOMINIO]`.
+  en `index.html` con `assets/og-cover-v2.jpg` (1200×630, 50 KB). ⚠️ `og:url` y `og:image`
+  deben ser **absolutas**: si cambia el dominio, actualiza las 5 líneas marcadas con
+  `[DOMINIO]`. **Para reemplazar la imagen hay que renombrar el archivo** (`-v3`, `-v4`…):
+  Facebook y WhatsApp la cachean por URL, y añadir `?v=N` a la página no sirve porque el
+  `og:url` canónico devuelve al rastreador a la ficha ya guardada.
 
 ## Clasificador de catálogo (herramienta interna)
 `clasificador.html` es la herramienta de curación manual: permite revisar y mover
@@ -81,7 +84,9 @@ catalogo-web/
   assets/   styles.css · app.js · clasificador.css · clasificador.js
             logo-ap-oficial.jpg  logo oficial completo (azul marino + cuadro rojo óxido)
             logo-ap-marca.png    solo el monograma — encabezado e iconos
-            og-cover.jpg         vista previa al compartir el enlace (1200×630)
+            og-cover-v2.jpg      vista previa al compartir el enlace (1200×630)
+            og-cover.jpg         copia idéntica del anterior (nombre viejo, cacheado
+                                 en Facebook; se puede borrar más adelante)
             icon-192 / 512 / maskable-512.png   iconos PWA
             logo-ap.jpg/.png     versión metalizada, ya NO se usa en el catálogo
                                  (sigue en clasificador.html)

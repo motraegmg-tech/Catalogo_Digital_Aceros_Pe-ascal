@@ -10,16 +10,26 @@
 <!-- ===== Vista previa del enlace (WhatsApp · Facebook · Telegram) =====
      og:url y og:image DEBEN ser URLs absolutas: los rastreadores no resuelven
      rutas relativas. Si cambia el dominio o la carpeta del despliegue, actualiza
-     las líneas marcadas con [DOMINIO]. La imagen vive en assets/og-cover.jpg
-     (1200x630, 58 KB — por debajo del límite de ~300 KB de WhatsApp). -->
+     las líneas marcadas con [DOMINIO].
+
+     La imagen es assets/og-cover-v2.jpg (1200x630, 50 KB — muy por debajo del
+     límite de ~300 KB de WhatsApp).
+
+     ⚠️ PARA CAMBIAR LA IMAGEN EN EL FUTURO: Facebook/WhatsApp cachean la imagen
+     **por URL**, y el truco de añadir ?v=N a la página NO sirve aquí porque el
+     og:url canónico apunta a la raíz y el rastreador vuelve a la ficha cacheada.
+     Lo único fiable es **renombrar el archivo** (og-cover-v3.jpg, v4…) y
+     actualizar las 3 líneas de imagen de abajo: ante una URL nueva el rastreador
+     no tiene nada guardado y la descarga a fuerza. -->
+
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Aceros Peñascal" />
 <meta property="og:locale" content="es_MX" />
 <meta property="og:title" content="Aceros Peñascal · Catálogo Digital" />
 <meta property="og:description" content="Consulta el catálogo completo, arma tu pedido y cotízalo por WhatsApp con la sucursal más cercana." />
 <!-- [DOMINIO] --><meta property="og:url" content="https://catalogo-digital-aceros-penascal.vercel.app/" />
-<!-- [DOMINIO] --><meta property="og:image" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover.jpg" />
-<!-- [DOMINIO] --><meta property="og:image:secure_url" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover.jpg" />
+<!-- [DOMINIO] --><meta property="og:image" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover-v2.jpg" />
+<!-- [DOMINIO] --><meta property="og:image:secure_url" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover-v2.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
@@ -27,7 +37,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Aceros Peñascal · Catálogo Digital" />
 <meta name="twitter:description" content="Consulta el catálogo completo, arma tu pedido y cotízalo por WhatsApp con la sucursal más cercana." />
-<!-- [DOMINIO] --><meta name="twitter:image" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover.jpg" />
+<!-- [DOMINIO] --><meta name="twitter:image" content="https://catalogo-digital-aceros-penascal.vercel.app/assets/og-cover-v2.jpg" />
 <!-- [DOMINIO] --><link rel="canonical" href="https://catalogo-digital-aceros-penascal.vercel.app/" />
 
 <link rel="manifest" href="manifest.webmanifest" />
@@ -44,7 +54,7 @@
   <div class="brand">
     <!-- Solo el monograma: a 42 px el logo completo (con wordmark y tagline) se
          vuelve ilegible y además duplica el texto de al lado. El logo completo
-         se usa en assets/og-cover.jpg, donde sí hay espacio. -->
+         se usa en assets/og-cover-v2.jpg, donde sí hay espacio. -->
     <img src="assets/logo-ap-marca.png" alt="Aceros Peñascal" class="brand-logo" />
     <div class="brand-text">
       <strong>ACEROS PEÑASCAL</strong>
