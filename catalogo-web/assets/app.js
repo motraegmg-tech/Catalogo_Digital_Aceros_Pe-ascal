@@ -77,31 +77,75 @@ function thumb(p){
   return box;
 }
 
-/* ---------- filtro ---------- */
+/* ---------- filtro ----------
+   La búsqueda SIEMPRE barre el catálogo completo, sin importar la categoría que
+   el usuario tenga abierta: al escribir se limpia la categoría (ver listener de
+   #q en init) y los chips de arriba permiten acotar después por categoría. */
+function textoBusqueda(){ return norm(state.q).trim(); }
+function buscando(){ return textoBusqueda() !== ''; }
+
+/* Texto normalizado de cada producto, calculado una sola vez: con 3,222
+   productos, normalizar en cada tecla se sentía en el celular. */
+function haystack(p){
+  if (p._hay == null) p._hay = norm(p.nom)+' '+norm(p.cod)+' '+norm(p.sub)+' '+norm(p.med)+' '+norm(p.cat);
+  return p._hay;
+}
+function coincide(p, terminos){
+  const hay = haystack(p);
+  return terminos.every(t => hay.includes(t));
+}
+
+// Resultados del texto buscado en todo el catálogo (sin filtro de categoría).
+// Se memoriza el último término porque la rejilla, el panel de categorías y los
+// chips piden la misma lista en cada render.
+let ultimaQ = null, ultimosResultados = null;
+function invalidarBusqueda(){ ultimaQ = null; ultimosResultados = null; }
+function resultadosBusqueda(){
+  const q = textoBusqueda();
+  if (!q) return DATA.productos;
+  if (q === ultimaQ) return ultimosResultados;
+  const terminos = q.split(/\s+/);
+  ultimaQ = q;
+  ultimosResultados = DATA.productos.filter(p=>coincide(p, terminos));
+  return ultimosResultados;
+}
+
 function filtered(){
-  const q = norm(state.q);
-  return DATA.productos.filter(p=>{
+  return resultadosBusqueda().filter(p=>{
     if (state.cat && p.cat !== state.cat) return false;
     if (state.sub && p.sub !== state.sub) return false;
-    if (q){
-      const hay = norm(p.nom)+' '+norm(p.cod)+' '+norm(p.sub)+' '+norm(p.med);
-      if (!hay.includes(q)) return false;
-    }
     return true;
   });
 }
 
-/* ---------- sidebar ---------- */
+/* ---------- sidebar ----------
+   Sin búsqueda: el mapa completo del catálogo. Con búsqueda: solo las categorías
+   que tienen resultados, con el conteo de esos resultados (así el número del
+   botón siempre corresponde con lo que verá el usuario al pulsarlo). */
+function conteoPorCategoria(lista){
+  const m = new Map();
+  lista.forEach(p=>{ if(p.cat) m.set(p.cat, (m.get(p.cat)||0)+1); });
+  return m;
+}
+
 function renderSidebar(){
   const s = $('#sidebar'); s.innerHTML='';
   s.appendChild(el('div','cat-title','Categorías'));
+
+  const res = buscando() ? resultadosBusqueda() : null;
+  const conteos = res ? conteoPorCategoria(res) : null;
+  const total = res ? res.length : DATA.total;
+
   const all = el('button','cat-btn'+(state.cat?'':' on'),
-    `<span>Todas</span><span class="n">${DATA.total}</span>`);
+    `<span>Todas</span><span class="n">${total.toLocaleString('es-MX')}</span>`);
   all.onclick = ()=>{ state.cat=null; state.sub=null; state.page=1; renderAll(); trasElegirCat(); };
   s.appendChild(all);
+
   DATA.categorias.forEach(c=>{
+    const n = conteos ? (conteos.get(c.nombre)||0) : c.n;
+    if (!n) return;
     const b = el('button','cat-btn'+(state.cat===c.nombre?' on':''),
-      `<span>${esc(c.nombre)}</span><span class="n">${c.n}</span>`);
+      `<span>${esc(c.nombre)}</span><span class="n">${n.toLocaleString('es-MX')}</span>`);
     b.onclick = ()=>{ state.cat=c.nombre; state.sub=null; state.page=1; renderAll(); trasElegirCat(); };
     s.appendChild(b);
   });
@@ -114,8 +158,26 @@ function trasElegirCat(){
 }
 
 function asArray(v){ return Array.isArray(v) ? v : (v==null ? [] : [v]); }
+
+/* Buscando: los chips acotan por categoría los resultados globales. Es el único
+   acceso visible en móvil, donde el panel de categorías vive detrás de un botón. */
+function renderChipsBusqueda(wrap){
+  const res = resultadosBusqueda();
+  const conteos = conteoPorCategoria(res);
+  if (conteos.size <= 1) return;   // acotar a la única categoría no cambia nada
+  const all = el('button','chip'+(state.cat?'':' on'), `Todo el catálogo · ${res.length.toLocaleString('es-MX')}`);
+  all.onclick = ()=>{ state.cat=null; state.sub=null; state.page=1; renderAll(); };
+  wrap.appendChild(all);
+  [...conteos.entries()].sort((a,b)=>b[1]-a[1]).forEach(([nombre,n])=>{
+    const c = el('button','chip'+(state.cat===nombre?' on':''), `${esc(nombre)} · ${n.toLocaleString('es-MX')}`);
+    c.onclick = ()=>{ state.cat=nombre; state.sub=null; state.page=1; renderAll(); };
+    wrap.appendChild(c);
+  });
+}
+
 function renderSubchips(){
   const wrap = $('#subchips'); wrap.innerHTML='';
+  if (buscando()) return renderChipsBusqueda(wrap);
   if (!state.cat) return;
   const cat = DATA.categorias.find(c=>c.nombre===state.cat);
   const subs = cat ? asArray(cat.subs) : [];
@@ -158,12 +220,15 @@ function renderGrid(){
   grid.innerHTML='';
   if (!list.length){
     grid.appendChild(el('div','empty', DATA.total
-      ? 'Sin resultados. Prueba con otro término o cambia de categoría.'
+      ? 'Sin resultados en todo el catálogo. Prueba con otro término, el código o la medida.'
       : 'No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.'));
   }
   list.slice(0, limit).forEach(p=>grid.appendChild(card(p)));
   $('#count').textContent = `${list.length.toLocaleString('es-MX')} productos`;
-  $('#crumbs').textContent = state.cat ? state.cat : 'Todas las categorías';
+  const q = state.q.trim();
+  $('#crumbs').textContent = q
+    ? (state.cat ? `«${q}» en ${state.cat}` : `«${q}» en todo el catálogo`)
+    : (state.cat || 'Todas las categorías');
   const more = $('#btnMore');
   if (list.length > limit){ more.hidden=false; more.textContent = `Cargar más (${(list.length-limit).toLocaleString('es-MX')} restantes)`; }
   else more.hidden=true;
@@ -235,6 +300,7 @@ function enableInlineEdit(root, p){
     node.addEventListener('blur', ()=>{
       const f = node.dataset.f; const val = node.textContent.trim();
       p[f] = val;
+      p._hay = null; invalidarBusqueda();   // el texto editado debe volver a indexarse
       state.overrides[p.id] = Object.assign({}, state.overrides[p.id], {[f]:val});
       save(LS_OVR, state.overrides);
       renderGrid();
@@ -344,6 +410,7 @@ async function init(){
   }
   if (datos.productos.length){
     DATA = datos;
+    invalidarBusqueda();   // pudo escribirse algo mientras cargaba el catálogo
     DATA.productos.forEach(p => {
       const o = state.overrides[p.id];
       if (o) Object.assign(p, o);
@@ -352,8 +419,14 @@ async function init(){
 
   renderAll();
 
-  // Tus listeners originales intactos
-  let t; $('#q').addEventListener('input', e=>{ clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; state.page=1; renderGrid(); },140); });
+  // Al escribir se suelta la categoría abierta: la búsqueda arranca siempre
+  // sobre el catálogo completo y luego se acota con los chips si hace falta.
+  let t; $('#q').addEventListener('input', e=>{ clearTimeout(t); t=setTimeout(()=>{
+    state.q = e.target.value;
+    state.cat = null; state.sub = null;
+    state.page = 1;
+    renderAll();
+  },140); });
   $('#btnMore').onclick = ()=>{ state.page++; renderGrid(); };
   $('#btnCart').onclick = openCart;
   $('#cartClose').onclick = closeCart;
