@@ -7,6 +7,14 @@
 <title>Clasificador · Aceros Peñascal</title>
 <link rel="icon" href="assets/logo-ap.jpg" />
 <link rel="stylesheet" href="assets/clasificador.css" />
+<style>
+  /* Sincronización en línea (Supabase) */
+  .sb-input{ flex:1; min-width:130px; padding:8px 10px; border-radius:8px;
+    border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06);
+    color:inherit; font:inherit; }
+  .sb-input:focus{ outline:none; border-color:var(--zintro-2,#57ad30); }
+  .sb-head{ opacity:.9; }
+</style>
 </head>
 <body>
 
@@ -36,6 +44,8 @@
 <div class="autosave-note">
   <button id="fsBtn" class="fs-btn" hidden></button>
   <span id="fsTxt"></span>
+  <span class="sep-dot">·</span>
+  <span id="sbTxt" class="sb-head"></span>
   <span class="sep-dot">·</span>
   <span>Avance local autoguardado en este navegador; respáldalo con <b>Guardar / Exportar</b>.</span>
   <span id="saveHint" class="save-hint"></span>
@@ -80,6 +90,7 @@
   <label class="sublab">Sub <select id="selSub"></select></label>
   <button id="btnAsignar" class="btn-asignar">Aplicar</button>
   <button id="btnSugSel" class="btn-sug" title="Aplica a cada producto seleccionado su propia sugerencia">✓ Usar sugerencias</button>
+  <span class="sel-etq" id="selEtq"></span>
   <button id="btnSelClear" class="btn-clear" title="Quitar selección (Esc)">✕</button>
 </div>
 
@@ -113,6 +124,18 @@
       <button id="btnFsGuardar" class="btn-datos">⟳ Guardar en el catálogo ahora</button>
       <button id="btnFsDesconectar" class="btn-datos btn-danger">Desconectar</button>
     </div>
+    <div class="datos-sec">Sincronización en línea (Supabase)</div>
+    <div id="sbEstadoTxt" class="datos-stats"></div>
+    <div id="sbLoginRow" class="datos-row" style="flex-wrap:wrap">
+      <input id="sbEmail" class="sb-input" type="email" placeholder="correo" autocomplete="username" />
+      <input id="sbPass" class="sb-input" type="password" placeholder="contraseña" autocomplete="current-password" />
+      <button id="sbLogin" class="btn-datos">🔐 Iniciar sesión</button>
+    </div>
+    <div id="sbSessionRow" class="datos-row" hidden>
+      <button id="sbSync" class="btn-datos">☁ Sincronizar ahora</button>
+      <button id="sbLogout" class="btn-datos btn-danger">Cerrar sesión</button>
+    </div>
+    <p class="datos-nota">Inicia sesión <b>una vez</b>: cada reclasificación se guarda sola en la base en línea (<code>Supabase</code>) y el catálogo público la refleja al refrescar. Con la <b>conexión directa</b> de arriba activa, además se reescriben los archivos locales <code>data/</code>. Sin sesión, tus cambios se guardan localmente y quedan pendientes de subir.</p>
     <div class="datos-sec">Avance de trabajo</div>
     <div class="datos-row">
       <button id="expAvance" class="btn-datos">💾 Guardar avance (.json)</button>
@@ -133,6 +156,55 @@
   </div>
 </div>
 
+<!-- ===== Editor de foto ===== -->
+<div id="modalFoto" class="modal" hidden>
+  <div class="modal-card modal-foto">
+    <button class="modal-close" id="fotoClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title">Editar foto</h3>
+    <div class="fed-stage"><canvas id="fedCanvas"></canvas></div>
+    <p class="fed-tip">Arrastra la imagen para centrarla · rueda del ratón para acercar</p>
+    <div class="fed-controls">
+      <div class="fed-row">
+        <span class="fed-lab">Encuadre</span>
+        <div class="fed-chips" id="fedRatios"></div>
+      </div>
+      <div class="fed-row">
+        <span class="fed-lab">Zoom</span>
+        <input type="range" id="fedZoom" min="10" max="400" value="100" />
+        <button class="btn-datos" id="fedCubrir" title="La imagen llena el marco (recorta lo que sobra)">Cubrir</button>
+        <button class="btn-datos" id="fedContener" title="La imagen completa cabe dentro del marco">Contener</button>
+        <button class="btn-datos" id="fedCentrar" title="Volver al centro">Centrar</button>
+        <button class="btn-datos" id="fedRotar" title="Rotar 90°">⟳ 90°</button>
+      </div>
+      <div class="fed-row">
+        <span class="fed-lab">Tamaño</span>
+        <select id="fedSize">
+          <option value="600">600 px</option>
+          <option value="800" selected>800 px</option>
+          <option value="1200">1200 px</option>
+        </select>
+        <span class="fed-lab">Formato</span>
+        <select id="fedFmt">
+          <option value="webp" selected>WebP (ligero)</option>
+          <option value="jpeg">JPEG</option>
+          <option value="png">PNG</option>
+        </select>
+        <span class="fed-lab">Fondo</span>
+        <select id="fedBg">
+          <option value="#ffffff" selected>Blanco</option>
+          <option value="#F4F6F7">Hueso</option>
+          <option value="transparente">Transparente</option>
+        </select>
+      </div>
+    </div>
+    <div class="fed-foot">
+      <span id="fedInfo" class="fed-info"></span>
+      <button id="fedCancel" class="btn-datos">Cancelar</button>
+      <button id="fedSave" class="btn-asignar">Guardar foto</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Diálogo genérico ===== -->
 <div id="dlg" class="modal" hidden>
   <div class="modal-card modal-mini">
@@ -147,6 +219,17 @@
 
 <div id="toast" class="toast" hidden></div>
 
+<!-- Cliente Supabase (UMD) para la sincronización en línea del clasificador -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  /* Mismas credenciales públicas (anon) que usa el catálogo en core/config.js.
+     La ESCRITURA está protegida por RLS: sólo un usuario autenticado puede
+     reclasificar la tabla `productos` (ver login en "Guardar / Exportar"). */
+  window.SUPA_CFG = {
+    URL: 'https://qdlezhfcnwsygtosieme.supabase.co',
+    KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkbGV6aGZjbndzeWd0b3NpZW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMzU2NjEsImV4cCI6MjA5OTgxMTY2MX0.8SwUSs76lJNsQXp8qR_gTHbPRHcdfg6C5Et4Wg6wTp8'
+  };
+</script>
 <script src="data/productos.js"></script>
 <script src="assets/clasificador.js"></script>
 </body>

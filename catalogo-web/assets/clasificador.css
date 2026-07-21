@@ -90,6 +90,59 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .tax-row.pend.on{background:#D98E22;border-color:#D98E22;color:#fff}
 .tax-row.pend .n{background:#f2ddb4;color:#8a6414}
 .tax-row.pend.on .n{background:rgba(255,255,255,.22);color:#fff}
+/* Marcas de gestión: conviven con la categoría real del producto */
+.tax-row.etq{background:#eef4fb;border:1px dashed #a9c4e3;color:#1d4b7a}
+.tax-row.etq:hover{background:#e2edf8}
+.tax-row.etq .n{background:#d5e4f4;color:#1d4b7a}
+.tax-row.etq.on{background:var(--aqua);border-color:var(--aqua);color:#fff}
+.tax-row.etq.on .n{background:rgba(255,255,255,.22);color:#fff}
+.tagetq{display:inline-block;font-size:10.5px;line-height:1.5;padding:1px 7px;margin-left:5px;
+  border-radius:999px;background:#e2edf8;color:#1d4b7a;border:1px solid #a9c4e3;white-space:nowrap}
+.f-etq{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:10px;background:var(--hueso)}
+.f-etq-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--carbon);cursor:pointer}
+.sel-etq{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.btn-etq{font-size:11.5px;padding:5px 10px;border-radius:8px;border:1px solid #a9c4e3;
+  background:#eef4fb;color:#1d4b7a;cursor:pointer;white-space:nowrap}
+.btn-etq:hover{background:#dceaf7}
+.btn-etq.quitar{padding:5px 8px;color:var(--oxido);border-color:#d9a3ab;background:#f7e4e6}
+.btn-etq.quitar:hover{background:#f0d3d7}
+
+/* Editor de foto: recorte, encuadre, tamaño y formato */
+.modal-foto{max-width:580px;width:100%}
+.fed-stage{display:flex;justify-content:center;align-items:center;background:var(--fondo-prod);
+  border-radius:10px;padding:14px}
+#fedCanvas{border-radius:6px;cursor:grab;touch-action:none;box-shadow:var(--shadow);
+  background:
+    linear-gradient(45deg,#c9cfd3 25%,transparent 25%,transparent 75%,#c9cfd3 75%) 0 0/16px 16px,
+    linear-gradient(45deg,#c9cfd3 25%,#fff 25%,#fff 75%,#c9cfd3 75%) 8px 8px/16px 16px}
+#fedCanvas.arrastrando{cursor:grabbing}
+.fed-tip{font-size:11.5px;color:var(--gris);text-align:center;margin:8px 0 12px}
+.fed-controls{display:flex;flex-direction:column;gap:9px}
+.fed-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fed-lab{font-size:11.5px;color:var(--gris);min-width:60px}
+.fed-chips{display:flex;gap:6px;flex-wrap:wrap}
+.fed-chip{font-size:11.5px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--carbon);cursor:pointer}
+.fed-chip:hover{background:var(--gris-50)}
+.fed-chip.on{background:var(--zintro-aqua);border-color:var(--zintro-aqua);color:#fff}
+#fedZoom{flex:1;min-width:110px}
+.fed-foot{display:flex;align-items:center;gap:8px;margin-top:14px}
+.fed-info{flex:1;font-size:11px;color:var(--gris);font-family:var(--mono)}
+
+/* Control para cambiar la foto del producto (ficha) */
+.foto-bar{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.foto-estado{font-size:11.5px;color:var(--gris)}
+
+/* Categoría/subcategoría creada hace menos de 48 h: se resalta en naranja y
+   vuelve sola a su color original al cumplirse las 48 h. */
+.tax-row.nueva{background:#fff1e6;border:1px solid #f6b98a;box-shadow:inset 3px 0 0 #F2853A}
+.tax-row.nueva:hover{background:#ffe6d3}
+.tax-row.nueva .nm{color:#C25510;font-weight:600}
+.tax-row.nueva .n{background:#fbdcc4;color:#9c4a12}
+.tax-row.nueva.on{background:#F2853A;border-color:#F2853A;color:#fff}
+.tax-row.nueva.on .nm{color:#fff}
+.tax-row.nueva.on .n{background:rgba(255,255,255,.22);color:#fff}
 .tax-row.fantasma{background:#f7e4e6;border:1px dashed #d9a3ab;color:#7c1e2b}
 .tax-row.fantasma.on{background:var(--oxido);color:#fff;border-color:var(--oxido)}
 .tax-row.dropover{outline:2px solid var(--aqua-3);outline-offset:-2px;background:#dff0f2}

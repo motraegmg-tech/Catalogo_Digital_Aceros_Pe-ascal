@@ -1,5 +1,25 @@
 import { supabase } from './supabaseClient.js';
 
+/* Agrupa una lista de productos en categorías con sus subcategorías y conteos.
+   Se usa tanto con los datos de Supabase como con el respaldo local
+   (data/productos.js), para que ambos caminos produzcan la misma estructura. */
+export const agruparCategorias = (productos) => {
+  const catMap = {};
+  productos.forEach(p => {
+    if (!p.cat) return;
+    if (!catMap[p.cat]) catMap[p.cat] = { nombre: p.cat, n: 0, subs: {} };
+    const c = catMap[p.cat];
+    c.n++;
+    if (p.sub) c.subs[p.sub] = (c.subs[p.sub] || 0) + 1;
+  });
+
+  return Object.values(catMap).map(c => ({
+    nombre: c.nombre,
+    n: c.n,
+    subs: Object.entries(c.subs).map(([nombre, n]) => ({ nombre, n }))
+  }));
+};
+
 export const fetchCatalogo = async () => {
   let allData = [];
   let page = 0;
@@ -18,9 +38,9 @@ export const fetchCatalogo = async () => {
       if (data && data.length > 0) {
         allData = allData.concat(data);
         if (data.length < pageSize) {
-          hasMore = false; // 
+          hasMore = false; //
         } else {
-          page++; 
+          page++;
         }
       } else {
         hasMore = false;
@@ -41,22 +61,5 @@ export const fetchCatalogo = async () => {
     foto: p.foto
   }));
 
-  const catMap = {};
-  productos.forEach(p => {
-    if (!p.cat) return;
-    if (!catMap[p.cat]) catMap[p.cat] = { nombre: p.cat, n: 0, subs: new Set() };
-    catMap[p.cat].n++;
-    if (p.sub) catMap[p.cat].subs.add(p.sub);
-  });
-
-  const categorias = Object.values(catMap).map(c => ({
-    nombre: c.nombre,
-    n: c.n,
-    subs: Array.from(c.subs).map(sub => ({
-      nombre: sub,
-      n: productos.filter(prod => prod.cat === c.nombre && prod.sub === sub).length
-    }))
-  }));
-
-  return { productos, categorias, total: productos.length };
+  return { productos, categorias: agruparCategorias(productos), total: productos.length };
 };

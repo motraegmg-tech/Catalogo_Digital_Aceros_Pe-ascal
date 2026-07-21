@@ -13,6 +13,19 @@ const SEP = '';                 // separador interno (valores compuestos)
 const PAGE_LISTA = 100, PAGE_PREVIA = 60;
 const FOTO_EXTS = ['webp','jpg','jpeg','png'];
 
+/* ---------- marcas de gestión (las "categorías extra") ----------
+   Un producto sigue teniendo UNA categoría real, pero además puede llevar
+   estas marcas para rastrear lo que todavía no está 100% configurado. Viven en
+   el arreglo `etq` y se sincronizan a Supabase (columna `etiquetas`). */
+const ETIQUETAS = [
+  { id:'sin-foto',         label:'Productos sin foto o foto errónea', corto:'Sin foto' },
+  { id:'sin-conocimiento', label:'Productos sin conocimiento',        corto:'Sin conocimiento' },
+];
+const ETQMAP = new Map(ETIQUETAS.map(e=>[e.id,e]));
+function etqDe(p){ return Array.isArray(p.etq) ? p.etq : []; }
+function tieneEtq(p,id){ return etqDe(p).includes(id); }
+function etqKey(p){ return etqDe(p).slice().sort().join(','); }
+
 const DATA = window.CATALOGO || { generado:'', total:0, productos:[], categorias:[] };
 
 /* ---------- utils ---------- */
@@ -41,7 +54,7 @@ function taxDesdeBase(){
 }
 function nuevoTrabajo(){
   return { version:2, creado:hoyISO(), guardado:null, baseGenerado:DATA.generado||'',
-    taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, bitacora:[] };
+    taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, etiquetas:{}, bitacora:[] };
 }
 function migrar(w){
   // v1 → v2: subs de strings a objetos {nombre, subs:[]}
@@ -52,7 +65,8 @@ function migrar(w){
       : {nombre:s.nombre, subs:(s.subs||[]).map(x=>typeof x==='string'?x:x.nombre)}),
   }));
   w.version = 2;
-  w.asignaciones = w.asignaciones||{}; w.ediciones = w.ediciones||{}; w.bitacora = w.bitacora||[];
+  w.asignaciones = w.asignaciones||{}; w.ediciones = w.ediciones||{};
+  w.etiquetas = w.etiquetas||{}; w.bitacora = w.bitacora||[];
   return w;
 }
 let WORK = load(LS_KEY, null);
@@ -70,6 +84,7 @@ function persistir(){
   h.classList.add('on');
   clearTimeout(persistir._t); persistir._t = setTimeout(()=>h.classList.remove('on'), 2200);
   programarGuardadoCatalogo();   // conexión directa: reescribe productos.js/.json
+  programarSyncSupabase();       // sincronización en línea: sube cambios a Supabase
 }
 
 /* ---------- conexión directa con el catálogo (File System Access) ----------
@@ -253,6 +268,142 @@ function pintarFsDatos(){
   $('#btnFsDesconectar').disabled = (FS.estado==='off'||FS.estado==='nosoporte');
 }
 
+/* ---------- sincronización en línea con Supabase ----------
+   Login seguro (Supabase Auth): sólo un usuario autenticado puede reclasificar
+   la tabla `productos`. Cada cambio marca el producto como "sucio" (por código);
+   con sesión activa se empuja a Supabase en lotes agrupados por destino. El
+   catálogo público lo refleja al refrescar. La escritura al archivo local la
+   sigue haciendo la conexión directa (File System Access) de arriba. */
+const SBC = (window.supabase && window.SUPA_CFG)
+  ? window.supabase.createClient(window.SUPA_CFG.URL, window.SUPA_CFG.KEY)
+  : null;
+const SB = { user:null, estado: SBC ? 'anon' : 'nosoporte', ultimo:null, error:null };
+// estado: nosoporte | anon (sin sesión) | on (sesión activa) | sync | error
+const SB_SEP = '';
+// Clave de comparación: categoría + subcategoría + marcas de gestión
+function sbClave(p){ return (p.cat||'')+SB_SEP+(p.sub||'')+SB_SEP+etqKey(p); }
+// Estado que asumimos ya está en Supabase (arranca == base local == BD desplegada)
+const SB_BASE = new Map(DATA.productos.map(p => [p.cod, sbClave(p)]));
+const SB_DIRTY = new Set();   // códigos cuya categoría/subcategoría difieren de Supabase
+
+function marcarSucios(){
+  if (!SBC) return;
+  for (const p of PRODUCTOS){
+    const key = sbClave(p);
+    if (SB_BASE.get(p.cod) !== key) SB_DIRTY.add(p.cod);
+    else SB_DIRTY.delete(p.cod);
+  }
+  renderSbEstado();
+}
+
+let SB_T = null;
+function programarSyncSupabase(){
+  if (!SBC || SB.estado==='nosoporte') return;
+  clearTimeout(SB_T);
+  SB_T = setTimeout(()=>sincronizarSupabase('auto'), 1600);
+}
+
+async function sincronizarSupabase(origen){
+  if (!SBC) return false;
+  if (!SB.user){ if (origen!=='auto') aviso('⚠ Inicia sesión para sincronizar en línea.'); return false; }
+  if (!SB_DIRTY.size){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
+  // Agrupa por destino (categoria|subcategoria) para actualizar en lote
+  const grupos = new Map();
+  for (const p of PRODUCTOS){
+    if (!SB_DIRTY.has(p.cod)) continue;
+    const key = sbClave(p);
+    if (!grupos.has(key)) grupos.set(key, []);
+    grupos.get(key).push(p.cod);
+  }
+  SB.estado='sync'; renderSbEstado();
+  let escritos = 0, fallo = null;
+  for (const [key, cods] of grupos){
+    const [cat, sub, etqs] = key.split(SB_SEP);
+    for (let i=0;i<cods.length;i+=200){          // trocea por límite de URL de .in()
+      const lote = cods.slice(i, i+200);
+      const { error } = await SBC.from('productos')
+        .update({ categoria: cat, subcategoria: sub, etiquetas: etqs ? etqs.split(',') : [] })
+        .in('codigo', lote);
+      if (error){ fallo = error; break; }
+      for (const c of lote){ SB_BASE.set(c, key); SB_DIRTY.delete(c); escritos++; }
+    }
+    if (fallo) break;
+  }
+  if (fallo){
+    SB.estado='error'; SB.error = fallo.message || String(fallo); renderSbEstado();
+    aviso('⚠ Error al sincronizar con Supabase: '+SB.error);
+    return false;
+  }
+  SB.estado='on'; SB.ultimo=new Date(); SB.error=null; renderSbEstado();
+  if (escritos && origen!=='auto') aviso('☁ Sincronizados '+fmt(escritos)+' producto(s) en línea.');
+  return true;
+}
+
+function sbAplicarSesion(session){
+  SB.user = session?.user || null;
+  SB.estado = SB.user ? 'on' : 'anon';
+  renderSbEstado();
+  if (SB.user){ marcarSucios(); programarSyncSupabase(); }   // sube lo pendiente al entrar
+}
+
+async function sbLogin(){
+  if (!SBC) return;
+  const email = ($('#sbEmail')?.value||'').trim();
+  const password = $('#sbPass')?.value||'';
+  if (!email || !password){ aviso('Escribe correo y contraseña.'); return; }
+  const btn = $('#sbLogin'); if (btn){ btn.disabled=true; btn.textContent='Entrando…'; }
+  const { data, error } = await SBC.auth.signInWithPassword({ email, password });
+  if (btn){ btn.disabled=false; btn.textContent='🔐 Iniciar sesión'; }
+  if (error){ aviso('⚠ No se pudo iniciar sesión: '+error.message); return; }
+  if ($('#sbPass')) $('#sbPass').value='';
+  aviso('✓ Sesión iniciada: '+(data.user?.email||''));   // onAuthStateChange hará el flush
+}
+
+async function sbLogout(){
+  if (!SBC) return;
+  await SBC.auth.signOut();
+  aviso('Sesión cerrada. Tus cambios se siguen guardando localmente (pendientes de subir).');
+}
+
+function renderSbEstado(){
+  const head = $('#sbTxt'), full = $('#sbEstadoTxt');
+  const loginRow = $('#sbLoginRow'), sessRow = $('#sbSessionRow');
+  const pend = SB_DIRTY.size;
+  const hora = SB.ultimo ? SB.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : null;
+  let h='', f='';
+  switch (SB.estado){
+    case 'nosoporte':
+      f = 'Sincronización en línea no disponible (no cargó el cliente de Supabase; revisa tu conexión).'; break;
+    case 'anon':
+      h = '<b>○ Sin sesión</b>' + (pend?` · ${fmt(pend)} pend.`:'');
+      f = 'Sin sesión: tus cambios NO se suben en línea. Inicia sesión abajo para activarlo.'
+          + (pend?` Hay <b>${fmt(pend)}</b> cambio(s) pendiente(s) de subir.`:''); break;
+    case 'sync':
+      h = '<b style="color:var(--zintro-2)">↻ Sincronizando…</b>';
+      f = 'Subiendo cambios a Supabase…'; break;
+    case 'on':
+      h = '<b style="color:var(--zintro-2)">● En línea</b>' + (SB.user?.email?' · '+esc(SB.user.email):'')
+          + (pend?` · ${fmt(pend)} pend.`:'');
+      f = `Conectado como <b>${esc(SB.user?.email||'')}</b>. `
+          + (pend ? `<b>${fmt(pend)}</b> cambio(s) pendiente(s) de subir.`
+                  : `Todo al día${hora?' · última subida '+hora:''}.`); break;
+    case 'error':
+      h = '<b style="color:var(--oxido)">⚠ Error al sincronizar</b>' + (pend?` · ${fmt(pend)} pend.`:'');
+      f = 'Error al subir a Supabase: '+esc(SB.error||'')+(pend?` · ${fmt(pend)} pendiente(s).`:''); break;
+  }
+  if (head) head.innerHTML = h;
+  if (full) full.innerHTML = f;
+  if (loginRow) loginRow.hidden = !!SB.user || SB.estado==='nosoporte';
+  if (sessRow)  sessRow.hidden  = !SB.user;
+}
+
+function initSb(){
+  renderSbEstado();
+  if (!SBC) return;
+  SBC.auth.getSession().then(({data})=> sbAplicarSesion(data.session)).catch(()=>{});
+  SBC.auth.onAuthStateChange((_ev, session)=> sbAplicarSesion(session));
+}
+
 /* ---------- productos efectivos (base + deltas) ---------- */
 const BMAP = new Map(DATA.productos.map(p=>[p.id,p]));
 let PRODUCTOS = [], IDX = new Map(), TAXMAP = new Map();
@@ -261,17 +412,20 @@ function construirProductos(){
     const q = Object.assign({}, p); q.sub2 = '';
     const e = WORK.ediciones[p.id]; if (e) Object.assign(q, e);
     const a = WORK.asignaciones[p.id]; if (a){ q.cat=a.cat; q.sub=a.sub; q.sub2=a.sub2||''; }
+    q.etq = WORK.etiquetas[p.id] ? WORK.etiquetas[p.id].slice()
+          : (Array.isArray(p.etq) ? p.etq.slice() : []);
     return q;
   });
   IDX = new Map(PRODUCTOS.map(p=>[p.id,p]));
   TAXMAP = new Map(WORK.taxonomia.map(c=>[c.nombre,c]));
+  marcarSucios();   // recalcula qué productos difieren de Supabase (para sincronizar)
 }
 function buscarCat(nombre){ return WORK.taxonomia.find(c=>norm(c.nombre)===norm(nombre)); }
 function buscarSub(entrada, nombre){ return entrada.subs.find(s=>norm(s.nombre)===norm(nombre)); }
 
 /* ---------- estado de la interfaz ---------- */
 const state = {
-  q:'', cat:null, sub:null, sub2:null, prov:'', estado:'todos',
+  q:'', cat:null, sub:null, sub2:null, etq:null, prov:'', estado:'todos',
   page:1, vista:'lista', sel:new Set(), lastIdx:null,
   expand:new Set(), expand2:new Set(),
 };
@@ -280,7 +434,9 @@ let DRAGIDS = null;
 // Selección por arrastre (clic izquierdo sostenido sobre las filas)
 const PAINT = { downId:null, downIdx:null, base:null, active:false, suppressUntil:0 };
 
-function irA(cat, sub, sub2){ state.cat=cat; state.sub=sub; state.sub2=sub2; state.page=1; renderAll(); }
+function irA(cat, sub, sub2){ state.etq=null; state.cat=cat; state.sub=sub; state.sub2=sub2; state.page=1; renderAll(); }
+/* Filtra por una marca de gestión (independiente de la categoría real) */
+function irAEtq(etqId){ state.etq=etqId; state.cat=null; state.sub=null; state.sub2=null; state.page=1; renderAll(); }
 
 /* ---------- bitácora / deshacer ---------- */
 function bitacora(txt){
@@ -294,10 +450,16 @@ function restaurarAsig(cambios){
     if (c.prev) WORK.asignaciones[c.id] = c.prev; else delete WORK.asignaciones[c.id];
   }
 }
+function restaurarEtq(cambios){
+  for (const c of cambios){
+    if (c.prev) WORK.etiquetas[c.id] = c.prev; else delete WORK.etiquetas[c.id];
+  }
+}
 function undo(){
   const a = UNDO.pop();
   if (!a){ aviso('Nada que deshacer'); return; }
   if (a.tipo==='asig') restaurarAsig(a.cambios);
+  else if (a.tipo==='etq') restaurarEtq(a.cambios);
   else if (a.tipo==='edic'){ if (a.prev) WORK.ediciones[a.id]=a.prev; else delete WORK.ediciones[a.id]; }
   else if (a.tipo==='tax'){ WORK.taxonomia = a.tax; restaurarAsig(a.asig); }
   bitacora('Deshacer: '+(a.label||''));
@@ -436,10 +598,12 @@ function contar(){
       subs:new Map(c.subs.map(s=>[s.nombre, {n:0, subs2:new Map(s.subs.map(x=>[x,0]))}])) });
   }
   const fantasmas = new Map();
+  const etq = new Map(ETIQUETAS.map(e=>[e.id,0]));
   let pendientes=0, modificados=0, conSug=0;
   for (const p of PRODUCTOS){
     if (WORK.asignaciones[p.id] || WORK.ediciones[p.id]) modificados++;
     if (sugVisible(p)) conSug++;
+    for (const t of etqDe(p)) if (etq.has(t)) etq.set(t, etq.get(t)+1);
     if (p.cat===POR){ pendientes++; continue; }
     const c = cats.get(p.cat);
     if (!c){ fantasmas.set(p.cat,(fantasmas.get(p.cat)||0)+1); continue; }
@@ -451,7 +615,7 @@ function contar(){
     const s2 = p.sub2||'';
     se.subs2.set(s2,(se.subs2.get(s2)||0)+1);
   }
-  return { cats, fantasmas, pendientes, modificados, conSug,
+  return { cats, fantasmas, etq, pendientes, modificados, conSug,
     total:PRODUCTOS.length, clasificados:PRODUCTOS.length-pendientes };
 }
 let CNT = null;
@@ -460,6 +624,7 @@ let CNT = null;
 function filtered(){
   const q = norm(state.q);
   return PRODUCTOS.filter(p=>{
+    if (state.etq && !tieneEtq(p, state.etq)) return false;
     if (state.cat && p.cat!==state.cat) return false;
     if (state.sub!==null && state.sub!==undefined){
       const sub = p.sub && p.sub!==p.cat ? p.sub : '';
@@ -504,6 +669,27 @@ function asignar(ids, cat, sub, sub2, origen){
   bitacora(label + (origen ? ` (${origen})` : ''));
   construirProductos(); persistir();
   state.sel.clear();
+  renderAll();
+  aviso('✓ '+label);
+  return cambios.length;
+}
+
+/* Pone o quita una marca de gestión a varios productos. No toca su categoría. */
+function marcarEtiqueta(ids, etqId, poner, origen){
+  const meta = ETQMAP.get(etqId); if (!meta) return 0;
+  const cambios = [];
+  for (const id of ids){
+    const p = IDX.get(id); if (!p) continue;
+    const actual = etqDe(p);
+    if (actual.includes(etqId) === !!poner) continue;      // ya estaba así
+    cambios.push({ id, prev: WORK.etiquetas[id] ? WORK.etiquetas[id].slice() : null });
+    WORK.etiquetas[id] = poner ? [...actual, etqId] : actual.filter(x=>x!==etqId);
+  }
+  if (!cambios.length){ aviso('Sin cambios: ya estaban así.'); return 0; }
+  const label = `${fmt(cambios.length)} producto(s) ${poner?'marcados':'desmarcados'} · ${meta.label}`;
+  pushUndo({tipo:'etq', label, cambios});
+  bitacora(label + (origen ? ` (${origen})` : ''));
+  construirProductos(); persistir();
   renderAll();
   aviso('✓ '+label);
   return cambios.length;
@@ -589,7 +775,7 @@ async function nuevaCategoria(){
   const nombre = nombreValido(v.nombre); if (!nombre) return;
   if (buscarCat(nombre)){ aviso('Ya existe una categoría con ese nombre.'); return; }
   const tax = taxSnapshot();
-  WORK.taxonomia.push({nombre, subs:[]});
+  WORK.taxonomia.push({nombre, subs:[], creada:sello()});
   pushUndo({tipo:'tax', label:'Nueva categoría "'+nombre+'"', tax, asig:[]});
   bitacora('Nueva categoría "'+nombre+'"');
   construirProductos(); persistir(); renderAll();
@@ -684,7 +870,7 @@ async function nuevaSub(catNombre){
   if (norm(nombre)===norm(catNombre)){ aviso('La subcategoría no puede llamarse igual que la categoría.'); return; }
   if (buscarSub(entrada, nombre)){ aviso('Ya existe esa subcategoría.'); return; }
   const tax = taxSnapshot();
-  entrada.subs.push({nombre, subs:[]}); entrada.subs.sort(alfaN);
+  entrada.subs.push({nombre, subs:[], creada:sello()}); entrada.subs.sort(alfaN);
   pushUndo({tipo:'tax', label:`Nueva subcategoría "${nombre}" en "${catNombre}"`, tax, asig:[]});
   bitacora(`Nueva subcategoría "${nombre}" en "${catNombre}"`);
   state.expand.add(catNombre);
@@ -816,12 +1002,17 @@ async function reasignarFantasma(nombre){
 }
 
 /* ---------- edición de campos ---------- */
-function editarCampos(id, campos){ // campos = {nom?, med?, prov?}
+/* Fusiona: los campos que NO se envían conservan su edición previa. (Antes se
+   reemplazaba la entrada completa, así que guardar la ficha borraba la foto
+   recién subida, y viceversa.) */
+function editarCampos(id, campos){ // campos = {nom?, med?, prov?, foto?}
   const base = BMAP.get(id); if (!base) return false;
   const prev = WORK.ediciones[id] ? Object.assign({},WORK.ediciones[id]) : null;
-  const entrada = {};
-  for (const f of ['nom','med','prov']){
-    if (campos[f]!==undefined && campos[f]!==base[f]) entrada[f]=campos[f];
+  const entrada = Object.assign({}, prev||{});
+  for (const f of ['nom','med','prov','foto']){
+    if (campos[f]===undefined) continue;              // no enviado → se respeta
+    if (campos[f]!==base[f]) entrada[f]=campos[f];    // difiere de la base → se edita
+    else delete entrada[f];                           // volvió al valor original
   }
   const igual = JSON.stringify(entrada)===JSON.stringify(prev||{});
   if (igual) return false;
@@ -842,9 +1033,43 @@ function renderProgreso(){
   $('#progFill').style.width = pct+'%';
 }
 
+/* ---------- resaltado de categorías nuevas (48 h) ----------
+   Las categorías y subcategorías creadas se sellan con `creada`. Mientras no
+   pasen 48 h se pintan en naranja; al cumplirse, vuelven solas a su color
+   original (un vigilante re-dibuja el árbol cuando alguna deja de ser nueva).
+   Es metadato del clasificador: en Supabase las categorías sólo existen como
+   texto en cada producto, así que esta marca vive en localStorage. */
+const MS_48H = 48*60*60*1000;
+function sello(){ return new Date().toISOString(); }
+function esNueva(e){
+  if (!e || !e.creada) return false;
+  const t = Date.parse(e.creada);
+  return Number.isFinite(t) && (Date.now() - t) < MS_48H;
+}
+function tituloNueva(e){
+  const restan = MS_48H - (Date.now() - Date.parse(e.creada));
+  const h = Math.max(0, Math.round(restan/3600000));
+  return `Creada hace poco · se resalta ${h} h más`;
+}
+function firmaNuevas(){
+  const out = [];
+  for (const c of WORK.taxonomia){
+    if (esNueva(c)) out.push(c.nombre);
+    for (const s of (c.subs||[])) if (esNueva(s)) out.push(c.nombre+SEP+s.nombre);
+  }
+  return out.sort().join('|');
+}
+let FIRMA_NUEVAS = null;
+function vigilarNuevas(){
+  setInterval(()=>{
+    if (FIRMA_NUEVAS !== null && firmaNuevas() !== FIRMA_NUEVAS) renderTax();
+  }, 60000);
+}
+
 /* ---------- render: árbol de taxonomía ---------- */
 function filaTax(opts){
   const row = el('div','tax-row'+(opts.cls?' '+opts.cls:''));
+  if (opts.title) row.title = opts.title;
   if (opts.twisty!==undefined){
     const tw = el('span','tw', opts.twisty ? '▼' : '▶');
     tw.onclick = (e)=>{ e.stopPropagation(); opts.onTwisty(); };
@@ -870,11 +1095,20 @@ function filaTax(opts){
       if (DRAGIDS) asignar(DRAGIDS, opts.drop.cat, opts.drop.sub||opts.drop.cat, opts.drop.sub2||'', 'arrastre');
     });
   }
+  if (opts.dropEtq){   // arrastrar productos aquí los MARCA (no los mueve)
+    row.addEventListener('dragover', e=>{ if(DRAGIDS){ e.preventDefault(); row.classList.add('dropover'); } });
+    row.addEventListener('dragleave', ()=>row.classList.remove('dropover'));
+    row.addEventListener('drop', e=>{
+      e.preventDefault(); row.classList.remove('dropover');
+      if (DRAGIDS) marcarEtiqueta(DRAGIDS, opts.dropEtq, true, 'arrastre');
+    });
+  }
   return row;
 }
 
 function renderTax(){
   const c = CNT;
+  FIRMA_NUEVAS = firmaNuevas();
   const root = $('#tax'); root.innerHTML='';
 
   root.appendChild(filaTax({ cls:(state.cat===null?'on':''), nombre:'Todas las categorías', n:c.total,
@@ -884,6 +1118,17 @@ function renderTax(){
     onSel:()=>irA(POR,null,null),
     acts:[{t:'⇄', title:'Mover todos los pendientes a otra categoría', fn:()=>moverContenido({cat:POR})}],
     drop:{cat:POR, sub:POR} }));
+
+  root.appendChild(el('div','tax-title','Marcas de gestión'));
+  for (const e of ETIQUETAS){
+    root.appendChild(filaTax({
+      cls:'etq'+(state.etq===e.id?' on':''),
+      nombre:e.label, n:(c.etq.get(e.id)||0),
+      title:'Marca de gestión: convive con la categoría real. Arrastra productos aquí para marcarlos.',
+      onSel:()=>irAEtq(e.id),
+      dropEtq:e.id,
+    }));
+  }
 
   root.appendChild(el('div','tax-title','Categorías ('+WORK.taxonomia.length+')'));
 
@@ -898,7 +1143,8 @@ function renderTax(){
     const abierta = state.expand.has(t.nombre);
     const cont = el('div','tax-cat');
     cont.appendChild(filaTax({
-      cls:(state.cat===t.nombre && state.sub===null ? 'on' : ''),
+      cls:(state.cat===t.nombre && state.sub===null ? 'on' : '') + (esNueva(t) ? ' nueva' : ''),
+      title: esNueva(t) ? tituloNueva(t) : undefined,
       nombre:t.nombre, n:info.n,
       twisty: subs.length ? abierta : undefined,
       onTwisty:()=>{ abierta ? state.expand.delete(t.nombre) : state.expand.add(t.nombre); renderTax(); },
@@ -931,7 +1177,8 @@ function renderTax(){
         const key2 = t.nombre+SEP+s;
         const abierta2 = state.expand2.has(key2);
         wrap.appendChild(filaTax({
-          cls:(state.cat===t.nombre && state.sub===s && state.sub2===null?'on':''),
+          cls:(state.cat===t.nombre && state.sub===s && state.sub2===null?'on':'') + (esNueva(taxSub) ? ' nueva' : ''),
+          title: esNueva(taxSub) ? tituloNueva(taxSub) : undefined,
           nombre:s, n:infoSub.n,
           twisty: hijos.length ? abierta2 : undefined,
           onTwisty:()=>{ abierta2 ? state.expand2.delete(key2) : state.expand2.add(key2); renderTax(); },
@@ -1016,7 +1263,13 @@ function llenarProveedores(){
 function tagClasif(p){
   const cls = p.cat===POR ? ' pend' : (!TAXMAP.has(p.cat) ? ' fantasma' : '');
   const ruta = rutaTxt(p.cat, p.sub, p.sub2);
-  return `<span class="tagcat${cls}" title="${esc(ruta)}"><span>${esc(ruta)}</span></span>`;
+  return `<span class="tagcat${cls}" title="${esc(ruta)}"><span>${esc(ruta)}</span></span>` + etqChips(p);
+}
+function etqChips(p){
+  return etqDe(p).map(t=>{
+    const e = ETQMAP.get(t); if (!e) return '';
+    return `<span class="tagetq" title="${esc(e.label)}">${esc(e.corto)}</span>`;
+  }).join('');
 }
 function pintarSeleccion(){
   // Actualiza clases/checkbox de las filas ya renderizadas (sin reconstruir)
@@ -1114,13 +1367,188 @@ function fila(p, idx){
   return row;
 }
 
+/* ---------- fotos: Storage (en línea) con respaldo a los archivos locales ----------
+   Si el producto tiene una foto subida desde el clasificador, el campo `foto`
+   guarda su URL pública de Supabase Storage y ésa manda. Si no, se usa la
+   convención histórica fotos/<id>.<ext> que ya vive en el repositorio. */
+function esUrlFoto(f){ return typeof f==='string' && /^https?:\/\//i.test(f); }
+function fuentesFoto(p){
+  const out = [];
+  if (esUrlFoto(p.foto)) out.push(p.foto);
+  for (const e of FOTO_EXTS) out.push(`fotos/${p.id}.${e}`);
+  return out;
+}
+
+/* Sube una imagen al bucket `fotos`, apunta la columna `foto` del producto a su
+   URL pública y refleja el cambio en el trabajo local (y por tanto en data/). */
+async function subirFoto(id, blob, ext){
+  const p = IDX.get(id); if (!p) return false;
+  if (!SBC){ aviso('⚠ Supabase no disponible.'); return false; }
+  if (!SB.user){ aviso('⚠ Inicia sesión (Guardar / Exportar) para cambiar fotos.'); return false; }
+  if (blob.size > 5*1024*1024){ aviso('⚠ La imagen supera 5 MB.'); return false; }
+
+  const ruta = `${id}-${Date.now()}.${ext||'webp'}`;   // nombre único: evita caché
+  try{
+    const { error: errUp } = await SBC.storage.from('fotos')
+      .upload(ruta, blob, { cacheControl:'3600', upsert:true, contentType:blob.type });
+    if (errUp) throw errUp;
+
+    const url = SBC.storage.from('fotos').getPublicUrl(ruta).data.publicUrl;
+    const { error: errDb } = await SBC.from('productos').update({ foto:url }).eq('codigo', p.cod);
+    if (errDb) throw errDb;
+
+    editarCampos(id, { foto:url });          // fusiona: no pisa otras ediciones
+    construirProductos(); persistir();
+    aviso('✓ Foto actualizada: en línea y en el catálogo local');
+    if (FICHA_ID===id) abrirFicha(id);       // repinta la ficha con la imagen nueva
+    renderAll();
+    return true;
+  }catch(e){
+    aviso('⚠ No se pudo subir la foto: '+(e.message||e.name));
+    return false;
+  }
+}
+
+/* ---------- editor de foto (encuadre, recorte, tamaño y formato) ----------
+   Lienzo WYSIWYG: lo que se ve en el marco es exactamente lo que se sube. El
+   mismo dibujo se repite en un lienzo de salida multiplicando por el factor k,
+   así que la vista previa y el archivo final no pueden desalinearse. */
+const FED = { id:null, img:null, escala:1, dx:0, dy:0, rot:0, ratio:1, arrastre:null };
+const FED_RATIOS = [{t:'1:1',v:1},{t:'4:3',v:4/3},{t:'3:4',v:3/4},{t:'16:9',v:16/9},{t:'Original',v:0}];
+const FED_LADO = 300;   // lado mayor del lienzo en pantalla
+
+function fedImgDims(){  // dimensiones efectivas de la imagen según la rotación
+  const i = FED.img;
+  return (FED.rot%180===0) ? {w:i.width, h:i.height} : {w:i.height, h:i.width};
+}
+function fedDims(){     // tamaño del marco en pantalla, según el encuadre
+  let r = FED.ratio;
+  if (!r){ const im = fedImgDims(); r = im.w/im.h; }
+  return r>=1 ? {w:FED_LADO, h:Math.round(FED_LADO/r)} : {w:Math.round(FED_LADO*r), h:FED_LADO};
+}
+function fedEscalaCubrir(){
+  const {w,h} = fedDims(), im = fedImgDims();
+  return Math.max(w/im.w, h/im.h);
+}
+function fedAjustar(modo){
+  const {w,h} = fedDims(), im = fedImgDims();
+  FED.escala = modo==='contener' ? Math.min(w/im.w, h/im.h) : Math.max(w/im.w, h/im.h);
+  FED.dx = 0; FED.dy = 0;
+  $('#fedZoom').value = Math.round(FED.escala/fedEscalaCubrir()*100);
+  fedPintar();
+}
+function fedSalida(){
+  const {w,h} = fedDims();
+  const k = parseInt($('#fedSize').value,10) / Math.max(w,h);
+  return { w:Math.round(w*k), h:Math.round(h*k), k };
+}
+function fedDibujar(ctx, W, H, k){
+  ctx.clearRect(0,0,W,H);
+  const bg = $('#fedBg').value, fmt = $('#fedFmt').value;
+  if (bg!=='transparente' || fmt==='jpeg'){          // JPEG no admite transparencia
+    ctx.fillStyle = (bg==='transparente' ? '#ffffff' : bg);
+    ctx.fillRect(0,0,W,H);
+  }
+  ctx.save();
+  ctx.translate(W/2 + FED.dx*k, H/2 + FED.dy*k);
+  ctx.rotate(FED.rot*Math.PI/180);
+  const s = FED.escala*k, iw = FED.img.width*s, ih = FED.img.height*s;
+  ctx.drawImage(FED.img, -iw/2, -ih/2, iw, ih);
+  ctx.restore();
+}
+function fedPintar(){
+  const c = $('#fedCanvas'); if (!c || !FED.img) return;
+  const {w,h} = fedDims();
+  c.width = w; c.height = h;
+  fedDibujar(c.getContext('2d'), w, h, 1);
+  const sal = fedSalida();
+  $('#fedInfo').textContent =
+    `${FED.img.width}×${FED.img.height} → ${sal.w}×${sal.h} ${$('#fedFmt').value.toUpperCase()}`;
+}
+function fedChips(){
+  const cont = $('#fedRatios'); cont.innerHTML='';
+  for (const r of FED_RATIOS){
+    const b = el('button','fed-chip'+(FED.ratio===r.v?' on':''), r.t);
+    b.onclick = ()=>{ FED.ratio=r.v; fedChips(); fedAjustar('cubrir'); };
+    cont.appendChild(b);
+  }
+}
+function abrirEditorFoto(id, file){
+  if (!/^image\//.test(file.type||'')){ aviso('⚠ El archivo no es una imagen.'); return; }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = ()=>{
+    URL.revokeObjectURL(url);
+    Object.assign(FED, {id, img, rot:0, ratio:1, dx:0, dy:0, arrastre:null});
+    $('#modalFoto').hidden = false;
+    fedChips(); fedAjustar('cubrir');
+  };
+  img.onerror = ()=>{ URL.revokeObjectURL(url); aviso('⚠ No se pudo leer la imagen.'); };
+  img.src = url;
+}
+function cerrarEditorFoto(){ $('#modalFoto').hidden = true; FED.img=null; FED.id=null; }
+
+async function fedGuardar(){
+  if (!FED.img) return;
+  const sal = fedSalida();
+  const out = document.createElement('canvas');
+  out.width = sal.w; out.height = sal.h;
+  fedDibujar(out.getContext('2d'), sal.w, sal.h, sal.k);
+  const fmt = $('#fedFmt').value;
+  const mime = fmt==='jpeg' ? 'image/jpeg' : (fmt==='png' ? 'image/png' : 'image/webp');
+  const btn = $('#fedSave'); btn.disabled = true; btn.textContent = 'Subiendo…';
+  const blob = await new Promise(res=>out.toBlob(res, mime, 0.9));
+  const ok = blob ? await subirFoto(FED.id, blob, fmt==='jpeg'?'jpg':fmt) : false;
+  btn.disabled = false; btn.textContent = 'Guardar foto';
+  if (ok) cerrarEditorFoto();
+}
+
+function initEditorFoto(){
+  const c = $('#fedCanvas'); if (!c) return;
+  c.addEventListener('pointerdown', e=>{
+    if (!FED.img) return;
+    FED.arrastre = {x:e.clientX, y:e.clientY, dx:FED.dx, dy:FED.dy};
+    c.setPointerCapture(e.pointerId); c.classList.add('arrastrando');
+  });
+  c.addEventListener('pointermove', e=>{
+    if (!FED.arrastre) return;
+    FED.dx = FED.arrastre.dx + (e.clientX - FED.arrastre.x);
+    FED.dy = FED.arrastre.dy + (e.clientY - FED.arrastre.y);
+    fedPintar();
+  });
+  const fin = ()=>{ FED.arrastre=null; c.classList.remove('arrastrando'); };
+  c.addEventListener('pointerup', fin); c.addEventListener('pointercancel', fin);
+  c.addEventListener('wheel', e=>{
+    if (!FED.img) return;
+    e.preventDefault();
+    const z = $('#fedZoom');
+    z.value = Math.max(10, Math.min(400, (+z.value) + (e.deltaY<0 ? 6 : -6)));
+    FED.escala = fedEscalaCubrir() * (+z.value)/100;
+    fedPintar();
+  }, {passive:false});
+
+  $('#fedZoom').oninput = ()=>{ FED.escala = fedEscalaCubrir()*(+$('#fedZoom').value)/100; fedPintar(); };
+  $('#fedCubrir').onclick   = ()=>fedAjustar('cubrir');
+  $('#fedContener').onclick = ()=>fedAjustar('contener');
+  $('#fedCentrar').onclick  = ()=>{ FED.dx=0; FED.dy=0; fedPintar(); };
+  $('#fedRotar').onclick    = ()=>{ FED.rot=(FED.rot+90)%360; fedAjustar('cubrir'); };
+  $('#fedSize').onchange = fedPintar;
+  $('#fedFmt').onchange  = fedPintar;
+  $('#fedBg').onchange   = fedPintar;
+  $('#fedSave').onclick  = fedGuardar;
+  $('#fedCancel').onclick = cerrarEditorFoto;
+  $('#fotoClose').onclick = cerrarEditorFoto;
+  $('#modalFoto').addEventListener('click', e=>{ if(e.target.id==='modalFoto') cerrarEditorFoto(); });
+}
+
 function thumbEl(p){
   const box = el('div','pthumb');
   const PH = `<div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
     <span>Sin foto</span></div>`;
   const img = new Image(); let i=0;
-  const tryNext = ()=>{ if (i<FOTO_EXTS.length){ img.src=`fotos/${p.id}.${FOTO_EXTS[i++]}`; } else box.innerHTML=PH; };
+  const fuentes = fuentesFoto(p);
+  const tryNext = ()=>{ if (i<fuentes.length){ img.src=fuentes[i++]; } else box.innerHTML=PH; };
   img.onerror = tryNext;
   img.onload = ()=>{ box.innerHTML=''; box.appendChild(img); };
   box.innerHTML = PH;
@@ -1206,6 +1634,19 @@ function renderSelbar(){
   // Se reconstruye SIEMPRE: así cualquier alta/renombre/fusión/baja de la
   // taxonomía se refleja al instante también aquí. La selección previa se
   // conserva solo si la opción sigue existiendo.
+  const se = $('#selEtq');
+  if (se){
+    se.innerHTML = '';
+    for (const e of ETIQUETAS){
+      const mas = el('button','btn-etq', '＋ '+esc(e.corto));
+      mas.title = 'Marcar los seleccionados · '+e.label;
+      mas.onclick = ()=>marcarEtiqueta([...state.sel], e.id, true, 'selección');
+      const menos = el('button','btn-etq quitar', '－');
+      menos.title = 'Quitar la marca a los seleccionados · '+e.label;
+      menos.onclick = ()=>marcarEtiqueta([...state.sel], e.id, false, 'selección');
+      se.appendChild(mas); se.appendChild(menos);
+    }
+  }
   const cs = $('#selCat'), fs = $('#selSub');
   const prevCat = cs.value, prevSub = fs.value;
   opcionesCategoria(cs, true);
@@ -1223,6 +1664,10 @@ function abrirFicha(id){
   const pos = lista.findIndex(x=>x.id===id);
   const b = $('#modalBody'); b.innerHTML='';
   const photo = el('div','modal-photo'); photo.appendChild(thumbEl(p));
+  photo.appendChild(el('div','foto-bar',
+    `<button class="btn-datos" id="fFotoBtn" title="Sube una imagen: se guarda en línea y el catálogo la muestra al instante">🖼 Cambiar foto</button>
+     <input type="file" id="fFotoFile" accept="image/*" hidden />
+     <span id="fFotoEstado" class="foto-estado"></span>`));
   const info = el('div','modal-info');
   const s = sugVisible(p);
   info.innerHTML = `
@@ -1237,6 +1682,11 @@ function abrirFicha(id){
       <div class="f-field"><label>Categoría</label><select id="fCat"></select></div>
       <div class="f-field"><label>Sub / sub-sub</label><select id="fSub"></select></div>
     </div>
+    <div class="f-field"><label>Marcas de gestión (se aplican al instante)</label>
+      <div class="f-etq">${ETIQUETAS.map(e=>
+        `<label class="f-etq-item"><input type="checkbox" data-etq="${e.id}"${tieneEtq(p,e.id)?' checked':''} /> ${esc(e.label)}</label>`
+      ).join('')}</div>
+    </div>
     ${s ? `<div class="f-sug">${s.aprox?'≈':'Regla:'} sugerencia <b>${esc(s.cat)}${s.sub&&s.sub!==s.cat?' › '+esc(s.sub):''}</b>
       <button id="fAplicaSug">Aplicar</button></div>` : ''}
     <div class="f-cta">
@@ -1246,8 +1696,17 @@ function abrirFicha(id){
         <button id="fNext" title="Siguiente (→)">→</button>
       </span>
     </div>
-    <div class="fname" style="font-size:11px;color:var(--gris);font-family:var(--mono);margin-top:12px">Foto esperada: fotos/${esc(p.id)}.webp (o .jpg/.png)</div>`;
+    <div class="fname" style="font-size:11px;color:var(--gris);font-family:var(--mono);margin-top:12px">${
+      esUrlFoto(p.foto) ? 'Foto en línea (Supabase Storage)' : `Foto local: fotos/${esc(p.id)}.webp (o .jpg/.png)`
+    }</div>`;
   b.appendChild(photo); b.appendChild(info);
+
+  info.querySelectorAll('[data-etq]').forEach(cb=>{
+    cb.onchange = ()=>marcarEtiqueta([p.id], cb.dataset.etq, cb.checked, 'ficha');
+  });
+
+  $('#fFotoBtn').onclick = ()=>$('#fFotoFile').click();
+  $('#fFotoFile').onchange = (e)=>{ const f=e.target.files[0]; e.target.value=''; if (f) abrirEditorFoto(p.id, f); };
 
   const fc = $('#fCat'), fs = $('#fSub');
   opcionesCategoria(fc, true);
@@ -1367,7 +1826,7 @@ function construirCSV(){
   return '﻿'+lineas.join('\r\n')+'\r\n';
 }
 function construirExport(){
-  const productos = PRODUCTOS.map(p=>({id:p.id,cod:p.cod,nom:p.nom,cat:p.cat,sub:p.sub,sub2:p.sub2||'',med:p.med,prov:p.prov,foto:p.id+'.webp'}));
+  const productos = PRODUCTOS.map(p=>({id:p.id,cod:p.cod,nom:p.nom,cat:p.cat,sub:p.sub,sub2:p.sub2||'',med:p.med,prov:p.prov,foto:p.foto||(p.id+'.webp'),etq:etqDe(p)}));
   const cuenta = new Map();
   for (const p of productos){
     let c = cuenta.get(p.cat); if(!c){ c={n:0,subs:new Map()}; cuenta.set(p.cat,c); }
@@ -1439,6 +1898,7 @@ function abrirDatos(){
     `<b>${fmt(nA)}</b> asignaciones de categoría · <b>${fmt(nE)}</b> fichas editadas · bitácora con <b>${fmt(WORK.bitacora.length)}</b> entradas` +
     `<br>Último autoguardado: ${WORK.guardado?new Date(WORK.guardado).toLocaleString('es-MX'):'—'} · tamaño del avance: ~${kb} KB` + baseCambio;
   pintarFsDatos();
+  renderSbEstado();
   $('#modalDatos').hidden=false;
 }
 
@@ -1539,11 +1999,22 @@ function init(){
   $('#btnFsDesconectar').onclick = desconectarCatalogo;
   initFs();
 
+  // Sincronización en línea (Supabase)
+  $('#sbLogin').onclick = sbLogin;
+  $('#sbLogout').onclick = sbLogout;
+  $('#sbSync').onclick = ()=>sincronizarSupabase('manual');
+  $('#sbPass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') sbLogin(); });
+  initSb();
+
+  vigilarNuevas();   // devuelve el color original a las categorías al cumplir 48 h
+  initEditorFoto();
+
   // Teclado
   document.addEventListener('keydown', e=>{
     const enInput = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'');
     if (e.key==='Escape'){
       if (!$('#dlg').hidden){ cerrarDlg(null); return; }
+      if (!$('#modalFoto').hidden){ cerrarEditorFoto(); return; }
       if (!$('#modal').hidden){ cerrarFicha(); return; }
       if (!$('#modalLog').hidden){ $('#modalLog').hidden=true; return; }
       if (!$('#modalDatos').hidden){ $('#modalDatos').hidden=true; return; }

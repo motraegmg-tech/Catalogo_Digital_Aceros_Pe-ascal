@@ -34,6 +34,9 @@ select,input{font-family:inherit}
 .brand-text{display:flex;flex-direction:column;line-height:1.05}
 .brand-text strong{font-size:14px;letter-spacing:1.5px}
 .brand-text span{font-size:10px;letter-spacing:2px;color:var(--gris-claro);text-transform:uppercase}
+/* Buscador + controles (Categorías / formato de vista). En escritorio solo se ve
+   el buscador; los dos botones aparecen en teléfono y tableta. */
+.topbar-tools{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .search{flex:1;min-width:120px}
 .search input{
   width:100%;padding:10px 14px;border-radius:10px;border:1px solid #2c343a;
@@ -42,6 +45,22 @@ select,input{font-family:inherit}
 .search input::placeholder{color:#7c858c}
 .search input:focus{border-color:var(--aqua);box-shadow:0 0 0 2px rgba(21,69,78,.5)}
 .topbar-actions{display:flex;align-items:center;gap:10px}
+
+/* Botón "Categorías" (abre el panel deslizable) — solo móvil/tableta */
+.btn-tool{
+  display:none;align-items:center;gap:7px;flex:0 0 auto;white-space:nowrap;
+  background:#0f1316;color:var(--platino);border:1px solid #2c343a;
+  border-radius:10px;padding:9px 12px;font-size:13px;
+}
+.btn-tool svg{width:18px;height:18px;flex:0 0 18px}
+.btn-tool[aria-expanded="true"]{background:var(--zintro-aqua);border-color:var(--zintro-aqua);color:#fff}
+
+/* Selector de formato de visualización — solo móvil/tableta */
+.viewtoggle{display:none;align-items:center;gap:2px;flex:0 0 auto;background:#0f1316;border:1px solid #2c343a;border-radius:10px;padding:3px}
+.vt{display:flex;align-items:center;background:transparent;border:0;border-radius:7px;padding:6px 8px;color:var(--gris-claro)}
+.vt svg{width:18px;height:18px}
+.vt.on{background:var(--aqua);color:#fff}
+.ico-cart{display:none;width:18px;height:18px;flex:0 0 18px}
 .suc{display:flex;flex-direction:column;font-size:9px;letter-spacing:1px;color:var(--gris-claro);text-transform:uppercase}
 .suc select{margin-top:2px;background:#0f1316;color:var(--platino);border:1px solid #2c343a;border-radius:8px;padding:6px 8px;font-size:12px}
 .btn-ghost{background:transparent;color:var(--platino);border:1px solid #3a434a;border-radius:8px;padding:8px 12px;font-size:12px}
@@ -54,10 +73,14 @@ select,input{font-family:inherit}
 
 /* ===== Layout ===== */
 .layout{display:flex;align-items:flex-start;gap:0;max-width:1500px;margin:0 auto}
-.sidebar{
+/* Columna de categorías en escritorio; en móvil/tableta el mismo bloque se
+   convierte en panel deslizable (ver bloque Responsive). */
+.sidebar-wrap{
   position:sticky;top:64px;width:248px;flex:0 0 248px;max-height:calc(100vh - 64px);
-  overflow:auto;padding:16px 10px 30px;border-right:1px solid var(--line);
+  overflow:auto;border-right:1px solid var(--line);background:var(--fondo);
 }
+.sidebar{padding:16px 10px 30px}
+.drawer-head{display:none}
 .cat-btn{
   display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;
   text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;
@@ -144,14 +167,121 @@ select,input{font-family:inherit}
 .cart-note{font-size:11px;color:var(--gris);text-align:center;margin:10px 0 0}
 .cart-empty{color:var(--gris);text-align:center;padding:40px 10px;font-size:13px}
 
+.empty{grid-column:1/-1;text-align:center;color:var(--carbon);background:rgba(255,255,255,.55);border:1px dashed var(--acero);border-radius:var(--radius);padding:38px 16px;font-size:13.5px;line-height:1.5}
+
 .more-wrap{display:flex;justify-content:center;margin-top:22px}
 .btn-more{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 22px;font-size:13.5px;font-weight:600}
 
-/* ===== Responsive ===== */
+/* ===== Responsive · teléfono y tableta ===== */
 @media(max-width:880px){
-  .sidebar{display:none}
+
+  /* --- Barra superior en 2 filas ---
+     Fila 1: logo · sucursal · pedido    Fila 2: buscar · categorías · vista */
+  .topbar{
+    flex-wrap:wrap;gap:8px;padding:8px 10px;
+    padding-top:calc(8px + env(safe-area-inset-top));
+  }
+  .brand{order:1;flex:1 1 auto}
+  .brand-logo{height:34px}
   .brand-text span{display:none}
-  .suc{display:none}
+  .topbar-actions{order:2;flex:0 0 auto;gap:8px}
+  .topbar-tools{order:3;flex:1 1 100%;gap:8px}
+
+  /* Sucursal: vuelve a la barra, compacta y sin la etiqueta */
+  .topbar .suc{display:flex;max-width:38vw}
+  .topbar .suc>span{display:none}
+  .topbar .suc select{margin-top:0;padding:9px 6px;font-size:13px;max-width:100%}
+
+  .btn-cart{padding:9px 11px}
+  .ico-cart{display:block}
+
+  .search{flex:1 1 auto;min-width:0}
+  /* 16px evita el zoom automático de iOS al enfocar el campo */
+  .search input{font-size:16px;padding:9px 12px}
+
+  .btn-tool,.viewtoggle{display:inline-flex}
+
+  /* --- Categorías como panel deslizable --- */
+  .layout{display:block}
+  .sidebar-wrap{
+    position:fixed;top:0;left:0;bottom:0;width:min(86vw,320px);
+    flex:none;max-height:none;z-index:70;background:var(--hueso);
+    border-right:0;box-shadow:14px 0 44px rgba(19,23,26,.38);
+    display:flex;flex-direction:column;overflow:hidden;
+    padding-top:env(safe-area-inset-top);
+    transform:translateX(-102%);visibility:hidden;
+    transition:transform .24s ease,visibility 0s linear .24s;
+  }
+  body.cats-open{overflow:hidden}
+  body.cats-open .sidebar-wrap{
+    transform:none;visibility:visible;
+    transition:transform .24s ease,visibility 0s linear 0s;
+  }
+  .drawer-head{
+    display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
+    padding:14px 12px 10px 16px;border-bottom:1px solid var(--line);
+  }
+  .drawer-head strong{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gris)}
+  .drawer-x{position:static}
+  .sidebar{flex:1;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:10px 10px 30px}
+  .cat-title{display:none}                       /* el panel ya lleva su título */
+  .cat-btn{padding:12px;font-size:14.5px}        /* objetivo táctil cómodo */
+
+  /* --- Contenido --- */
+  .content{padding:12px 10px 48px;min-height:auto}
+  .crumbs{font-size:15.5px}
+  .subchips{flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-bottom:10px;padding-bottom:4px;scrollbar-width:none}
+  .subchips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px}
+
+  /* --- Formato 1: cuadrícula de 2 columnas (predeterminado) --- */
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .card{border-width:2px}
+  .card:hover{transform:none}
+  .card-body{padding:8px 9px 10px;gap:5px}
+  .card-name{font-size:12.5px;min-height:32px}
+  .card-foot{gap:5px}
+  .btn-add,.btn-view{min-height:38px;padding:8px 10px;font-size:12px}
+
+  /* --- Formato 2: lista (una fila por producto) --- */
+  .grid.view-list{grid-template-columns:1fr;gap:8px}
+  .grid.view-list .card{flex-direction:row}
+  .grid.view-list .thumb{flex:0 0 96px;width:96px;aspect-ratio:1/1}
+  .grid.view-list .card-body{padding:9px 11px}
+  .grid.view-list .card-name{min-height:0;font-size:13.5px}
+  .grid.view-list .btn-add{flex:0 0 auto;padding:8px 18px}
+
+  /* --- Ficha --- */
+  .modal{padding:10px}
+  .modal-card{max-height:92vh;max-height:92dvh;border-width:2px}
   .modal-body{grid-template-columns:1fr}
   .modal-photo{aspect-ratio:16/10}
+  .modal-info{padding:18px 16px}
+  .modal-name{font-size:17px}
+  .spec b{min-width:78px}
+  .btn-quote{padding:14px;font-size:14px}
+
+  /* --- Carrito a pantalla completa --- */
+  .cart{width:100%;max-width:100%;height:100vh;height:100dvh}
+  .cart-head{padding:14px;padding-top:calc(14px + env(safe-area-inset-top))}
+  .cart-items{padding:10px 14px}
+  .ci{padding:12px 0}
+  .qty button{width:32px;height:32px}
+  .cart-foot{padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+}
+
+/* Teléfonos: el nombre de la marca y la palabra "Pedido" ceden su espacio */
+@media(max-width:520px){
+  .brand-text{display:none}
+  .btn-cart-txt{display:none}
+  .btn-cart{gap:6px}
+}
+
+/* Pantallas muy angostas (≤359px: iPhone SE y similares): el botón de categorías
+   se queda solo con el icono. Por encima de eso conserva la etiqueta, que es lo
+   que hace evidente dónde quedaron las categorías. */
+@media(max-width:359px){
+  .btn-tool span{display:none}
+  .btn-tool{padding:9px 10px}
+  .grid{gap:8px}
 }

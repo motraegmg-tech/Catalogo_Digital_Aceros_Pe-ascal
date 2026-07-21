@@ -19,6 +19,16 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
   Es el esqueleto del editor que, al conectar Supabase, persistirá en la base con control por rol.
 - **Paleta industrial**: grises/plata/negro/platino/blanco + acentos rojo óxido, verde zintro,
   verde oscuro, aqua oscuro y beige arena.
+- **Teléfono y tableta (≤880 px)**: la barra superior se reacomoda en dos filas y concentra
+  todo lo necesario — logo · **sucursal** · **Pedido** arriba, y **buscador** · **Categorías**
+  · **formato de vista** abajo. Las categorías ya no desaparecen: el botón abre un panel
+  deslizable con la misma lista de escritorio (mismo marcado, sin código duplicado).
+  El **formato de vista** alterna cuadrícula de 2 columnas y lista compacta, y se recuerda
+  en el navegador (`ap_view`). El carrito ocupa la pantalla completa y respeta el notch
+  (`env(safe-area-inset-*)`).
+- **Vista previa al compartir el enlace** (WhatsApp/Facebook/Telegram): etiquetas Open Graph
+  en `index.html` con `assets/og-cover.jpg` (1200×630, 58 KB). ⚠️ `og:url` y `og:image` deben
+  ser **absolutas**: si cambia el dominio, actualiza las 5 líneas marcadas con `[DOMINIO]`.
 
 ## Clasificador de catálogo (herramienta interna)
 `clasificador.html` es la herramienta de curación manual: permite revisar y mover

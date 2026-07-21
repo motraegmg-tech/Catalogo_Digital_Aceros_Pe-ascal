@@ -1,7 +1,7 @@
 /* ===== Aceros Peñascal · Catálogo Digital · app.js =====
    Prototipo autocontenido (datos en data/productos.js). Diseñado para migrar
    despues a Supabase sin reescribir la interfaz. */
-import { fetchCatalogo } from '../core/catalogService.js';
+import { fetchCatalogo, agruparCategorias } from '../core/catalogService.js';
 
 const CONFIG = {
   // 5 sucursales con su WhatsApp (formato wa.me: solo digitos, lada 52) y ubicacion
@@ -18,15 +18,19 @@ const CONFIG = {
 
 //const DATA = window.CATALOGO || { productos:[], categorias:[] };
 let DATA = { productos:[], categorias:[], total: 0 };
-const LS_CART = 'ap_cart', LS_OVR = 'ap_overrides';
+const LS_CART = 'ap_cart', LS_OVR = 'ap_overrides', LS_VIEW = 'ap_view';
 
 const state = {
   q:'', cat:null, sub:null, page:1,
   cart: load(LS_CART, {}),
   overrides: load(LS_OVR, {}),
   sucursal: CONFIG.sucursales[0].id,
+  view: load(LS_VIEW, 'grid'),   // 'grid' (2 columnas) | 'list' — solo aplica en móvil/tableta
   edit: false,
 };
+
+// ¿Estamos en el layout de teléfono/tableta? Debe coincidir con el breakpoint de styles.css
+const esMovil = () => window.matchMedia('(max-width:880px)').matches;
 
 // Aplica overrides de edicion (demo local) sobre los productos en memoria
 DATA.productos.forEach(p => {
@@ -46,12 +50,23 @@ const PLACEHOLDER = `<div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke
 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
 <span>Sin foto</span></div>`;
 
+/* Foto: si el producto trae una URL (subida desde el clasificador a Supabase
+   Storage) ésa manda; si no, se usan los archivos locales fotos/<id>.<ext>. */
+function esUrlFoto(f){ return typeof f==='string' && /^https?:\/\//i.test(f); }
+function fuentesFoto(p){
+  const out = [];
+  if (esUrlFoto(p.foto)) out.push(p.foto);
+  for (const e of CONFIG.fotoExts) out.push(`fotos/${p.id}.${e}`);
+  return out;
+}
+
 function thumb(p){
   const box = el('div','thumb');
   const img = new Image();
   let i = 0;
+  const fuentes = fuentesFoto(p);
   const tryNext = () => {
-    if (i < CONFIG.fotoExts.length){ img.src = `fotos/${p.id}.${CONFIG.fotoExts[i++]}`; }
+    if (i < fuentes.length){ img.src = fuentes[i++]; }
     else { box.innerHTML = PLACEHOLDER; }
   };
   img.onerror = tryNext;
@@ -82,14 +97,20 @@ function renderSidebar(){
   s.appendChild(el('div','cat-title','Categorías'));
   const all = el('button','cat-btn'+(state.cat?'':' on'),
     `<span>Todas</span><span class="n">${DATA.total}</span>`);
-  all.onclick = ()=>{ state.cat=null; state.sub=null; state.page=1; renderAll(); };
+  all.onclick = ()=>{ state.cat=null; state.sub=null; state.page=1; renderAll(); trasElegirCat(); };
   s.appendChild(all);
   DATA.categorias.forEach(c=>{
     const b = el('button','cat-btn'+(state.cat===c.nombre?' on':''),
       `<span>${esc(c.nombre)}</span><span class="n">${c.n}</span>`);
-    b.onclick = ()=>{ state.cat=c.nombre; state.sub=null; state.page=1; renderAll(); };
+    b.onclick = ()=>{ state.cat=c.nombre; state.sub=null; state.page=1; renderAll(); trasElegirCat(); };
     s.appendChild(b);
   });
+}
+
+/* Al elegir categoría en móvil: cierra el panel y sube al inicio de la lista */
+function trasElegirCat(){
+  closeCats();
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 function asArray(v){ return Array.isArray(v) ? v : (v==null ? [] : [v]); }
@@ -135,6 +156,11 @@ function renderGrid(){
   const grid = $('#grid');
   const limit = state.page * CONFIG.pageSize;
   grid.innerHTML='';
+  if (!list.length){
+    grid.appendChild(el('div','empty', DATA.total
+      ? 'Sin resultados. Prueba con otro término o cambia de categoría.'
+      : 'No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.'));
+  }
   list.slice(0, limit).forEach(p=>grid.appendChild(card(p)));
   $('#count').textContent = `${list.length.toLocaleString('es-MX')} productos`;
   $('#crumbs').textContent = state.cat ? state.cat : 'Todas las categorías';
@@ -144,6 +170,37 @@ function renderGrid(){
 }
 
 function renderAll(){ renderSidebar(); renderSubchips(); renderGrid(); }
+
+/* ---------- panel de categorías (móvil/tableta) ---------- */
+function catsAbierto(){ return document.body.classList.contains('cats-open'); }
+function openCats(){
+  closeCart();
+  document.body.classList.add('cats-open');
+  $('#btnCats').setAttribute('aria-expanded','true');
+  $('#overlay').hidden = false;
+}
+function closeCats(){
+  if (!catsAbierto()) return;
+  document.body.classList.remove('cats-open');
+  $('#btnCats').setAttribute('aria-expanded','false');
+  if ($('#cart').hidden) $('#overlay').hidden = true;
+}
+function toggleCats(){ catsAbierto() ? closeCats() : openCats(); }
+
+/* ---------- formato de visualización (móvil/tableta) ---------- */
+function setView(v){
+  state.view = (v === 'list') ? 'list' : 'grid';
+  save(LS_VIEW, state.view);
+  applyView();
+}
+function applyView(){
+  $('#grid').className = 'grid ' + (state.view === 'list' ? 'view-list' : 'view-grid');
+  document.querySelectorAll('.vt').forEach(b=>{
+    const on = b.dataset.view === state.view;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
 
 /* ---------- modal ---------- */
 function openModal(p){
@@ -214,8 +271,8 @@ function refreshCart(){
     row.append(qty,del); box.appendChild(row);
   });
 }
-function openCart(){ $('#cart').hidden=false; $('#overlay').hidden=false; }
-function closeCart(){ $('#cart').hidden=true; $('#overlay').hidden=true; }
+function openCart(){ closeCats(); $('#cart').hidden=false; $('#overlay').hidden=false; }
+function closeCart(){ $('#cart').hidden=true; if(!catsAbierto()) $('#overlay').hidden=true; }
 function pulseCart(){ const b=$('#btnCart'); b.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:220}); }
 
 function sendWhatsApp(){
@@ -257,15 +314,36 @@ function toggleAdmin(){
   $('#adminBanner').hidden = !state.edit;
 }
 
+/* ---------- respaldo local ----------
+   data/productos.js pesa ~600 KB, así que ya no se carga en el arranque (era
+   media pantalla de espera en el celular). Solo se pide si Supabase no responde. */
+function cargarRespaldoLocal(){
+  return new Promise(resolve=>{
+    if (window.CATALOGO) return resolve(window.CATALOGO);
+    const s = document.createElement('script');
+    s.src = 'data/productos.js';
+    s.onload  = ()=>resolve(window.CATALOGO || null);
+    s.onerror = ()=>resolve(null);
+    document.head.appendChild(s);
+  });
+}
+
 /* ---------- init ---------- */
 async function init(){
   fillSucursales();
   refreshCart();
+  applyView();
 
-  const supabaseData = await fetchCatalogo();
-  if(supabaseData.productos.length > 0) {
-    DATA = supabaseData;
-    
+  let datos = await fetchCatalogo();
+  if (!datos.productos.length){
+    const local = await cargarRespaldoLocal();
+    if (local && local.productos && local.productos.length){
+      console.warn('Supabase no respondió: catálogo servido desde el respaldo local.');
+      datos = { productos: local.productos, categorias: agruparCategorias(local.productos), total: local.productos.length };
+    }
+  }
+  if (datos.productos.length){
+    DATA = datos;
     DATA.productos.forEach(p => {
       const o = state.overrides[p.id];
       if (o) Object.assign(p, o);
@@ -279,11 +357,22 @@ async function init(){
   $('#btnMore').onclick = ()=>{ state.page++; renderGrid(); };
   $('#btnCart').onclick = openCart;
   $('#cartClose').onclick = closeCart;
-  $('#overlay').onclick = closeCart;
+  $('#overlay').onclick = ()=>{ closeCart(); closeCats(); };
   $('#modalClose').onclick = closeModal;
   $('#modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
   $('#btnWhats').onclick = sendWhatsApp;
-  $('#btnAdmin').onclick = toggleAdmin;
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeCart(); } });
+
+  // Controles de la barra móvil
+  $('#btnCats').onclick = toggleCats;
+  $('#catsClose').onclick = closeCats;
+  document.querySelectorAll('.vt').forEach(b=>{ b.onclick = ()=>setView(b.dataset.view); });
+  window.addEventListener('resize', ()=>{ if(!esMovil()) closeCats(); });
+
+  // #btnAdmin solo existe en el prototipo con modo edición; sin esta guarda,
+  // el error dejaba sin registrar el atajo Escape de abajo.
+  const admin = $('#btnAdmin');
+  if (admin) admin.onclick = toggleAdmin;
+
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeCart(); closeCats(); } });
 }
 init();
