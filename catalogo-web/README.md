@@ -71,6 +71,52 @@ y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
 - Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
 - Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie).
 
+### Trabajo en paralelo (dos o más personas a la vez)
+Sí se puede: dos personas, cada una en su máquina, pueden clasificar en paralelo
+sin pisarse **mientras trabajen productos distintos** (p. ej. uno los discos y otro
+los perfiles). La clave es entender que hay **tres capas de guardado** y que la
+**fuente de verdad compartida es Supabase**:
+
+1. **localStorage** del navegador — tu avance, por máquina.
+2. **Archivo local** `data/productos.js`/`.json` — se reescribe en tu disco con la
+   *Conexión directa* (File System Access). Es una copia/respaldo, **no** el punto
+   de encuentro entre las dos personas.
+3. **Tabla `productos` de Supabase** — lo compartido. El catálogo público lee de aquí.
+
+- **Subir (push) — automático:** inicia sesión **una vez** en *Guardar / Exportar →
+  Sincronización en línea (Supabase)*. Con sesión activa (indicador **"● En línea ·
+  0 pendientes"**), cada cambio se sube solo a Supabase. **Sin** sesión, tus cambios
+  se quedan locales y **pendientes**: el otro no los recibe. Cada quien sube **sólo**
+  las filas que realmente tocó, así que no puede pisar el trabajo del otro salvo que
+  edite el **mismo** producto.
+- **Bajar (pull) — botón "⟲ Traer del equipo":** el clasificador **no** leía en vivo
+  de Supabase; para ver lo que el otro reclasificó desde su máquina, pulsa **"⟲ Traer
+  del equipo"** (barra superior). Con la casilla **"auto"** activada (por defecto) lo
+  hace solo cada ~45 s —pero nunca en medio de una selección, una subida o un modal
+  abierto, para no moverte el piso—. Al abrir el clasificador también baja lo último
+  del equipo. Tus cambios locales **siempre mandan encima**: un pull nunca pisa lo que
+  tú acabas de clasificar, sólo trae lo del resto. La lectura es anónima: no requiere
+  sesión (la sesión sólo hace falta para **subir**).
+- **Verificación combinada:** el resultado de ambos junto se ve en el **catálogo
+  público** (recargándolo), que siempre lee de Supabase.
+
+**Flujo recomendado**
+1. Ambos: iniciar sesión y confirmar **"● En línea · 0 pendientes"** al guardar.
+2. Dividir por categoría, **sin traslape** (discos / perfiles). Las fotos también se
+   comparten (van a Supabase Storage) y el otro las ve con "Traer del equipo".
+3. Trabajar normal; los cambios suben solos y "auto" los baja en la otra máquina.
+4. Al cerrar la sesión de trabajo, **una** persona corre `node sync-local.mjs` para
+   volcar Supabase sobre `data/productos.js`/`.json`, y hace `git add/commit/push`.
+   El otro hace `git pull`. Así el repositorio queda idéntico a lo que ve el público.
+
+**Cuidados (conflictos)**
+- **Mismo producto tocado por ambos** → gana el último que sube, en silencio. Evítalo
+  manteniendo la división por categoría y no pescando los dos del mismo montón
+  *POR CLASIFICAR* sobre los mismos códigos.
+- **No mezcles a mano** `data/productos.js`/`.json` en git: cada archivo es la foto
+  completa y chocan casi línea por línea. Trata Supabase como fuente de verdad y
+  regenera esos archivos con `sync-local.mjs` (uno solo lo commitea).
+
 ## Llenado de fotos (operativa posterior)
 Ver `fotos\LEEME.txt`. Resumen: guardar cada imagen en `fotos\` con el nombre por
 código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen solas.

@@ -14,6 +14,8 @@
     color:inherit; font:inherit; }
   .sb-input:focus{ outline:none; border-color:var(--zintro-2,#57ad30); }
   .sb-head{ opacity:.9; }
+  .pull-auto{ display:inline-flex; align-items:center; gap:4px; cursor:pointer; opacity:.9; user-select:none; }
+  .pull-auto input{ accent-color:var(--zintro-2,#57ad30); margin:0; }
 </style>
 </head>
 <body>
@@ -36,6 +38,7 @@
   <div class="topbar-actions">
     <button id="btnUndo" class="btn-ghost" title="Deshacer último cambio (Ctrl+Z)">↩ Deshacer</button>
     <button id="btnLog" class="btn-ghost" title="Historial de cambios">Bitácora</button>
+    <button id="btnPull" class="btn-ghost" title="Trae la clasificación y fotos más recientes de Supabase: lo que tu equipo cambió desde otra máquina. Tus cambios locales no se pisan.">⟲ Traer del equipo</button>
     <button id="btnDatos" class="btn-primary" title="Guardar avance, importar y exportar">Guardar / Exportar</button>
     <a href="index.html" target="_blank" class="btn-ghost btn-link" title="Abre el catálogo público (muestra los datos exportados, no el avance en vivo)">Ver catálogo ↗</a>
   </div>
@@ -46,6 +49,9 @@
   <span id="fsTxt"></span>
   <span class="sep-dot">·</span>
   <span id="sbTxt" class="sb-head"></span>
+  <span class="sep-dot">·</span>
+  <span id="pullTxt" class="sb-head"></span>
+  <label class="pull-auto" title="Baja solo los cambios del equipo cada ~45 s (nunca en medio de una selección o con un modal abierto)"><input type="checkbox" id="pullAuto" /> auto</label>
   <span class="sep-dot">·</span>
   <span>Avance local autoguardado en este navegador; respáldalo con <b>Guardar / Exportar</b>.</span>
   <span id="saveHint" class="save-hint"></span>

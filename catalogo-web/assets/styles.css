@@ -118,6 +118,7 @@ select,input{font-family:inherit}
 .tag{font-size:10px;background:var(--platino);color:var(--carbon);border-radius:5px;padding:2px 7px}
 .tag.sub{background:#e4f2e4;color:var(--zintro-2);border:1px solid #c2e2c2}
 .tag.med{background:#dff0f2;color:var(--aqua-2);border:1px solid #bce3e8}
+.tag.pend{background:#fdf3e3;color:#8a6414;border:1px solid #e3c98e;font-weight:700}
 .card-cod{font-size:10.5px;color:var(--gris-claro);font-family:'Consolas',monospace}
 .card-foot{margin-top:auto;display:flex;gap:6px}
 .btn-add{flex:1;background:var(--aqua-3);color:#fff;border:0;border-radius:8px;padding:8px;font-size:12.5px;font-weight:600}

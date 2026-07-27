@@ -404,6 +404,103 @@ function initSb(){
   SBC.auth.onAuthStateChange((_ev, session)=> sbAplicarSesion(session));
 }
 
+/* ---------- traer cambios del equipo (pull desde Supabase) ----------
+   El clasificador sólo SUBE cambios (push). Para VER lo que otra persona
+   reclasificó desde su propia máquina hay que BAJAR el estado vigente en línea.
+   Esto relee la vista pública `catalogo_publico` (lectura anónima permitida, no
+   requiere sesión) y la vuelca sobre la base en memoria (DATA.productos). Tus
+   propios cambios locales siguen mandando encima —se reaplican como deltas—, así
+   que un pull nunca pisa lo que TÚ acabas de clasificar; sólo trae lo del resto. */
+const LS_AUTOPULL = 'ap_clasif_autopull';
+let AUTO_PULL = localStorage.getItem(LS_AUTOPULL) !== '0';   // por defecto activo
+const PULL = { estado: SBC ? 'idle' : 'nosoporte', ultimo:null };
+let PULL_T = null;
+
+async function descargarClasificacionSB(){
+  const filas = [];
+  const pageSize = 1000;
+  for (let page=0;;page++){
+    const { data, error } = await SBC.from('catalogo_publico')
+      .select('codigo,categoria,subcategoria,foto,etiquetas')
+      .range(page*pageSize, (page+1)*pageSize-1);
+    if (error) throw error;
+    if (!data || !data.length) break;
+    filas.push(...data);
+    if (data.length < pageSize) break;
+  }
+  return filas;
+}
+
+async function traerCambiosSupabase(origen){
+  if (!SBC){ if (origen!=='auto') aviso('⚠ Sincronización en línea no disponible en este navegador.'); return 0; }
+  if (PULL.estado==='cargando') return 0;
+  PULL.estado='cargando'; renderPullEstado();
+  let filas;
+  try{ filas = await descargarClasificacionSB(); }
+  catch(e){
+    PULL.estado='error'; renderPullEstado();
+    if (origen!=='auto') aviso('⚠ No se pudo traer del equipo: '+(e.message||e.name));
+    return 0;
+  }
+  const mapa = new Map(filas.map(r=>[r.codigo, r]));
+  let cambios = 0;
+  for (const p of DATA.productos){
+    const r = mapa.get(p.cod); if (!r) continue;
+    const cat = r.categoria || '', sub = r.subcategoria || '';
+    const etq = Array.isArray(r.etiquetas) ? r.etiquetas : [];
+    const foto = (r.foto && r.foto!==p.foto) ? r.foto : p.foto;   // sólo pisa la foto si en línea hay una
+    if (p.cat===cat && p.sub===sub && foto===p.foto &&
+        JSON.stringify(etq)===JSON.stringify(p.etq||[])) continue;
+    p.cat=cat; p.sub=sub; p.foto=foto; p.etq=etq; cambios++;
+  }
+  PULL.estado='ok'; PULL.ultimo=new Date(); renderPullEstado();
+  if (cambios){
+    // La base en memoria ahora ES el estado vigente en línea: realinea el rastreo
+    // de "sucios" (para no re-subir lo que ya está) y reaplica tus deltas encima.
+    SB_BASE.clear();
+    for (const p of DATA.productos) SB_BASE.set(p.cod, sbClave(p));
+    construirProductos(); calcularSugerencias(); renderAll();
+    aviso('⟲ '+fmt(cambios)+' producto(s) actualizados desde el equipo'+(origen==='auto'?' (auto)':''));
+  } else if (origen!=='auto'){
+    aviso('Ya estás al día: sin cambios nuevos del equipo.');
+  }
+  return cambios;
+}
+
+function renderPullEstado(){
+  const b = $('#btnPull'), h = $('#pullTxt'), c = $('#pullAuto');
+  if (c) c.checked = AUTO_PULL;
+  if (b){
+    b.disabled = !SBC || PULL.estado==='cargando';
+    b.textContent = PULL.estado==='cargando' ? '⟲ Trayendo…' : '⟲ Traer del equipo';
+  }
+  if (!h) return;
+  if (!SBC){ h.textContent = 'Traer del equipo: no disponible aquí.'; return; }
+  const hora = PULL.ultimo ? PULL.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : '—';
+  h.textContent = `Equipo: ${AUTO_PULL?'se actualiza solo':'manual'} · última ${hora}`;
+}
+
+/* ¿Es buen momento para un pull automático? No mientras trabajas una selección,
+   subes cambios o tienes un modal abierto: no queremos moverte el piso. */
+function puedePullAuto(){
+  if (!AUTO_PULL || !SBC) return false;
+  if (PULL.estado==='cargando' || SB.estado==='sync') return false;
+  if (state.sel.size || PAINT.downId!==null) return false;
+  for (const id of ['#modal','#modalLog','#modalDatos','#modalFoto','#dlg'])
+    if (!$(id).hidden) return false;
+  const ae = document.activeElement;
+  if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return false;
+  return true;
+}
+function programarPullAuto(){
+  if (!SBC) return;
+  clearTimeout(PULL_T);
+  PULL_T = setTimeout(async ()=>{
+    if (puedePullAuto()) await traerCambiosSupabase('auto');
+    programarPullAuto();
+  }, 45000);
+}
+
 /* ---------- productos efectivos (base + deltas) ---------- */
 const BMAP = new Map(DATA.productos.map(p=>[p.id,p]));
 let PRODUCTOS = [], IDX = new Map(), TAXMAP = new Map();
@@ -1555,13 +1652,22 @@ function thumbEl(p){
   tryNext();
   return box;
 }
+// Etiqueta de clasificación para la tarjeta (Vista catálogo): SIEMPRE visible.
+// Subcategoría si aporta detalle; si no, la categoría; y si sigue pendiente,
+// se marca "Por clasificar" en vez de dejar la tarjeta sin clasificación.
+function clasifTag(p){
+  if (p.sub && p.sub!==POR && p.sub!==p.cat) return { txt:p.sub, pend:false };
+  if (p.cat && p.cat!==POR) return { txt:p.cat, pend:false };
+  return { txt:'Por clasificar', pend:true };
+}
 function pcard(p){
   const c = el('div','pcard');
   c.appendChild(thumbEl(p));
   const body = el('div','pcard-body');
   body.appendChild(el('div','pcard-name', esc(p.nom)));
   const meta = el('div','pcard-meta');
-  if (p.sub && p.sub!==POR && p.sub!==p.cat) meta.appendChild(el('span','tag sub', esc(p.sub)));
+  const cl = clasifTag(p);
+  meta.appendChild(el('span','tag '+(cl.pend?'pend':'sub'), esc(cl.txt)));
   if (p.sub2) meta.appendChild(el('span','tag sub', esc(p.sub2)));
   if (p.med) meta.appendChild(el('span','tag med', esc(p.med)));
   body.appendChild(meta);
@@ -2005,6 +2111,18 @@ function init(){
   $('#sbSync').onclick = ()=>sincronizarSupabase('manual');
   $('#sbPass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') sbLogin(); });
   initSb();
+
+  // Traer cambios del equipo (pull desde Supabase)
+  $('#btnPull').onclick = ()=>traerCambiosSupabase('manual');
+  $('#pullAuto').onchange = (e)=>{
+    AUTO_PULL = e.target.checked;
+    localStorage.setItem(LS_AUTOPULL, AUTO_PULL?'1':'0');
+    renderPullEstado();
+    if (AUTO_PULL){ programarPullAuto(); traerCambiosSupabase('auto'); }
+  };
+  renderPullEstado();
+  programarPullAuto();
+  if (AUTO_PULL) setTimeout(()=>traerCambiosSupabase('auto'), 800);   // arranca al día con el equipo
 
   vigilarNuevas();   // devuelve el color original a las categorías al cumplir 48 h
   initEditorFoto();

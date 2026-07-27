@@ -12,6 +12,16 @@ export const PIN_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 
 export function asArray(v) { return Array.isArray(v) ? v : (v == null ? [] : [v]); }
 
+const POR_CLASIF = 'POR CLASIFICAR';
+// Etiqueta de clasificación para la primera vista (tarjeta): SIEMPRE visible.
+// Muestra la subcategoría cuando aporta detalle; si no, la categoría; y si el
+// producto aún no está clasificado, lo señala en vez de dejar la tarjeta muda.
+export function clasifLabel(p) {
+  if (p.sub && p.sub !== POR_CLASIF && p.sub !== p.cat) return { txt: p.sub, pend: false };
+  if (p.cat && p.cat !== POR_CLASIF) return { txt: p.cat, pend: false };
+  return { txt: 'Por clasificar', pend: true };
+}
+
 function fuentesFoto(p) {
   const out = [];
   if (typeof p.foto === 'string' && /^https?:\/\//i.test(p.foto)) out.push(p.foto);
@@ -127,7 +137,8 @@ export function renderGrid(onAdd, onView) {
     body.appendChild(name);
     
     const meta = el('div', 'card-meta');
-    if (p.sub && p.sub !== 'POR CLASIFICAR') meta.appendChild(el('span', 'tag sub', esc(p.sub)));
+    const cl = clasifLabel(p);
+    meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
     if (p.med) meta.appendChild(el('span', 'tag med', esc(p.med)));
     body.appendChild(meta);
     body.appendChild(el('div', 'card-cod', 'Cód: ' + esc(p.cod)));

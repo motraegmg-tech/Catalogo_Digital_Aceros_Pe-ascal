@@ -217,6 +217,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .tag{font-size:10px;background:var(--platino);color:var(--carbon);border-radius:5px;padding:2px 7px}
 .tag.sub{background:#e4f2e4;color:var(--zintro-2);border:1px solid #c2e2c2}
 .tag.med{background:#dff0f2;color:var(--aqua-2);border:1px solid #bce3e8}
+.tag.pend{background:#fdf3e3;color:#8a6414;border:1px solid #e3c98e;font-weight:700}
 .pcard-cod{font-size:10.5px;color:var(--gris-claro);font-family:var(--mono)}
 
 .more-wrap{display:flex;justify-content:center;margin-top:22px}
