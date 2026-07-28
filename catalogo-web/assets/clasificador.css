@@ -258,6 +258,12 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .f-field input:focus,.f-field select:focus{outline:none;border-color:var(--aqua);box-shadow:0 0 0 2px rgba(14,126,140,.18)}
 .f-field input[readonly]{background:var(--gris-50);color:var(--gris);border-style:dashed}
 .f-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Acciones en bloque del proveedor (ficha) */
+.f-prov-n{text-transform:none;letter-spacing:0;font-size:10.5px;color:var(--gris-claro);font-weight:400}
+.f-prov-acc{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.f-prov-acc .btn-datos{padding:7px 11px;font-size:11.5px}
+/* Encendido = el proveedor SÍ se publica al cliente final */
+.f-prov-acc .btn-datos.on{background:#e4f2e4;border-color:#c2e2c2;color:var(--zintro-2)}
 .f-sug{margin:10px 0;font-size:12px;background:#dff0f2;border:1px solid #bce3e8;color:var(--aqua-2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .f-sug button{background:var(--aqua);border:0;color:#fff;border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:600}
 .f-cta{display:flex;gap:8px;margin-top:16px;align-items:center}

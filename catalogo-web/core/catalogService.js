@@ -58,7 +58,10 @@ export const fetchCatalogo = async () => {
     cat: p.categoria,
     sub: p.subcategoria,
     med: p.medidas,
-    foto: p.foto
+    foto: p.foto,
+    // La vista sólo entrega `proveedor` cuando el clasificador lo publicó
+    // (mostrar_proveedor = true); si no, llega NULL y la ficha no lo muestra.
+    prov: p.mostrar_proveedor ? (p.proveedor || '') : ''
   }));
 
   return { productos, categorias: agruparCategorias(productos), total: productos.length };

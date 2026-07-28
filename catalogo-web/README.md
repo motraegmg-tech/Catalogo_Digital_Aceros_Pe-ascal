@@ -68,6 +68,31 @@ y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
   regenerados (incluyen campo `sub2`), por si prefieres reemplazar a mano.
 - **Vista catálogo**: alterna la lista de trabajo por una cuadrícula de tarjetas
   para ver cómo va quedando cada categoría.
+- **Proveedores** (desde la ficha del producto): los **3,222** productos traen su
+  proveedor del Excel maestro (`datos/productos_maestro.csv`, columna A del Excel
+  aplicada a las filas siguientes) — **54 proveedores**. Dos acciones en bloque,
+  porque un proveedor lo comparten decenas o cientos de productos:
+  - **✎ Modificar para todos** — renombra el proveedor en **todos** los productos
+    que lo comparten (ideal para corregir la captura del Excel: comas mal puestas,
+    sufijos irregulares). Si escribes el nombre de otro proveedor existente, se
+    **fusionan**. Reversible con Deshacer (`Ctrl+Z`).
+  - **🚫 Mostrar en el Catálogo / 👁 Visible en el catálogo** — interruptor de
+    publicación. **Arranca apagado en los 3,222.** Encendido, el proveedor aparece
+    en la ficha del catálogo público para todos los productos de ese proveedor;
+    apagado, el cliente final no lo ve. Ver la nota de privacidad abajo.
+  - Marca **«Proveedor genérico o por confirmar»**: 90 productos que en el Excel
+    no traen un proveedor real (88 dicen «PROVEEDOR EN GENERAL» y 2 la propia
+    sucursal). Fíltralos desde el árbol para corregirlos.
+
+> ⚠️ **Privacidad del proveedor.** La spec de **Fase 1** dice no publicar precio,
+> existencia **ni proveedor**. Por eso el interruptor nace **apagado** y la
+> protección vive en la **base de datos**, no sólo en la interfaz: la vista
+> `catalogo_publico` entrega `proveedor` como `NULL` mientras `mostrar_proveedor`
+> sea `false`. Como la anon key es pública y está desplegada, ésta es la única
+> forma de que la lista de proveedores **no** sea descargable por cualquiera.
+> El respaldo local (`data/productos.js`) sí trae los 54 proveedores porque es la
+> copia **interna**; `assets/app.js` aplica el mismo filtro al usarlo, para que
+> nunca publique lo que la base oculta.
 - Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
 - Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie).
 

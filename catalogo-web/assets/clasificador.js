@@ -20,6 +20,10 @@ const FOTO_EXTS = ['webp','jpg','jpeg','png'];
 const ETIQUETAS = [
   { id:'sin-foto',         label:'Productos sin foto o foto errónea', corto:'Sin foto' },
   { id:'sin-conocimiento', label:'Productos sin conocimiento',        corto:'Sin conocimiento' },
+  // El Excel registra estos con un marcador genérico ("PROVEEDOR EN GENERAL") o
+  // con la propia sucursal, no con un proveedor real: quedan para que Gonzalo
+  // los corrija con "Modificar para todos" desde la ficha.
+  { id:'proveedor-por-revisar', label:'Proveedor genérico o por confirmar', corto:'Proveedor ?' },
 ];
 const ETQMAP = new Map(ETIQUETAS.map(e=>[e.id,e]));
 function etqDe(p){ return Array.isArray(p.etq) ? p.etq : []; }
@@ -27,6 +31,15 @@ function tieneEtq(p,id){ return etqDe(p).includes(id); }
 function etqKey(p){ return etqDe(p).slice().sort().join(','); }
 
 const DATA = window.CATALOGO || { generado:'', total:0, productos:[], categorias:[] };
+
+/* Normaliza los campos de proveedor para que la base siempre los tenga definidos.
+   `prov` = razón social (interna). `mprov` = interruptor "Mostrar en el Catálogo":
+   mientras esté en false el catálogo público NO recibe el proveedor (la vista
+   `catalogo_publico` lo devuelve como NULL). Arranca apagado en todo. */
+for (const p of DATA.productos){
+  if (typeof p.prov !== 'string') p.prov = p.prov==null ? '' : String(p.prov);
+  p.mprov = !!p.mprov;
+}
 
 /* ---------- utils ---------- */
 function load(k, def){ try{ return JSON.parse(localStorage.getItem(k)) ?? def; }catch{ return def; } }
@@ -280,8 +293,11 @@ const SBC = (window.supabase && window.SUPA_CFG)
 const SB = { user:null, estado: SBC ? 'anon' : 'nosoporte', ultimo:null, error:null };
 // estado: nosoporte | anon (sin sesión) | on (sesión activa) | sync | error
 const SB_SEP = '';
-// Clave de comparación: categoría + subcategoría + marcas de gestión
-function sbClave(p){ return (p.cat||'')+SB_SEP+(p.sub||'')+SB_SEP+etqKey(p); }
+// Clave de comparación: categoría + subcategoría + marcas + proveedor + su interruptor
+function sbClave(p){
+  return (p.cat||'')+SB_SEP+(p.sub||'')+SB_SEP+etqKey(p)
+       + SB_SEP+(p.prov||'')+SB_SEP+(p.mprov?'1':'0');
+}
 // Estado que asumimos ya está en Supabase (arranca == base local == BD desplegada)
 const SB_BASE = new Map(DATA.productos.map(p => [p.cod, sbClave(p)]));
 const SB_DIRTY = new Set();   // códigos cuya categoría/subcategoría difieren de Supabase
@@ -318,11 +334,12 @@ async function sincronizarSupabase(origen){
   SB.estado='sync'; renderSbEstado();
   let escritos = 0, fallo = null;
   for (const [key, cods] of grupos){
-    const [cat, sub, etqs] = key.split(SB_SEP);
+    const [cat, sub, etqs, prov, mprov] = key.split(SB_SEP);
     for (let i=0;i<cods.length;i+=200){          // trocea por límite de URL de .in()
       const lote = cods.slice(i, i+200);
       const { error } = await SBC.from('productos')
-        .update({ categoria: cat, subcategoria: sub, etiquetas: etqs ? etqs.split(',') : [] })
+        .update({ categoria: cat, subcategoria: sub, etiquetas: etqs ? etqs.split(',') : [],
+                  proveedor: prov, mostrar_proveedor: mprov==='1' })
         .in('codigo', lote);
       if (error){ fallo = error; break; }
       for (const c of lote){ SB_BASE.set(c, key); SB_DIRTY.delete(c); escritos++; }
@@ -416,27 +433,33 @@ let AUTO_PULL = localStorage.getItem(LS_AUTOPULL) !== '0';   // por defecto acti
 const PULL = { estado: SBC ? 'idle' : 'nosoporte', ultimo:null };
 let PULL_T = null;
 
+/* Con sesión leemos la tabla base `productos` (RLS la permite a `authenticated`):
+   trae el proveedor REAL de todos. Sin sesión sólo hay vista pública, que
+   enmascara el proveedor de los productos con el interruptor apagado — por eso
+   en ese caso el proveedor se marca como "no confiable" y no se sobrescribe. */
 async function descargarClasificacionSB(){
+  const conSesion = !!SB.user;
+  const tabla  = conSesion ? 'productos' : 'catalogo_publico';
+  const campos = 'codigo,categoria,subcategoria,foto,etiquetas,proveedor,mostrar_proveedor';
   const filas = [];
   const pageSize = 1000;
   for (let page=0;;page++){
-    const { data, error } = await SBC.from('catalogo_publico')
-      .select('codigo,categoria,subcategoria,foto,etiquetas')
+    const { data, error } = await SBC.from(tabla).select(campos)
       .range(page*pageSize, (page+1)*pageSize-1);
     if (error) throw error;
     if (!data || !data.length) break;
     filas.push(...data);
     if (data.length < pageSize) break;
   }
-  return filas;
+  return { filas, provConfiable: conSesion };
 }
 
 async function traerCambiosSupabase(origen){
   if (!SBC){ if (origen!=='auto') aviso('⚠ Sincronización en línea no disponible en este navegador.'); return 0; }
   if (PULL.estado==='cargando') return 0;
   PULL.estado='cargando'; renderPullEstado();
-  let filas;
-  try{ filas = await descargarClasificacionSB(); }
+  let filas, provConfiable;
+  try{ ({ filas, provConfiable } = await descargarClasificacionSB()); }
   catch(e){
     PULL.estado='error'; renderPullEstado();
     if (origen!=='auto') aviso('⚠ No se pudo traer del equipo: '+(e.message||e.name));
@@ -449,9 +472,12 @@ async function traerCambiosSupabase(origen){
     const cat = r.categoria || '', sub = r.subcategoria || '';
     const etq = Array.isArray(r.etiquetas) ? r.etiquetas : [];
     const foto = (r.foto && r.foto!==p.foto) ? r.foto : p.foto;   // sólo pisa la foto si en línea hay una
-    if (p.cat===cat && p.sub===sub && foto===p.foto &&
+    // Sin sesión el proveedor llega enmascarado (NULL): se conserva el local.
+    const prov  = provConfiable ? (r.proveedor || '') : p.prov;
+    const mprov = !!r.mostrar_proveedor;
+    if (p.cat===cat && p.sub===sub && foto===p.foto && p.prov===prov && p.mprov===mprov &&
         JSON.stringify(etq)===JSON.stringify(p.etq||[])) continue;
-    p.cat=cat; p.sub=sub; p.foto=foto; p.etq=etq; cambios++;
+    p.cat=cat; p.sub=sub; p.foto=foto; p.etq=etq; p.prov=prov; p.mprov=mprov; cambios++;
   }
   PULL.estado='ok'; PULL.ultimo=new Date(); renderPullEstado();
   if (cambios){
@@ -558,6 +584,11 @@ function undo(){
   if (a.tipo==='asig') restaurarAsig(a.cambios);
   else if (a.tipo==='etq') restaurarEtq(a.cambios);
   else if (a.tipo==='edic'){ if (a.prev) WORK.ediciones[a.id]=a.prev; else delete WORK.ediciones[a.id]; }
+  else if (a.tipo==='edicm'){
+    for (const c of a.cambios){
+      if (c.prev) WORK.ediciones[c.id]=c.prev; else delete WORK.ediciones[c.id];
+    }
+  }
   else if (a.tipo==='tax'){ WORK.taxonomia = a.tax; restaurarAsig(a.asig); }
   bitacora('Deshacer: '+(a.label||''));
   actualizarBtnUndo();
@@ -1102,11 +1133,11 @@ async function reasignarFantasma(nombre){
 /* Fusiona: los campos que NO se envían conservan su edición previa. (Antes se
    reemplazaba la entrada completa, así que guardar la ficha borraba la foto
    recién subida, y viceversa.) */
-function editarCampos(id, campos){ // campos = {nom?, med?, prov?, foto?}
+function editarCampos(id, campos){ // campos = {nom?, med?, prov?, mprov?, foto?}
   const base = BMAP.get(id); if (!base) return false;
   const prev = WORK.ediciones[id] ? Object.assign({},WORK.ediciones[id]) : null;
   const entrada = Object.assign({}, prev||{});
-  for (const f of ['nom','med','prov','foto']){
+  for (const f of ['nom','med','prov','mprov','foto']){
     if (campos[f]===undefined) continue;              // no enviado → se respeta
     if (campos[f]!==base[f]) entrada[f]=campos[f];    // difiere de la base → se edita
     else delete entrada[f];                           // volvió al valor original
@@ -1118,6 +1149,78 @@ function editarCampos(id, campos){ // campos = {nom?, med?, prov?, foto?}
   pushUndo({tipo:'edic', label, id, prev});
   bitacora(label + ' ('+Object.keys(entrada).join(', ')+')');
   return true;
+}
+
+/* ---------- proveedor: acciones en bloque ----------
+   El proveedor viene del Excel maestro (columna A) y lo comparten muchos
+   productos, así que corregir un nombre producto por producto sería inviable.
+   Estas dos acciones operan sobre TODOS los que comparten el mismo proveedor. */
+
+/* Aplica una edición de campo a varios productos en una sola operación deshacible. */
+function editarCamposMultiple(ids, hazCampos, label){
+  const cambios = [];
+  for (const id of ids){
+    const base = BMAP.get(id); if (!base) continue;
+    const campos = hazCampos(IDX.get(id));
+    if (!campos) continue;
+    const prev = WORK.ediciones[id] ? Object.assign({},WORK.ediciones[id]) : null;
+    const entrada = Object.assign({}, prev||{});
+    for (const f of ['nom','med','prov','mprov','foto']){
+      if (campos[f]===undefined) continue;
+      if (campos[f]!==base[f]) entrada[f]=campos[f];
+      else delete entrada[f];
+    }
+    if (JSON.stringify(entrada)===JSON.stringify(prev||{})) continue;
+    cambios.push({ id, prev });
+    if (Object.keys(entrada).length) WORK.ediciones[id]=entrada; else delete WORK.ediciones[id];
+  }
+  if (!cambios.length) return 0;
+  pushUndo({tipo:'edicm', label, cambios});
+  bitacora(label);
+  construirProductos(); persistir(); renderAll();
+  return cambios.length;
+}
+
+function productosDeProveedor(prov){
+  return PRODUCTOS.filter(p => (p.prov||'') === (prov||''));
+}
+
+/* "Modificar para todos": renombra un proveedor en todos los productos que lo
+   comparten. Sirve para corregir la captura del Excel (comas mal puestas,
+   sufijos irregulares) sin tocar producto por producto. */
+async function renombrarProveedorEnTodos(actual){
+  const afectados = productosDeProveedor(actual);
+  if (!afectados.length){ aviso('No hay productos con ese proveedor.'); return; }
+  const v = await dialogo({
+    titulo:'Modificar para todos',
+    texto:`El nombre se cambiará en los ${fmt(afectados.length)} producto(s) que hoy tienen «${actual||'(sin proveedor)'}». Si escribes el nombre de otro proveedor existente, ambos quedan fusionados. Reversible con Deshacer.`,
+    campos:[{id:'nombre', label:'Nuevo nombre del proveedor', tipo:'text', valor:actual}],
+    okTxt:'Modificar para todos' });
+  if (!v) return;
+  const nuevo = (v.nombre||'').trim();
+  if (nuevo === actual){ aviso('Sin cambios: es el mismo nombre.'); return; }
+  const n = editarCamposMultiple(afectados.map(p=>p.id), ()=>({prov:nuevo}),
+    `Proveedor «${actual}» → «${nuevo}» en ${fmt(afectados.length)} producto(s)`);
+  aviso(n ? `✓ Proveedor actualizado en ${fmt(n)} producto(s)` : 'Sin cambios.');
+}
+
+/* "Mostrar en el Catálogo": interruptor de publicación del proveedor. Apagado,
+   la vista `catalogo_publico` devuelve el proveedor como NULL y el cliente final
+   no lo ve. Se aplica a todo el proveedor porque publicar sólo algunos productos
+   de un mismo proveedor no tendría sentido comercial. */
+async function alternarMostrarProveedor(prov, encender){
+  const afectados = productosDeProveedor(prov);
+  if (!afectados.length){ aviso('No hay productos con ese proveedor.'); return; }
+  if (encender){
+    const ok = await dialogo({ titulo:'Mostrar el proveedor al público',
+      texto:`«${prov}» quedará VISIBLE en la ficha pública de sus ${fmt(afectados.length)} producto(s): cualquier visitante del catálogo podrá verlo. Recuerda que la Fase 1 del proyecto contemplaba no publicar proveedores. ¿Continuar?`,
+      okTxt:'Sí, mostrar al público' });
+    if (!ok) return;
+  }
+  const n = editarCamposMultiple(afectados.map(p=>p.id), ()=>({mprov:!!encender}),
+    `Proveedor «${prov}» ${encender?'PUBLICADO':'ocultado'} en el catálogo (${fmt(afectados.length)} producto(s))`);
+  aviso(n ? (encender ? `✓ Visible al público en ${fmt(n)} producto(s)` : `✓ Oculto al público en ${fmt(n)} producto(s)`)
+          : 'Sin cambios.');
 }
 
 /* ---------- render: barra de progreso ---------- */
@@ -1783,7 +1886,13 @@ function abrirFicha(id){
       <div class="f-field"><label>Código</label><input value="${esc(p.cod)}" readonly /></div>
       <div class="f-field"><label>Medidas</label><input id="fMed" value="${esc(p.med)}" /></div>
     </div>
-    <div class="f-field"><label>Proveedor</label><input id="fProvF" value="${esc(p.prov)}" /></div>
+    <div class="f-field"><label>Proveedor <span class="f-prov-n">· ${fmt(productosDeProveedor(p.prov).length)} producto(s) con este proveedor</span></label>
+      <input id="fProvF" value="${esc(p.prov)}" />
+      <div class="f-prov-acc">
+        <button type="button" class="btn-datos" id="fProvTodos" title="Cambia el nombre de este proveedor en TODOS los productos que lo comparten (reversible con Deshacer)">✎ Modificar para todos</button>
+        <button type="button" class="btn-datos${p.mprov?' on':''}" id="fProvMostrar" title="${p.mprov?'El cliente final VE este proveedor en la ficha pública. Clic para ocultarlo.':'Publica el proveedor en la ficha del catálogo público, para todos los productos que lo comparten.'}">${p.mprov?'👁 Visible en el catálogo':'🚫 Mostrar en el Catálogo'}</button>
+      </div>
+    </div>
     <div class="f-2col">
       <div class="f-field"><label>Categoría</label><select id="fCat"></select></div>
       <div class="f-field"><label>Sub / sub-sub</label><select id="fSub"></select></div>
@@ -1813,6 +1922,19 @@ function abrirFicha(id){
 
   $('#fFotoBtn').onclick = ()=>$('#fFotoFile').click();
   $('#fFotoFile').onchange = (e)=>{ const f=e.target.files[0]; e.target.value=''; if (f) abrirEditorFoto(p.id, f); };
+
+  // Acciones en bloque sobre el proveedor. Ambas parten del valor GUARDADO
+  // (p.prov), no del texto sin guardar del input, para no mover a un grupo que
+  // aún no existe. La ficha se repinta para reflejar el resultado.
+  $('#fProvTodos').onclick = async ()=>{
+    await renombrarProveedorEnTodos(p.prov);
+    if (IDX.has(p.id)) abrirFicha(p.id);
+  };
+  $('#fProvMostrar').onclick = async ()=>{
+    if (!p.prov){ aviso('Este producto no tiene proveedor que mostrar.'); return; }
+    await alternarMostrarProveedor(p.prov, !p.mprov);
+    if (IDX.has(p.id)) abrirFicha(p.id);
+  };
 
   const fc = $('#fCat'), fs = $('#fSub');
   opcionesCategoria(fc, true);
@@ -1932,7 +2054,7 @@ function construirCSV(){
   return '﻿'+lineas.join('\r\n')+'\r\n';
 }
 function construirExport(){
-  const productos = PRODUCTOS.map(p=>({id:p.id,cod:p.cod,nom:p.nom,cat:p.cat,sub:p.sub,sub2:p.sub2||'',med:p.med,prov:p.prov,foto:p.foto||(p.id+'.webp'),etq:etqDe(p)}));
+  const productos = PRODUCTOS.map(p=>({id:p.id,cod:p.cod,nom:p.nom,cat:p.cat,sub:p.sub,sub2:p.sub2||'',med:p.med,prov:p.prov,mprov:!!p.mprov,foto:p.foto||(p.id+'.webp'),etq:etqDe(p)}));
   const cuenta = new Map();
   for (const p of productos){
     let c = cuenta.get(p.cat); if(!c){ c={n:0,subs:new Map()}; cuenta.set(p.cat,c); }
@@ -2193,7 +2315,37 @@ function selfTest(){
     t('export total', ex.total===PRODUCTOS.length);
     t('export subs array', ex.categorias.every(c=>Array.isArray(c.subs) && c.subs.length>=1));
     t('export suma', ex.categorias.reduce((a,c)=>a+c.n,0)===ex.total);
-    t('export campos', ['id','cod','nom','cat','sub','sub2','med','prov','foto'].every(f=>f in ex.productos[0]));
+    t('export campos', ['id','cod','nom','cat','sub','sub2','med','prov','mprov','foto'].every(f=>f in ex.productos[0]));
+
+    // --- proveedor: acciones en bloque + interruptor de publicación ---
+    const provPrueba = PRODUCTOS.find(x=>x.prov)?.prov || '';
+    if (provPrueba){
+      const grupo = productosDeProveedor(provPrueba);
+      const nGrupo = grupo.length;
+      const nuevoNom = provPrueba+' ·PRUEBA';
+      const n1 = editarCamposMultiple(grupo.map(x=>x.id), ()=>({prov:nuevoNom}), 'selftest renombrar proveedor');
+      t('proveedor renombra en bloque', n1===nGrupo && productosDeProveedor(nuevoNom).length===nGrupo);
+      undo();
+      t('proveedor renombra undo', productosDeProveedor(provPrueba).length===nGrupo
+        && productosDeProveedor(nuevoNom).length===0);
+
+      // El interruptor arranca apagado: nada se publica sin decisión explícita
+      t('mostrar proveedor apagado por defecto', grupo.every(x=>!x.mprov));
+      const n2 = editarCamposMultiple(productosDeProveedor(provPrueba).map(x=>x.id),
+        ()=>({mprov:true}), 'selftest publicar proveedor');
+      t('mostrar proveedor enciende', n2===nGrupo && productosDeProveedor(provPrueba).every(x=>x.mprov));
+      t('mprov viaja al export', construirExport().productos.some(x=>x.mprov===true));
+      undo();
+      t('mostrar proveedor undo', productosDeProveedor(provPrueba).every(x=>!x.mprov));
+    }
+    t('etiqueta proveedor-por-revisar registrada', ETQMAP.has('proveedor-por-revisar'));
+    // La clave de sync debe distinguir proveedor e interruptor, o no se subirían
+    t('sbClave incluye proveedor', (()=>{
+      const a = PRODUCTOS[0];
+      const b = Object.assign({}, a, {prov:(a.prov||'')+'X'});
+      const c = Object.assign({}, a, {mprov:!a.mprov});
+      return sbClave(a)!==sbClave(b) && sbClave(a)!==sbClave(c);
+    })());
     const csv = construirCSV();
     const csvLineas = csv.trim().split('\r\n');
     t('csv filas', csvLineas.length===PRODUCTOS.length+1);

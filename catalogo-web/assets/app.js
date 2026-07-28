@@ -40,7 +40,8 @@ function handleViewProduct(p) {
     <div class="spec"><b>Código</b><span>${esc(p.cod)}</span></div>
     <div class="spec"><b>Tipo</b><span class="${ovrName}">${esc(p.sub||'—')}</span></div>
     <div class="spec"><b>Medidas</b><span class="${ovrName}">${esc(p.med||'—')}</span></div>
-    ${state.edit ? `<div class="spec"><b>Proveedor</b><span>${esc(p.prov||'—')}</span></div><div class="fname">Foto esperada: fotos/${p.id}.webp</div>` : ''}
+    ${p.prov ? `<div class="spec"><b>Proveedor</b><span>${esc(p.prov)}</span></div>` : ''}
+    ${state.edit ? `<div class="fname">Foto esperada: fotos/${p.id}.webp</div>` : ''}
     <div class="modal-cta"><button class="btn-quote" id="mQuote">Agregar al pedido y cotizar</button></div>`;
   
   b.append(photo, info);
@@ -88,7 +89,11 @@ async function init() {
   if (!datos.productos.length) {
     const local = await cargarRespaldoLocal();
     if (local && local.productos.length) {
-      datos = { productos: local.productos, categorias: agruparCategorias(local.productos), total: local.productos.length };
+      // El archivo local es la copia INTERNA: trae el proveedor de todos los
+      // productos. Aquí se respeta el mismo interruptor que aplica la vista de
+      // Supabase, para que el respaldo nunca publique lo que la base oculta.
+      const productos = local.productos.map(p => Object.assign({}, p, { prov: p.mprov ? (p.prov || '') : '' }));
+      datos = { productos, categorias: agruparCategorias(productos), total: productos.length };
     }
   }
   
