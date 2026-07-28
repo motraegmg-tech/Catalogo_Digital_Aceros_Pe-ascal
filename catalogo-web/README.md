@@ -93,6 +93,10 @@ y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
 > El respaldo local (`data/productos.js`) sí trae los 54 proveedores porque es la
 > copia **interna**; `assets/app.js` aplica el mismo filtro al usarlo, para que
 > nunca publique lo que la base oculta.
+- **Barra de filtros que se aparta**: la fila de búsqueda, proveedor y chips queda
+  fija bajo el encabezado; al bajar entre los productos se retira para dejar toda
+  la altura a la lista y **vuelve en cuanto empiezas a subir**. Nunca se esconde
+  mientras escribes en ella (el atajo `/` la trae de vuelta sola).
 - Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
 - Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie).
 

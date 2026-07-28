@@ -10,6 +10,7 @@
   --verde:#2F3D2C; --arena:#D9C9A8;
   --line:#D6DBDE; --shadow:0 1px 2px rgba(19,23,26,.06),0 6px 18px rgba(19,23,26,.08);
   --radius:12px;
+  --h-topbar:64px;   /* alto del encabezado: bajo él se fijan el árbol y la barra de filtros */
   --font:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --mono:'Consolas','Courier New',monospace;
 }
@@ -152,7 +153,20 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 
 /* ===== Main ===== */
 .main{flex:1;min-width:0;padding:14px 18px 90px;background:var(--fondo-prod);min-height:calc(100vh - 64px)}
-.toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+/* La barra de búsqueda y filtros queda fija bajo el encabezado. Se esconde al
+   bajar entre los productos y vuelve en cuanto empiezas a subir (clase .oculta,
+   que pone y quita clasificador.js). */
+.toolbar{
+  position:sticky;top:var(--h-topbar);z-index:30;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:0 -18px 10px;padding:10px 18px;
+  background:var(--fondo-prod);
+  box-shadow:0 10px 14px -12px rgba(19,23,26,.55);
+  transition:transform .22s ease,opacity .22s ease;
+}
+/* sube su propio alto más el del encabezado: sale de pantalla, no se asoma */
+.toolbar.oculta{transform:translateY(calc(-100% - var(--h-topbar)));opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.toolbar{transition:none}}
 .toolbar input[type=search]{
   flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid var(--acero);
   background:#fff;font-size:13.5px;outline:none;

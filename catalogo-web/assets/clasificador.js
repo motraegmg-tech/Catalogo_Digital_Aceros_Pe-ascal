@@ -2171,6 +2171,41 @@ function init(){
     renderLista(); renderSelbar();
   };
 
+  /* La barra de filtros se esconde al bajar entre los productos y reaparece en
+     cuanto empiezas a subir. Nunca se esconde si estás escribiendo en ella
+     (p. ej. tras pulsar "/") ni cuando aún no has pasado su sitio en la página. */
+  (function barraAlDesplazar(){
+    const barra = $('.toolbar'); if (!barra) return;
+    const UMBRAL = 8;                    // ignora el temblor del trackpad
+    let ultimo = window.scrollY, encolado = false;
+
+    /* El anclaje NO puede salir de la propia barra: `offsetTop` de un elemento
+       sticky devuelve su posición ya desplazada, así que crecería con el scroll
+       y el umbral se cumpliría siempre. La cabecera de la lista va en flujo
+       normal, de modo que su posición en el documento es fija. */
+    const anclaje = ()=> $('#listhead')?.offsetTop ?? 140;
+
+    function evaluar(){
+      encolado = false;
+      const y = Math.max(0, window.scrollY);
+      const salto = y - ultimo;
+      if (Math.abs(salto) < UMBRAL) return;
+      ultimo = y;
+      const escribiendo = barra.contains(document.activeElement);
+      const subiendo = salto < 0;
+      const arriba = y <= anclaje();
+      barra.classList.toggle('oculta', !(subiendo || arriba || escribiendo));
+    }
+
+    addEventListener('scroll', ()=>{
+      if (encolado) return;
+      encolado = true; requestAnimationFrame(evaluar);
+    }, {passive:true});
+
+    // el foco la trae de vuelta: el atajo "/" no puede llevarte a un campo oculto
+    barra.addEventListener('focusin', ()=>barra.classList.remove('oculta'));
+  })();
+
   // Fin del barrido de selección (mouseup en cualquier parte)
   document.addEventListener('mouseup', ()=>{
     if (PAINT.downId===null) return;
