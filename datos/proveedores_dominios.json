@@ -1,0 +1,125 @@
+{
+  "_comentario": "Mapa proveedor -> dominios oficiales autorizados para busqueda de imagenes. Solo se descargan imagenes de estos dominios. Los proveedores sin dominio configurado son saltados automaticamente.",
+  "_version": "1.0.0",
+  "_actualizado": "2026-07-28",
+  "CASCAR INTERNATIONAL S. DE R.L DE C.V": [
+    "cascar.mx"
+  ],
+  "PERFILES Y HERRAJES VARGAS, S.A DE C.V": [
+    "cascar.mx"
+  ],
+  "FORJA ARTISTICA RENACIMIENTO, S.A DE C.V": [
+    "arteferromexico.com",
+    "arteferro.com.mx",
+    "arteferro.com"
+  ],
+  "GABRIEL REYES GOMEZ": [
+    "arteferromexico.com",
+    "arteferro.com.mx"
+  ],
+  "ANITA DE LOS SANTOS DE LA ROSA": [
+    "arteferromexico.com",
+    "arteferro.com.mx"
+  ],
+  "MOISES JUAREZ MORALES": [
+    "arteferromexico.com",
+    "arteferro.com.mx"
+  ],
+  "VICTOR HUGO HERNANDEZ AGUILAR": [
+    "arteferromexico.com",
+    "arteferro.com.mx"
+  ],
+  "CHAPA INDUSTRIAS, S.A DE C.V": [
+    "cerraduras-dexter.com.mx"
+  ],
+  "UJUETA MEXICO, S.A DE C.V": [
+    "cerraduras-dexter.com.mx"
+  ],
+  "COMPLEMENTOS COBY,SA DE C.V": [
+    "cerraduras-dexter.com.mx"
+  ],
+  "FABRICACION DE HERRAJES DE OCCIDENTE, S.A": [
+    "cerraduras-dexter.com.mx"
+  ],
+  "URREA HERRAMIENTAS PROFESIONALES S.A DE C.V": [
+    "urrea.com"
+  ],
+  "LINCOLN ELECTRIC MANUFACTURA, S.A DE C.V": [
+    "lincolnelectric.com"
+  ],
+  "INFRA, S.A DE C.V": [
+    "grupoinfra.com",
+    "infra.com.mx"
+  ],
+  "TERNIUM MEXICO, S.A DE C.V": [
+    "mx.ternium.com",
+    "ternium.com",
+    "ternium.com.mx"
+  ],
+  "FORTACERO,S.A DE C.V": [
+    "fortacero.com"
+  ],
+  "DISTRIBUIDORA DE ACEROS ESTRUCTURALES, S.A DE C.V": [
+    "fortacero.com",
+    "ternium.com"
+  ],
+  "GRUPO INDUSTRIAL GARCIASTEEL,S.A DE C.V": [
+    "fortacero.com"
+  ],
+  "PERFILES LM, S.A DE C.V": [
+    "fortacero.com"
+  ],
+  "PRODUCTOS LAMINADOS DE MONTERREY S.A DE C.V": [
+    "mx.ternium.com",
+    "ternium.com"
+  ],
+  "LAMINAS ECOGREEN": [],
+  "LAMINAS ECONOMICAS TRANSPARENTES, S.A DE C.V": [],
+  "LAMINAS Y ESTRUCTURAS DE PVC": [],
+  "LAMITEC,S.A DE C.V": [
+    "grupolamitec.com"
+  ],
+  "GALVATUBING,S.A DE C.V": [
+    "construex.com.mx/exhibidores/galvatubing_s_a_de_c_v"
+  ],
+  "TUBO DECORADO MONTERREY, S.A DE C.V": [
+    "decorsteel.com.mx/productos"
+  ],
+  "INDUSTRIAL DE ALAMBRES, S.A DE C.V": [
+    "indasa.com.mx"
+  ],
+  "FERRETERA CANTABRIA, S.A DE C.V": [
+    "construex.com.mx/exhibidores/ferretera_cantabria_sa_de_cv"
+  ],
+  "FERRETERA CENTRAL DEL GOLFO, S.A DE C.V": [
+    "ferreteracentraldelgolfo.com.mx"
+  ],
+  "SURTIDORA MEXICANA MERIDA, S.A DE C.V": [
+    "surtimex.com"
+  ],
+  "ACEROS PEÑASCAL STA. LUCIA": [
+    "construex.com.mx/exhibidores/aceros_penascal_s_a/catalogos"
+  ],
+  "DISTRIBUIDORA MAYORISTA DE TORNILLOS DE YUCATAN": [
+    "dmt.com.mx"
+  ],
+  "INTERNACIONAL TOOL COMPANY, S.A DE C.V": [
+    "itcompany.com.mx"
+  ],
+  "GRUPO CORPORATIVO URGUT, S.A DE C.V": [
+    "urgutacanalados.com"
+  ],
+  "PAPALOTES FELIZARDO ELIZONDO GUAJARDO,S.A DE C.V": [
+    "papalotessteel.com"
+  ],
+  "METALES DESPLEGADOS S.A DE C.V": [
+    "medesa.com.mx"
+  ],
+  "TA-2000, S.A DE C.V": [
+    "tyasa.com"
+  ],
+  "WAREZOM S.A DE C.V": [
+    "warezom.com"
+  ],
+  "PROVEEDOR EN GENERAL": []
+}
