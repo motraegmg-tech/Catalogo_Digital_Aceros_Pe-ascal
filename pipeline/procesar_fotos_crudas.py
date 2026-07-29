@@ -65,8 +65,10 @@ ALPHA_THRESHOLD  = 15           # umbral de canal alfa para detección de bordes
 BG_COLOR         = (255, 255, 255, 255)   # blanco sólido
 RESAMPLE         = getattr(Image, "Resampling", Image).LANCZOS
 
-# Extensiones de imagen aceptadas en fotos_crudas
-EXTS_VALIDAS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
+# Extensiones de imagen aceptadas en fotos_crudas (incluye .avif de la segunda vuelta)
+EXTS_VALIDAS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".avif"}
+# Extensiones que definitivamente NO son imágenes (se excluyen siempre)
+EXTS_EXCLUIDAS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv"}
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)-8s %(message)s",
@@ -114,13 +116,20 @@ def _primer_valor(d: dict, claves: tuple) -> str:
 
 
 def cargar_productos_sin_foto() -> List[dict]:
-    """Lee productos.json y devuelve solo los marcados con 'sin-foto'. NUNCA lo modifica."""
+    """
+    Lee productos.json y devuelve SOLO los productos marcados 'sin-foto'. NUNCA lo modifica.
+
+    Los archivos que ya completamos y quitamos de 'sin-foto' seguirán en fotos_crudas/
+    como histórico — aparecerán como huérfanos en el reporte, lo cual es correcto
+    y esperado. No deben procesarse de nuevo.
+    """
     with PRODUCTOS_JSON.open("r", encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data.get("productos"), list):
         raise ValueError("productos.json no tiene la estructura esperada.")
     todos = [p for p in data["productos"] if isinstance(p, dict)]
     return [p for p in todos if "sin-foto" in (p.get("etq") or [])]
+
 
 
 def cargar_plantilla() -> Dict[str, str]:
@@ -135,11 +144,48 @@ def cargar_plantilla() -> Dict[str, str]:
     return mapa
 
 
+def _es_imagen_valida(ruta: Path) -> bool:
+    """
+    Determina si un archivo es una imagen utilizable.
+    Estrategia:
+      1. Si la extensión está en EXTS_EXCLUIDAS → rechazar sin intentar abrir.
+      2. Si la extensión está en EXTS_VALIDAS → aceptar.
+      3. Si la extensión es desconocida o no existe (p.ej. archivos sin extensión
+         o con extensión rota) → intentar abrir con Pillow para verificar.
+    Esto cubre: .avif, archivos sin extensión, nombres con puntos en el medio.
+    """
+    ext = ruta.suffix.lower()
+    if ext in EXTS_EXCLUIDAS:
+        return False
+    if ext in EXTS_VALIDAS:
+        return True
+    # Intento de apertura con Pillow para extensiones desconocidas
+    try:
+        with Image.open(ruta) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
+
+
 def listar_fotos_crudas() -> List[Path]:
-    """Devuelve todas las imágenes en fotos_crudas/ con extensión válida."""
+    """
+    Devuelve todas las imágenes utilizables en fotos_crudas/.
+    Acepta extensiones estándar (.jpg, .png, .webp, .avif, etc.) y también
+    archivos sin extensión o con extensión no estándar que Pillow pueda abrir.
+    Excluye PDFs, documentos y cualquier no-imagen.
+    """
     if not FOTOS_CRUDAS.exists():
         raise FileNotFoundError(f"Carpeta no encontrada: {FOTOS_CRUDAS}")
-    return [f for f in FOTOS_CRUDAS.iterdir() if f.suffix.lower() in EXTS_VALIDAS]
+    resultado = []
+    for f in FOTOS_CRUDAS.iterdir():
+        if not f.is_file():
+            continue
+        if _es_imagen_valida(f):
+            resultado.append(f)
+        else:
+            log.debug("Ignorado (no es imagen): %s", f.name)
+    return resultado
 
 
 # ===========================================================================
@@ -177,14 +223,29 @@ def sanitize_name_alt(nombre: str) -> str:
     return s.upper()
 
 
+def _nombre_logico(archivo: Path) -> str:
+    """
+    Extrae el 'nombre lógico' de un archivo para usarlo en el matching.
+
+    - Si tiene extensión estándar conocida (.jpg, .webp, .avif, etc.) → usa stem
+      Ej: "CABEZA DE LEON.avif"  → "CABEZA DE LEON"
+    - Si NO tiene extensión estándar (puede ser sin ext, o con ext rota como
+      "PLATO NUM.6 DE 4\" 1/2\"") → usa el nombre completo, sin tocar nada.
+      La función sanitize_name_for_match se encargará de normalizar el resultado.
+    """
+    if archivo.suffix.lower() in EXTS_VALIDAS:
+        return archivo.stem
+    return archivo.name
+
+
 def _indice_archivos_crudos(archivos: List[Path]) -> Dict[str, Path]:
     """
     Construye un diccionario {clave_sanitizada: Path} para todos los archivos
-    en fotos_crudas/, aplicando la misma función sanitize al stem del archivo.
+    en fotos_crudas/, aplicando sanitize_name_for_match al nombre lógico.
     """
     indice: Dict[str, Path] = {}
     for archivo in archivos:
-        clave = sanitize_name_for_match(archivo.stem)
+        clave = sanitize_name_for_match(_nombre_logico(archivo))
         if clave in indice:
             log.warning(
                 "Colisión de clave en fotos_crudas: %s vs %s (se usa el primero)",
@@ -193,6 +254,7 @@ def _indice_archivos_crudos(archivos: List[Path]) -> Dict[str, Path]:
         else:
             indice[clave] = archivo
     return indice
+
 
 
 def resolver_destino(cod: str, plantilla: Dict[str, str]) -> Optional[Path]:
@@ -279,106 +341,128 @@ def construir_matches(
 # MÓDULO 5: Pipeline de imagen
 # ===========================================================================
 
-def _tiene_fondo_uniforme(imagen: Image.Image) -> bool:
+# Umbral de luminosidad promedio para considerar que las esquinas son "blancas"
+# 240/255 ≈ 94% de blanco — tolerante a fondos off-white de catálogos web
+UMBRAL_FONDO_BLANCO = 240
+# Porcentaje mínimo de la imagen que debe ser claro para confirmar fondo blanco
+PORCENTAJE_FONDO_CLARO = 0.85
+
+
+def tiene_fondo_blanco(imagen: Image.Image) -> bool:
     """
-    Heurística: detecta si la imagen ya tiene un fondo blanco/sólido uniforme
-    verificando las esquinas. Si es así, rembg puede ser más agresivo de lo necesario.
-    No afecta el procesamiento — siempre aplicamos el pipeline completo.
+    Detecta si la imagen ya tiene un fondo blanco o muy claro.
+
+    Estrategia robusta (dos criterios combinados):
+      1. Las 4 esquinas deben ser blancas/muy claras (cubre fondos sólidos)
+      2. El porcentaje de píxeles claros en la imagen debe superar PORCENTAJE_FONDO_CLARO
+         (filtra falsos positivos en imágenes con mucho blanco pero fondo oscuro)
+
+    Imágenes de tiendas online, catálogos y fabricantes suelen tener fondo
+    blanco puro o muy cercano — rembg en estos casos daña la calidad.
     """
+    # Solo aplica a imágenes RGB/L (sin canal alfa ya procesado)
     if imagen.mode == "RGBA":
-        return False   # si ya tiene canal alfa, rembg fue aplicado antes
-    w, h = imagen.size
-    puntos = [
-        imagen.getpixel((0, 0)),
-        imagen.getpixel((w - 1, 0)),
-        imagen.getpixel((0, h - 1)),
-        imagen.getpixel((w - 1, h - 1)),
+        return False
+
+    rgb = imagen.convert("RGB")
+    w, h = rgb.size
+
+    # Criterio 1: las 4 esquinas son blancas
+    esquinas = [
+        rgb.getpixel((0, 0)),
+        rgb.getpixel((w - 1, 0)),
+        rgb.getpixel((0, h - 1)),
+        rgb.getpixel((w - 1, h - 1)),
     ]
-    # Todos blancos o muy claros
-    return all(
-        (sum(p[:3]) / 3 > 230 if isinstance(p, tuple) else p > 230)
-        for p in puntos
+    esquinas_blancas = all(
+        sum(px) / 3 >= UMBRAL_FONDO_BLANCO for px in esquinas
     )
+    if not esquinas_blancas:
+        return False
+
+    # Criterio 2: la mayor parte de la imagen es clara
+    gris = rgb.convert("L")
+    total = w * h
+    pixeles_claros = sum(1 for px in gris.getdata() if px >= UMBRAL_FONDO_BLANCO)
+    return (pixeles_claros / total) >= PORCENTAJE_FONDO_CLARO
 
 
-def remover_fondo(datos: bytes, sesion_ia) -> Image.Image:
+def _pipeline_con_fondo(imagen: Image.Image) -> Image.Image:
     """
-    Elimina el fondo con rembg. Si el resultado pierde el producto
-    (bbox vacío), devuelve la imagen original sin fondo aplicado.
+    Ruta RÁPIDA para imágenes que ya tienen fondo blanco.
+    Solo centra y redimensiona — no aplica rembg para preservar calidad original.
     """
-    imagen_original = Image.open(BytesIO(datos)).convert("RGBA")
+    rgb = imagen.convert("RGB")
+    rgb.thumbnail(PRODUCT_MAX_SIZE, RESAMPLE)
 
+    canvas = Image.new("RGB", CANVAS_SIZE, (255, 255, 255))
+    x = (CANVAS_SIZE[0] - rgb.width)  // 2
+    y = (CANVAS_SIZE[1] - rgb.height) // 2
+    canvas.paste(rgb, (x, y))
+    return canvas
+
+
+def _pipeline_sin_fondo(datos: bytes, imagen_orig: Image.Image, sesion_ia) -> Image.Image:
+    """
+    Ruta COMPLETA para imágenes con fondo no blanco.
+    Aplica rembg → recorte con margen → canvas blanco 800×800.
+    """
     try:
         resultado_bytes = remove(datos, session=sesion_ia)
         sin_fondo = Image.open(BytesIO(resultado_bytes)).convert("RGBA")
-        if sin_fondo.getchannel("A").getbbox():
-            return sin_fondo
-        log.debug("rembg devolvió canal alfa vacío, usando imagen original")
+        if not sin_fondo.getchannel("A").getbbox():
+            log.debug("rembg devolvió canal alfa vacío, usando imagen original")
+            sin_fondo = imagen_orig.convert("RGBA")
     except Exception as exc:
-        log.debug("rembg falló: %s — usando imagen original", exc)
+        log.debug("rembg falló (%s), usando imagen original", exc)
+        sin_fondo = imagen_orig.convert("RGBA")
 
-    return imagen_original
-
-
-def recortar_producto(imagen: Image.Image) -> Image.Image:
-    """
-    Recorta al bounding-box del producto con un margen de seguridad.
-    Trabaja sobre el canal alfa para imágenes con fondo removido,
-    o sobre luminosidad para imágenes sin canal alfa.
-    """
-    if imagen.mode != "RGBA":
-        imagen = imagen.convert("RGBA")
-
-    alpha = imagen.getchannel("A")
+    # Recortar al bounding-box del producto
+    alpha = sin_fondo.getchannel("A")
     mascara = alpha.point(lambda p: 255 if p > ALPHA_THRESHOLD else 0)
     bbox = mascara.getbbox()
-    if not bbox:
-        return imagen   # no se puede recortar, devolver intacta
+    if bbox:
+        l = max(0, bbox[0] - CROP_MARGIN_PX)
+        t = max(0, bbox[1] - CROP_MARGIN_PX)
+        r = min(sin_fondo.width,  bbox[2] + CROP_MARGIN_PX)
+        b = min(sin_fondo.height, bbox[3] + CROP_MARGIN_PX)
+        sin_fondo = sin_fondo.crop((l, t, r, b))
 
-    l = max(0, bbox[0] - CROP_MARGIN_PX)
-    t = max(0, bbox[1] - CROP_MARGIN_PX)
-    r = min(imagen.width,  bbox[2] + CROP_MARGIN_PX)
-    b = min(imagen.height, bbox[3] + CROP_MARGIN_PX)
-    return imagen.crop((l, t, r, b))
-
-
-def componer_canvas(imagen: Image.Image) -> Image.Image:
-    """
-    Centra el producto (con transparencia) sobre un canvas 800×800 blanco sólido.
-    Redimensiona manteniendo proporción para que quepa en PRODUCT_MAX_SIZE.
-    """
-    if imagen.mode != "RGBA":
-        imagen = imagen.convert("RGBA")
-
-    imagen.thumbnail(PRODUCT_MAX_SIZE, RESAMPLE)
+    sin_fondo.thumbnail(PRODUCT_MAX_SIZE, RESAMPLE)
 
     canvas = Image.new("RGBA", CANVAS_SIZE, BG_COLOR)
-    x = (CANVAS_SIZE[0] - imagen.width)  // 2
-    y = (CANVAS_SIZE[1] - imagen.height) // 2
-    canvas.alpha_composite(imagen, (x, y))
+    x = (CANVAS_SIZE[0] - sin_fondo.width)  // 2
+    y = (CANVAS_SIZE[1] - sin_fondo.height) // 2
+    canvas.alpha_composite(sin_fondo, (x, y))
     return canvas.convert("RGB")
 
 
-def estandarizar_imagen(ruta: Path, sesion_ia) -> Image.Image:
+def estandarizar_imagen(ruta: Path, sesion_ia) -> tuple:
     """
-    Pipeline completo de estandarización:
-      1. Leer archivo crudo
-      2. Validar tamaño mínimo
-      3. Remover fondo (rembg)
-      4. Recortar al producto con margen
-      5. Centrar en canvas 800×800 fondo blanco
+    Pipeline inteligente de estandarización:
+
+    RUTA A — Imagen con fondo blanco detectado (catálogos, tiendas online):
+      → Solo centra y redimensiona en canvas 800×800. No aplica rembg.
+      → Preserva la calidad original del fabricante.
+
+    RUTA B — Imagen con fondo de color / fotografía / fondo mixto:
+      → rembg elimina el fondo → recorte al producto → canvas 800×800 blanco.
+
+    Retorna (imagen_PIL, ruta_usada: str) para informar en el log.
     """
     datos = ruta.read_bytes()
-    img_check = Image.open(BytesIO(datos))
-    if img_check.width < MIN_EDGE_PX or img_check.height < MIN_EDGE_PX:
+    imagen_orig = Image.open(BytesIO(datos))
+
+    if imagen_orig.width < MIN_EDGE_PX or imagen_orig.height < MIN_EDGE_PX:
         raise ValueError(
-            f"Imagen demasiado pequeña: {img_check.width}×{img_check.height}px "
+            f"Imagen demasiado pequeña: {imagen_orig.width}×{imagen_orig.height}px "
             f"(mínimo {MIN_EDGE_PX}px por lado)"
         )
 
-    imagen = remover_fondo(datos, sesion_ia)
-    imagen = recortar_producto(imagen)
-    return componer_canvas(imagen)
+    if tiene_fondo_blanco(imagen_orig):
+        return _pipeline_con_fondo(imagen_orig), "fondo-blanco→solo-centrar"
+    else:
+        return _pipeline_sin_fondo(datos, imagen_orig, sesion_ia), "fondo-color→rembg"
 
 
 # ===========================================================================
@@ -505,6 +589,7 @@ def main() -> int:
 
     log.info("Productos sin-foto en JSON : %d", len(productos))
     log.info("Imágenes en fotos_crudas/  : %d", len(fotos_crudas))
+    log.info("(Huérfanos esperados = fotos ya aprobadas que quedan como histórico)")
 
     # ── Matching ────────────────────────────────────────────────────────────
     matches, huerfanos = construir_matches(productos, fotos_crudas, plantilla)
@@ -545,7 +630,7 @@ def main() -> int:
         log.info("%s %s | %s", prefix, match.cod, match.nom[:55])
 
         try:
-            imagen = estandarizar_imagen(match.archivo_crudo, sesion_ia)
+            imagen, ruta_usada = estandarizar_imagen(match.archivo_crudo, sesion_ia)
             ruta_guardada = guardar_imagen(imagen, match.archivo_destino)
             resultados.append(Resultado(
                 cod=match.cod,
@@ -553,9 +638,9 @@ def main() -> int:
                 archivo_crudo=match.archivo_crudo.name,
                 archivo_destino=ruta_guardada.name,
                 estado="ok",
-                detalle=f"Guardado en {ruta_guardada}",
+                detalle=f"{ruta_usada} | guardado en {ruta_guardada}",
             ))
-            log.info("%s ✓ OK → %s", prefix, ruta_guardada.name)
+            log.info("%s ✓ OK [%s] → %s", prefix, ruta_usada, ruta_guardada.name)
 
         except Exception as exc:
             resultados.append(Resultado(

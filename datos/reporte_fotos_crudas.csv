@@ -1,136 +1,287 @@
 cod,nom,archivo_crudo,archivo_destino,estado,detalle
-P6X6-1/4,"PLACA DE FIJACION 6""X6"" X 1/4","PLACA DE FIJACION 6""X6"" X 14.jpg",P6X6-1-4.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/P6X6-1-4.webp
-CASO70,CANDADO CON ALARMA SONORA 70 MM.,CANDADO CON ALARMA SONORA 70 MM.webp,CASO70.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CASO70.webp
-CAND16932,CANDADO DEXTER ANTIPALANCA 70 MM (16932),CANDADO DEXTER ANTIPALANCA 70 MM (16932).webp,CAND16932.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND16932.webp
-CAND16934,CANDADO DEXTER ANTIPALANCA 70 MM (16934),CANDADO DEXTER ANTIPALANCA 70 MM (16934).webp,CAND16934.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND16934.webp
-CAND16933,CANDADO DEXTER ANTIPALANCA COMBO 70 MM (16933),CANDADO DEXTER ANTIPALANCA COMBO 70 MM (16933).webp,CAND16933.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND16933.webp
-CAND6940,CANDADO DEXTER LATON (6940),CANDADO DEXTER LATON (6940).jpg,CAND6940.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND6940.webp
-CAND6942,CANDADO DEXTER LATON (6942),CANDADO DEXTER LATON (6942).webp,CAND6942.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND6942.webp
-CAND6939,CANDADO DEXTER LATON 25 MM GL (6939),CANDADO DEXTER LATON 25 MM GL (6939).webp,CAND6939.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND6939.webp
-CANCOM6924,CANDADO DEXTER METAL 40MM COMBO (6924),CANDADO DEXTER METAL 40MM COMBO (6924).jpg,CANCOM6924.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CANCOM6924.webp
-CAND6915,CANDADO DEXTER METALICO 25 MM GL(6915),CANDADO DEXTER METALICO 25 MM GL(6915).webp,CAND6915.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND6915.webp
-CAND6917,CANDADO DEXTER METALICO 40MM (6917),CANDADO DEXTER METALICO 40MM (6917).jpg,CAND6917.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CAND6917.webp
-CERD6634,CERROJO DEXTER CILINDRO MARIPOSA LA (6634),CERROJO DEXTER CILINDRO MARIPOSA LA (6634).webp,CERD6634.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CERD6634.webp
-CERD6339,CERROJO DEXTER CILINDRO-MARIPOSA L/BRILLANTE(6339),CERROJO DEXTER CILINDRO-MARIPOSA LBRILLANTE(6339).webp,CERD6339.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CERD6339.webp
-CERD6336,CERROJO DOBLE CILINDRO L/BRILLANTE (6336),CERROJO DOBLE CILINDRO BRILLANTE (6336).webp,CERD6336.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CERD6336.webp
-CERD6730,CERROJO DOBLE CILINDRO L/BRILLANTE (6730),CERROJO DOBLE CILINDRO LBRILLANTE (6730).webp,CERD6730.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CERD6730.webp
-CHAD6740,CHAPA DEXTER DALTON MOD 01DA55LAAB 6740,CHAPA DEXTER DALTON MOD 01DA55LAAB 6740.webp,CHAD6740.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD6740.webp
-CHAD5802,CHAPA DEXTER DE BULONES IFI (5802),CHAPA DEXTER DE BULONES IFI (5802).webp,CHAD5802.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD5802.webp
-CHAD6744,CHAPA DEXTER GAT/PER MILAN LATON ANTIG.(6744),CHAPA DEXTER GATPER MILAN LATON ANTIG.(6744).jpg,CHAD6744.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD6744.webp
-CHAD6641,CHAPA DEXTER MANIJA L/BRILLANTE (6641),CHAPA DEXTER MANIJA LBRILLANTE (6641).webp,CHAD6641.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD6641.webp
-CHAD4189,CHAPA DEXTER RESIDENCIAL GENOVA (4189),CHAPA DEXTER RESIDENCIAL GENOVA (4189).webp,CHAD4189.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD4189.webp
-CHAD6305,CHAPA DEXTER RESIDENCIAL LATON  ANTIGUO (6305),CHAPA DEXTER RESIDENCIAL LATON  ANTIGUO (6305).webp,CHAD6305.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD6305.webp
-CHA4187,CHAPA DEXTER RESIDENCIAL TRIPOLI (4187),CHAPA DEXTER RESIDENCIAL TRIPOLI (4187).png,CHA4187.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHA4187.webp
-CHAD4186,CHAPA DEXTER RESIDENCIAL TRIPOLI(4186),CHAPA DEXTER RESIDENCIAL TRIPOLI(4186).webp,CHAD4186.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD4186.webp
-CHAD6754,CHAPA DEXTER RESIDENCIAL TRIPOLI(6754),CHAPA DEXTER RESIDENCIAL TRIPOLI(6754).jpg,CHAD6754.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHAD6754.webp
-4065,"PASADOR DEXTER MAUSER 2"" LATON(4065)","PASADOR DEXTER MAUSER 2"" LATON(4065).webp",4065.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/4065.webp
-4058,"PASADOR DEXTER MAUSER 2"" NS (4058)","PASADOR DEXTER MAUSER 2"" NS (4058).webp",4058.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/4058.webp
-4066,"PASADOR DEXTER MAUSER 3"" LATON (4066)","PASADOR DEXTER MAUSER 3"" LATON (4066).jpg",4066.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/4066.webp
-4061,"PASADOR DEXTER MAUSER 5"" NS (4061)","PASADOR DEXTER MAUSER 5"" NS (4061).webp",4061.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/4061.webp
-CBR2,CHAPA KOVAC 800 LIBRE DER..(CBR2),CHAPA KOVAC 800 LIBRE DER..(CBR2).webp,CBR2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CBR2.webp
-PIE-ENC,PIEDRA P/ENCENDEDOR,PIEDRA PENCENDEDOR.webp,PIE-ENC.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIE-ENC.webp
-BIRLO5X400,"BIRLO 3/16"" X 16""","BIRLO 316"" X 16"".webp",BIRLO5X400.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BIRLO5X400.webp
-BIRLO6X200,"BIRLO DE 1/4"" X 8""","BIRLO DE 14"" X 8"".webp",BIRLO6X200.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BIRLO6X200.webp
-PIJA8X3/4,"PIJA 8 X 3/4"" CIENTO","PIJA 8 X 34"" CIENTO.jpg",PIJA8X3-4.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJA8X3-4.webp
-PIJA10X11/2,"PIJA GALV. 10 X 1 1/2""","PIJA GALV. 10 X 1 12"".jpeg",PIJA10X11-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJA10X11-2.webp
-PIJA10X2,"PIJA GALV. 10 X 2""","PIJA GALV. 10 X 2"".png",PIJA10X2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJA10X2.webp
-PIJA8X11/2,"PIJA GALV. 8 X 1 1/2""","PIJA GALV. 8 X 1 12"".webp",PIJA8X11-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJA8X11-2.webp
-PIJA8X1,"PIJA GALV. 8 X 1""","PIJA GALV. 8 X 1"".webp",PIJA8X1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJA8X1.webp
-PIJAKLATH8X11/2,"PIJA K-LATH BROCA 8 X 1 1/2""","PIJA K-LATH BROCA 8 X 1 12"".webp",PIJAKLATH8X11-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJAKLATH8X11-2.webp
-PIJAKLATH8X1,"PIJA K-LATH BROCA 8 X 1""","PIJA K-LATH BROCA 8 X 1"".jpg",PIJAKLATH8X1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJAKLATH8X1.webp
-PIJAKLATH8X1/2,"PIJA K-LATH BROCA 8 X 1/2""","PIJA K-LATH BROCA 8 X 12"".webp",PIJAKLATH8X1-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIJAKLATH8X1-2.webp
-RONPREGAL16,"RONDANA DE PRESION GALV. 5/8""","RONDANA DE PRESION GALV. 58"".jpg",RONPREGAL16.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/RONPREGAL16.webp
-TORCOGALV.6X38,"TORNILLO C/COCHE GALV. 1/4"" X 1 1/2""","TORNILLO CCOCHE GALV. 14"" X 1 12"".jpg",TORCOGALV-6X38.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TORCOGALV-6X38.webp
-TORCAGALV.6X50,"TORNILLO C/COCHE GALV. 1/4"" X 2""","TORNILLO CCOCHE GALV. 14"" X 2"".webp",TORCAGALV-6X50.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TORCAGALV-6X50.webp
-TORCOGALV6X100,"TORNILLO C/COCHE GALV. 1/4"" X 4""","TORNILLO CCOCHE GALV. 14"" X 4"".webp",TORCOGALV6X100.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TORCOGALV6X100.webp
-TORHEXGAL6X75,"TORNILLO HEX. GALV. 1/4"" X 3""","TORNILLO HEX. GALV. 14"" X 3"".jpeg",TORHEXGAL6X75.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TORHEXGAL6X75.webp
-VARO25,"VARILLA ROSCADA DE 1"" X 1 MTS.","VARILLA ROSCADA DE 1"" X 1 MTS.webp",VARO25.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VARO25.webp
-VARO13,"VARILLA ROSCADA DE 1/2"" X 1 MTS.","VARILLA ROSCADA DE 12"" X 1 MTS.png",VARO13.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VARO13.webp
-VAROS6,"VARILLA ROSCADA DE 1/4"" X 1 MTS.","VARILLA ROSCADA DE 14"" X 1 MTS.webp",VAROS6.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS6.webp
-VAROS5,"VARILLA ROSCADA DE 3/16"" X 1 MTS.","VARILLA ROSCADA DE 316"" X 1 MTS.jpeg",VAROS5.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS5.webp
-VAROS19,"VARILLA ROSCADA DE 3/4"" X 1 MTS.","VARILLA ROSCADA DE 34"" X 1 MTS.jpg",VAROS19.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS19.webp
-VAROS10,"VARILLA ROSCADA DE 3/8"" X 1 MTS.","VARILLA ROSCADA DE 38"" X 1 MTS.jpg",VAROS10.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS10.webp
-VAROS8X1,"VARILLA ROSCADA DE 5/16"" X 1 MTS.","VARILLA ROSCADA DE 516"" X 1 MTS.jpg",VAROS8X1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS8X1.webp
-VAROS16,"VARILLA ROSCADA DE 5/8"" X 1 MTS.","VARILLA ROSCADA DE 58"" X 1 MTS.webp",VAROS16.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VAROS16.webp
-AROSOL,ARO DE SOLERA DE 1/8,ARO DE SOLERA DE 18.webp,AROSOL.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/AROSOL.webp
-REMA610LF,REMACHE POP 610 LF,REMACHE POP 610 LF.webp,REMA610LF.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/REMA610LF.webp
-"BROIRW7/16""","BROCA P/FO. 7/16"" IRWIN (012798)","BROCA PFO. 716"" IRWIN (012798).webp",BROIRW7-16.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BROIRW7-16.webp
-BROCON1/4X6D24365,"BROCA PARA CONCRETO  MAK  1/4"" X 6"" D24365","BROCA PARA CONCRETO  MAK  14"" X 6"" D24365.jpg",BROCON1-4X6D24365.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BROCON1-4X6D24365.webp
-BROCON3/8X12D24418,"BROCA PARA CONCRETO  MAK  3/8"" X 12"" D24418","BROCA PARA CONCRETO  MAK  38"" X 12"" D24418.jpg",BROCON3-8X12D24418.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BROCON3-8X12D24418.webp
-BROCONI3/16X39MM,"BROCA PARA CONCRETO IRWIN  3/16"" X 39 MM LARGO","BROCA PARA CONCRETO IRWIN  316"" X 39 MM LARGO.webp",BROCONI3-16X39MM.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BROCONI3-16X39MM.webp
-CANPHILLTX-9TETRA,CANDADO PHILLIPS ANTIPAL. TETRA TX-9,CANDADO PHILLIPS ANTIPAL. TETRA TX-9.png,CANPHILLTX-9TETRA.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CANPHILLTX-9TETRA.webp
-CHA525DC,CHAPA PHILLIPS ALUM. 525 DOBLE CILINDRO,CHAPA PHILLIPS ALUM. 525 DOBLE CILINDRO.webp,CHA525DC.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHA525DC.webp
-CORBOSCH,CORTADORA BOSCH ( GCO2000),CORTADORA BOSCH ( GCO2000).webp,CORBOSCH.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CORBOSCH.webp
-64814,"DISCO LAMINADO FANDELI GRANO 40 4 1/2""(64814)","DISCO LAMINADO FANDELI GRANO 40 4 12""(64814).jpeg",64814.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/64814.webp
-DFANDG6041/2,"DISCO LAMINADO FANDELI GRANO 60 4 1/2""(046064)","DISCO LAMINADO FANDELI GRANO 60 4 12""(046064).webp",DFANDG6041-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/DFANDG6041-2.webp
-64815,DISCO LAMINADO FANDELI GRANO 60 41/2(64815),DISCO LAMINADO FANDELI GRANO 60 412(64815).jpg,64815.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/64815.webp
-DFANDG8041/2,"DISCO LAMINADO FANDELI GRANO 80 4 1/2""(046065)","DISCO LAMINADO FANDELI GRANO 80 4 12""(046065).jpg",DFANDG8041-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/DFANDG8041-2.webp
-DA60M,DISCO PFERD A60 4 1/2 CORTE METAL(000959),DISCO PFERD A60 4 12 CORTE METAL(000959).webp,DA60M.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/DA60M.webp
-DG80PFER41/2,"DISCO PFERD GRANO 80 4 1/2"" POLIFAN (034338)","DISCO PFERD GRANO 80 4 12"" POLIFAN (034338).jpg",DG80PFER41-2.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/DG80PFER41-2.webp
-33611,JGO. RIEL CAJON TELESC. 30 CM 3602 (033611),JGO. RIEL CAJON TELESC. 30 CM 3602 (033611).webp,33611.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/33611.webp
-14512,JGO. RIEL CAJON TELESC. 40 CM 3604 (014512),JGO. RIEL CAJON TELESC. 40 CM 3604 (014512).webp,14512.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/14512.webp
-PIS-314,MINI PISTOLA DE GRAVEDAD MODELO G-314 (014525),MINI PISTOLA DE GRAVEDAD MODELO G-314 (014525).jpg,PIS-314.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PIS-314.webp
-NIVMAGSTAN,NIVEL TORPEDO MAGNETICO STANLEY,NIVEL TORPEDO MAGNETICO STANLEY.webp,NIVMAGSTAN.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/NIVMAGSTAN.webp
-PETEKG1,PEGAMENTO ADVO PAQ 3 INST.TEKBOND 1G (051015),PEGAMENTO ADVO PAQ 3 INST.TEKBOND 1G (051015).jpg,PETEKG1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PETEKG1.webp
-38461,PEGAMENTO RESISTOL NO MAS CLAVOS 225G(038461),PEGAMENTO RESISTOL NO MAS CLAVOS 225G(038461).jpg,38461.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/38461.webp
-RESDBL,RESBALON DOBLE BALA LATONADO (012652),RESBALON DOBLE BALA LATONADO (012652).jpg,RESDBL.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/RESDBL.webp
-"SEGL6""-24DPP",SEGUETA LENOX (24DPP 624R),SEGUETA LENOX (24DPP 624R).webp,SEGL6-24DPP.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SEGL6-24DPP.webp
-"SICOL1""","SIERRA CORTACIRCULOS BIMETAL 1"" (16L-30016)","SIERRA CORTACIRCULOS BIMETAL 1"" (16L-30016).webp",SICOL1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SICOL1.webp
-"SICOL1""1/4","SIERRA CORTACIRCULOS BIMETAL 1""1/4 (20L- 30020)","SIERRA CORTACIRCULOS BIMETAL 1""14 (20L- 30020).jpeg",SICOL1-1-4.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SICOL1-1-4.webp
-"SICOL3""","SIERRA CORTACIRCULOS BIMETAL 3"" (48L 30048)","SIERRA CORTACIRCULOS BIMETAL 3"" (48L 30048).webp",SICOL3.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SICOL3.webp
-"SICOL7/8""","SIERRA CORTACIRCULOS BIMETAL 7/8"" (14L 30014 )","SIERRA CORTACIRCULOS BIMETAL 78"" (14L 30014 ).webp",SICOL7-8.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SICOL7-8.webp
-SILDUR300ML,SILICON CART. PENS DURETANO 300ML BCO.(013041),SILICON CART. PENS DURETANO 300ML BCO.(013041).jpg,SILDUR300ML.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SILDUR300ML.webp
-ALACISLAM,ALA DE CISNE LAMINA,ALA DE CISNE LAMINA.jpg,ALACISLAM.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ALACISLAM.webp
-ALAQD,ALA DE QUERUBIN DERECHA,ALA DE QUERUBIN DERECHA.jpeg,ALAQD.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ALAQD.webp
-ALAQ,ALA DE QUERUBIN IZQUIERDA,ALA DE QUERUBIN IZQUIERDA.jpeg,ALAQ.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ALAQ.webp
-APACHED,APACHE DERECHO,APACHE DERECHO.png,APACHED.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/APACHED.webp
-AROC16,ARO DE CUADRADO DE 5/8 A 12 CM.,"
+"SICOL3""","SIERRA CORTACIRCULOS BIMETAL 3"" (48L 30048)","SIERRA CORTACIRCULOS BIMETAL 3"" (48L 30048).webp",SICOL3.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SICOL3.webp
+CONSGDE,CONSTELACION GRANDE,CONSTELACION GRANDE.jpeg,CONSGDE.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CONSGDE.webp
+TACAV3X6,TABLERO CAS. EN V 3 X 6,TABLERO CAS. EN V 3 X 6.jpg,TACAV3X6.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TACAV3X6.webp
+MALLACI1.50CAL.12.50,MALLA CICLON 1.50 MT. ALT./CAL.12.50/20MTS.,MALLA CICLON 1.50 MT. ALT.CAL.12.5020MTS..webp,MALLACI1-50CAL-12-50.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MALLACI1-50CAL-12-50.webp
+MALLACI1.75CAL.12.50,MALLA CICLON 1.75 MT. ALT./CAL.12.50/20MTS.,MALLA CICLON 1.75 MT. ALT.CAL.12.5020MTS..webp,MALLACI1-75CAL-12-50.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MALLACI1-75CAL-12-50.webp
+MPS12,MICA DE POLICAR. S-12 (8225),MICA DE POLICAR. S-12 (8225).jpg,MPS12.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MPS12.webp
+HS3,CORTACIRCULOS BIMETAL URREA (HS3),CORTACIRCULOS BIMETAL URREA (HS3).webp,HS3.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/HS3.webp
+ESCOM12,"ESCUADRA COMBINADA DE 12"" (142073)","ESCUADRA COMBINADA DE 12"" (142073).jpg",ESCOM12.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ESCOM12.webp
+ESME24-122281,"ESCUADRA METALICA DE 16"" X 24"" (122281)","ESCUADRA METALICA DE 16"" X 24"" (122281).jpg",ESME24-122281.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ESME24-122281.webp
+FIL108103,FILTRO SEPARADOR AGUA Y ACEITE SURTEK(108103),FILTRO SEPARADOR AGUA Y ACEITE SURTEK(108103).webp,FIL108103.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/FIL108103.webp
+TCPC245,TIRA P/CORT. PLANA C24 5.05 M,TIRA PCORT. PLANA C24 5.05 M.jpg,TCPC245.webp,ok,fondo-color→rembg | guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TCPC245.webp
+,,HOJA DE VIÑA.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X3 SQ 1.00 MTS X 91.5 CM.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CARDA COPA TRENZ. 4X 0.35MM M1 (C515).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ANTORCHA SPOOL GUN-4MTS. AXT-SP250EC 250 AMP.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,REJA SAN REHNO 2.00 MTS X 2.50 MTS VERDE C-6.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DISCO PFERD A60 4 12 CORTE METAL(000959).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,LUNA CHICA.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJA DE OLIVO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X10 CAJA GDE. C-22.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CINTA ANTIDERRAPANTE 50MM 5M SURTEK (137367).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CLAVOS PCLAV.NEU. SURTEK 1"" (108502).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RODAJA ESFERICA CON PLACA 40 MM (RE4G).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JUEGO DE LLAVES ESTRI 45ª 6 PZAS (8100CM).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 12"" FOY (142650).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA K-LATH BROCA 8 X 12"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PINZA ANILLOS EXTERNOS 90º SURTEK (PFR6190).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TIJERA PARA HOJALATERO 14"" (T03).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CABEZA DE TORO CHICA(200MMX215MM).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"RONDANA DE PRESION GALV. 58"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA KOVAC 800 LIBRE DER..(CBR2).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RESBALON DOBLE BALA LATONADO (012652).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PEGAMENTO RESISTOL NO MAS CLAVOS 225G(038461).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MARRO OCTAGONAL 2 LB SURTEK (MARR2).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"
 ARO DE CUADRADO DE 58 A 12 CM.
-.webp",AROC16.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/AROC16.webp
-ARORED10,"ARO DE REDONDO DE 3/8"" A 12 CM.","ARO DE REDONDO DE 38"" A 12 CM..jpg",ARORED10.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ARORED10.webp
-AROSOL5,ARO DE SOLERA DE 3/16,ARO DE SOLERA DE 316.webp,AROSOL5.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/AROSOL5.webp
-CGN5,"CANASTA O PIÑA GRIEGA No.5 P/ 5/8""","CANASTA O PIÑA GRIEGA No.5 P 58"".jpg",CGN5.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CGN5.webp
-CGN7,"CANASTA O PIÑA GRIEGA NO.7 P/5/8""","CANASTA O PIÑA GRIEGA NO.7 P58"".jpg",CGN7.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CGN7.webp
-CHA150,"CHAPETON 6""(MEGA)","CHAPETON 6""(MEGA).jpg",CHA150.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CHA150.webp
-CONSGDE,CONSTELACION GRANDE,CONSTELACION GRANDE.jpeg,CONSGDE.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CONSGDE.webp
-COTOD,COTORRO DER,COTORRO DER.png,COTOD.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/COTOD.webp
-CUCF16,"CUELLO CUADRADO FORJADO 5/8""","CUELLO CUADRADO FORJADO 58"".jpeg",CUCF16.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CUCF16.webp
-GRA2C25,"GRAPA 2 COSTILLAS 1""","GRAPA 2 COSTILLAS 1"".jpg",GRA2C25.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/GRA2C25.webp
-HEUCA,HOJA DE EUCALIPTO,HOJA DE EUCALIPTO.png,HEUCA.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/HEUCA.webp
-PLA4,PLATO 5 5/8 HONDO,PLATO 5 58 HONDO.jpeg,PLA4.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PLA4.webp
-PLAB12,"PLATO BASE PLANO 1"" 1/2","PLATO BASE PLANO 1"" 12.jpeg",PLAB12.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PLAB12.webp
-PLA1,PLATO CHICO,PLATO CHICO.jpeg,PLA1.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PLA1.webp
-PLA6,"PLATO NUM.6 DE 4"" 1/2","PLATO NUM.6 DE 4"" 12.png",PLA6.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PLA6.webp
-SP10,SUPER PICO N0.10,SUPER PICO N0.10.png,SP10.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SP10.webp
-SP14,SUPER PICO N0.14,SUPER PICO N0.14.png,SP14.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SP14.webp
-VIRGEN,VIRGEN,VIRGEN.png,VIRGEN.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VIRGEN.webp
-VIRGENMED,VIRGEN MEDIANA 75CM X 40CM,VIRGEN MEDIANA 75CM X 40CM.png,VIRGENMED.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/VIRGENMED.webp
-CABTCH,CABEZA DE TORO CHICA(200MMX215MM),CABEZA DE TORO CHICA(200MMX215MM).webp,CABTCH.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/CABTCH.webp
-ESLALUMCEN,ESLABON ALUMINIO CENTRAL,ESLABON ALUMINIO CENTRAL.webp,ESLALUMCEN.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ESLALUMCEN.webp
-ESGA4,"ESQUINERO GALVANIZADO 4""","ESQUINERO GALVANIZADO 4"".jpg",ESGA4.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ESGA4.webp
-FIGFCA,FIGURA FO. CO. DE ALCATRAZ,FIGURA FO. CO. DE ALCATRAZ.webp,FIGFCA.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/FIGFCA.webp
-JABLVE,JALADERA COLOR BLANCA P/VENTANA CORRED.,JALADERA COLOR BLANCA PVENTANA CORRED..webp,JABLVE.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/JABLVE.webp
-MANCOMIZQ,MANIJA COMBINADA BCE. P/VENT.IZQ,MANIJA COMBINADA BCE. PVENT.IZQ.webp,MANCOMIZQ.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MANCOMIZQ.webp
-RESAN2X2.5CAL8,REJA SAN REHNO 2.00 MTS X 2.50 MTS VERDE C-6,REJA SAN REHNO 2.00 MTS X 2.50 MTS VERDE C-6.jpg,RESAN2X2-5CAL8.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/RESAN2X2-5CAL8.webp
-LGZR4.27E,GALVATUBING LAM.GALV. Z ALUM REC 4.27,GALVATUBING LAM.GALV. Z ALUM REC 4.27.webp,LGZR4-27E.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/LGZR4-27E.webp
-PZALE,PZA. LATERAL EUROPEA,PZA. LATERAL EUROPEA.webp,PZALE.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PZALE.webp
-TACAV3X6,TABLERO CAS. EN V 3 X 6,TABLERO CAS. EN V 3 X 6.jpg,TACAV3X6.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/TACAV3X6.webp
-MALLACI1.50CAL.12.50,MALLA CICLON 1.50 MT. ALT./CAL.12.50/20MTS.,MALLA CICLON 1.50 MT. ALT.CAL.12.5020MTS..webp,MALLACI1-50CAL-12-50.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MALLACI1-50CAL-12-50.webp
-MALLACI1.75CAL.12.50,MALLA CICLON 1.75 MT. ALT./CAL.12.50/20MTS.,MALLA CICLON 1.75 MT. ALT.CAL.12.5020MTS..webp,MALLACI1-75CAL-12-50.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MALLACI1-75CAL-12-50.webp
-BOQP/CORT-4157,BOQ. P/CORT. OXIG. BUT. SC-50 A-1(5/8)C-4157,BOQ. PCORT. OXIG. BUT. SC-50 A-1(58)C-4157.jpg,BOQP-CORT-4157.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BOQP-CORT-4157.webp
-BOQUILLA,BOQUILLA NO2,BOQUILLA NO2.webp,BOQUILLA.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BOQUILLA.webp
-BOQP/CORT-4158,BOQUILLA P/CORT. OXIG-BUT.  SC-50 A-2(1 1/4)C-4158,BOQUILLA PCORT. OXIG-BUT.  SC-50 A-2(1 14)C-4158.webp,BOQP-CORT-4158.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/BOQP-CORT-4158.webp
-MASSEN,MASCARILLA SENCILLA(CODIGO-8288),MASCARILLA SENCILLA(CODIGO-8288).jpg,MASSEN.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MASSEN.webp
-MPS12,MICA DE POLICAR. S-12 (8225),MICA DE POLICAR. S-12 (8225).jpg,MPS12.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MPS12.webp
-MICA2.5D,MICA TRANSP. 2.5 AUM. DIOPT. (8530),MICA TRANSP. 2.5 AUM. DIOPT. (8530).webp,MICA2-5D.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MICA2-5D.webp
-MICA1.5D,MICA TRANSP. AUM. 1.5 DIOPT. (8529),MICA TRANSP. AUM. 1.5 DIOPT. (8529).jpg,MICA1-5D.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MICA1-5D.webp
-PE300,PORTAELECTRODO DE 300 AMP. INFRA,PORTAELECTRODO DE 300 AMP. INFRA.jpg,PE300.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/PE300.webp
-MAN-500,PORTAELECTRODO DE 500 AMP. INFRA,PORTAELECTRODO DE 500 AMP. INFRA.webp,MAN-500.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/MAN-500.webp
-SOLACINOX,"SOLD. ACERO INOX. 1/8""(ARCWEL308-L16)(29PZA)","SOLD. ACERO INOX. 18""(ARCWEL308-L16)(29PZA).webp",SOLACINOX.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SOLACINOX.webp
-SOLFOCOE,"SOLD. FO. CO. (ARC.WELD127)1/8"" ECON.(38PZA)(6040)","SOLD. FO. CO. (ARC.WELD127)18"" ECON.(38PZA)(6040).webp",SOLFOCOE.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/SOLFOCOE.webp
-ZAP300,ZAPATA 300 AMPS COD.8295,ZAPATA 300 AMPS COD.8295.jpeg,ZAP300.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/ZAP300.webp
-AXT-SP250EC,ANTORCHA SPOOL GUN-4MTS. AXT-SP250EC 250 AMP,ANTORCHA SPOOL GUN-4MTS. AXT-SP250EC 250 AMP.webp,AXT-SP250EC.webp,ok,Guardado en /home/rodrigo/Documentos/ProyectosVisual/Catalogo_Digital_Aceros_Pe-ascal/catalogo-web/fotos/AXT-SP250EC.webp
+.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA ZINTRO DE 4 X 91.5 REDONDA C.22.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GATO HIDRAULICO BOTELLA 2 T (GBS2).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MT.CADENA GALV. 18"" SURTEK  (150847).avif",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TORNILLO CCOCHE GALV. 14"" X 1 12"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 2"" FOY (142653).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TREBOL DE SOLERA.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PIEDRA PENCENDEDOR.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER GATPER MILAN LATON ANTIG.(6744).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA GALV. 10 X 2"".png",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJAS PSIERRA CALADOR BCO. 5 PZA.(SSK15).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CLAVOS PCLAV.NEU. SURTEK 2"" (108508).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CARDA CIRCULAR SURTEK 14 X 1 12"" (123245).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PASADOR DEXTER MAUSER 5"" NS (4061).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CERROJO DEXTER CILINDRO MARIPOSA LA (6634).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PCONCRETO URREA 516"" X 12"" (BCN51612).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,FLOR ROMANA 2.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ESLINGA OJO 4""X 4M URREA (EP244).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"GRAPA 2 COSTILLAS 1"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PCONCRETO URREA 516"" X 6"" (BCN5166).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ECLIPSE GRANDE.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO PHILLIPS ANTIPAL. TETRA TX-9.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RIEL O GUIA PCORTINA PLANA 6M C16.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"GANCHO PPANEL RANURADO 8"" (124134).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PLATO CHICO.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SUJETADOR CMATRACA 2"" X 9 MTS. SURTEK (151130).avif",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA MEDIA CAÑA BASTARDA 10"" SURTEK (120303).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ESCALERA PLEGABLE TTAB.ACER. 2 PELDAÑO (ETT2).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA GALV. 10 X 1 12"".jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CUÑA PRASPAR CON MANGO PLASTICO 5"" (142636).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ALA DE QUERUBIN DERECHA.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER ANTIPALANCA 70 MM (16934).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 12"" X 1 MTS.png",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JGO. BROCAS NGA AC ALT VEL 13 PZ (5113).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MINI PISTOLA DE GRAVEDAD MODELO G-314 (014525).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER RESIDENCIAL GENOVA (4189).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SIERRA CORTACIRCULOS BIMETAL 1"" (16L-30016).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DESBROZADORA GAS 17""43CC(DG743A).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X8 CAJA GDE. C-22.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MODULO CONTEMPORANEO NO 3.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PORTAELECTRODO DE 300 AMP. INFRA.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PFO. 716"" IRWIN (012798).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PASADOR DEXTER MAUSER 2"" NS (4058).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER LATON (6940).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA K-LATH BROCA 8 X 1 12"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MANGAS DE CARNAZA SURTEK (137651).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,FLEXOMETRO CARC.PLASTICO ROJO 5 MT.(142126).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TORO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GAFAS WURKSS REFLEX.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PASADOR DEXTER MAUSER 3"" LATON (4066).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA Z.LISA 6 X 3.05 C.22.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA AZTECA 3 X 91.5 CM ZINTRO.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,BOQUILLA PCORT. OXIG-BUT.  SC-50 A-2(1 14)C-4158.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 1"" FOY (142651).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ANGEL CHICO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PINZA ANILLOS INTERNOS 90º SURTEK (PFR6090).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 2 12""  FOY (142654).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA ZINTRO DE 5 X 1.83 RED. COMBINADA.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X3 REC.1.00 MTS X 91.5 CM.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,VIRGEN.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,FLOR ROMANA 1.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ALA DE QUERUBIN IZQUIERDA.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"REMACHE POP 113411 (316"" X 14"") SURTEK.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MT.CADENA GALV. 316"" SURTEK (150850).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
 ,,"GRUPO CORPORATIVO URGUT, S.A DE C.V.jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"REMACHE POP 113420 (14""X12"") SURTEK.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ALA DE CISNE LAMINA.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ROSETON ECLIPSE.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MACHUELO 14"" X 20NC SURTEK (123508).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PIJA MULT. CERR. 6X1-12 SURTEK (PMC6112) 100PZ..jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,FIGURA FO. CO. DE ALCATRAZ.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,LLAVE COMB. FOSF. 1-316 URREA (1238B).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"RODILLO PPINTAR NAILON 4"" X 38"" SURTEK (123388).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GUANTES NAILON CPOLIU M (GNPM).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJA DE HELECHO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ESPATULA FLEXIBLE MGO. BIMET. 3"" SURTEK (123033).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MACHUELO URREA 316"" URREA 24NS.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PLACA DE FIJACION 6""X6"" X 14.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PCONCRETO URREA 58"" X 6"" (BCN586).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JGO. RIEL CAJON TELESC. 30 CM 3602 (033611).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA PLANA BASTARDA 8"" (120332).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ROSETON PAJARO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 58"" X 1 MTS.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TENAZA PTIERRA 500 AMP. SURTEK (118008).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
 ,,"GRUPO INDUSTRIAL GARCIASTEEL,S.A DE C.V.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CERROJO DOBLE CILINDRO LBRILLANTE (6730).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJA DE DURAZNO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CANASTA O PIÑA GRIEGA No.5 P 58"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PLATO NUM.6 DE 4"" 12.png",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MANIJA COMBINADA BCE. PVENT.IZQ.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DOBLADORA PARA TUBO HIDRAULICA 16 TON. (121151).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,LENTES DE SEGURIDAD OSCURO SURTEK (137669).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ECLIPSE CHICO FO.CO,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DISCO LAMINADO FANDELI GRANO 40 4 12""(64814).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA 8 X 34"" CIENTO.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DADO DE IMPACTO 6 PT 78"" SURTEK (S7828HL).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DISCO LAMINADO FANDELI GRANO 80 4 12""(046065).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JINETE DE LAMINA (FORJA).avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MT.CADENA GALV. 14"" SURTEK (150851).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER DE BULONES IFI (5802).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SUPER PICO N0.10.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CHAPETON 6""(MEGA).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TIRA PCORT. PLANA C24 6.00 M.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CONO PRECAUCION SIN REFL 90CM (137601).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X10 SQ 1.00X3.05 Z..jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER METALICO 40MM (6917).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RETOÑO IZQUIERDO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PLATO BASE PLANO 1"" 12.jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SIERRA CORTA CIRCULOS 2 38"" (120747) SURTEK.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,NIDO DE AVES.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,BOQUILLA NO2.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MTS. TELA MOSQUITERA ALUM. 1.20 SURTEK (138102)30M.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JALADERA COLOR BLANCA PVENTANA CORRED..webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER METALICO 25 MM GL(6915).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BIRLO 316"" X 16"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SIERRA CORTACIRCULOS BIMETAL 1""14 (20L- 30020).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,NIVEL TORPEDO MAGNETICO STANLEY.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA K-LATH BROCA 8 X 1"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PASADOR DEXTER DE EMBUTIR DE MAROMA 6"" (3475).avif",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA MUSA REDONDA 12"" SURTEK (120363).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER RESIDENCIAL TRIPOLI(4186).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,URREA HERRAMIENTAS PROFESIONALES S.A DE C.V.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA ZINTRO DE 8 X1.83 REDONDA C.22.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TORNILLO DE BANCO LIGERO 4"" SURTEK (107061).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PARA CONCRETO  MAK  14"" X 6"" D24365.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SILICON CART. PENS DURETANO 300ML BCO.(013041).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"JGO.SUJETADOR HULE 15"" (SH15).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,VIRGEN MEDIANA 75CM X 40CM.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RODAJA YOYO ARO BASE 50 MM SURTEK (RY5PB).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PIJA MULT. 10X3 SURTEK (PM103) 100 PZ..jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,COTORRO DER.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GUANTE MECANICO ANTIVIB. EG URREA (USGVX).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER RESIDENCIAL LATON  ANTIGUO (6305).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SUPER PICO N0.14.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SOLD. FO. CO. (ARC.WELD127)18"" ECON.(38PZA)(6040).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 516"" X 1 MTS.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TORNILLO CCOCHE GALV. 14"" X 4"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GALLO IZQ..avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ARO DE SOLERA DE 316.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CUELLO CUADRADO FORJADO 58"".jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MT.CABLE DE ACERO PVC 7X19 18"" (CAP214).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CERROJO DEXTER CILINDRO-MARIPOSA LBRILLANTE(6339).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RODAJA ESFERICA CON PLACA 50 MM (RE5G).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER ANTIPALANCA 70 MM (16932).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 1"" X 1 MTS.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PUNTA DOBLE DE 14"" X 1 12"" SURTEK (PPH2PL).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO CON ALARMA SONORA 70 MM.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ZAPATA 300 AMPS COD.8295.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 6""FOY (142658).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ESLINGA OJO 4""X 2M URREA (EP242).jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TOCA PUERTAS GRANDE 28 CM X 28 CM.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ESCUADRA METALICA DE 16"" X 24"" (142072).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TORNILLO CCOCHE GALV. 14"" X 2"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER ANTIPALANCA COMBO 70 MM (16933).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MAGNOLIA (DE FORJA).avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
 ,,GABRIEL REYES GOMEZ.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA ZINTRO DE 5 X 1.05 SQ.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RACK DESPACHADOR PTALADRO 18 X 13 (EXHE2G).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"MT.CABLE DE ACERO 7 X 19 14"" (CA218).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 14"" X 1 MTS.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GUANTE MECANICO ANTIVIB. M URREA (USGVM).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ESLABON ALUMINIO CENTRAL.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ESQUINERO GALVANIZADO 4"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJA DE EUCALIPTO.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"ARO DE REDONDO DE 38"" A 12 CM..jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CABEZA DE LOBO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA GALV. 8 X 1"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BIRLO DE 14"" X 8"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PZA. LATERAL EUROPEA.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SERRUCHO BIMAT.3PLE FILO 14 "".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CARDA COPA TRENZ. 3X 0.35MM 58""(C512).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PLATO 5 58 HONDO.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER LATON (6942).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER DALTON MOD 01DA55LAAB 6740.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PINZA PRESION 9"" NARIZ LGA (115058).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"COPLE HEMBRA 14"" SURTEK (108106).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X6 CB 1.00 MTS X 1.83 MTS.jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MANGAS DE CARNAZA SURTEK (137651).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SOL CHICO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 316"" X 1 MTS.jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X3 CAJA GDE. C-22.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 6""FOY (142658).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,ARO DE SOLERA DE 18.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PEGAMENTO ADVO PAQ 3 INST.TEKBOND 1G (051015).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SOL MEDIANO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,BOQ. PCORT. OXIG. BUT. SC-50 A-1(58)C-4157.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA MUSA REDONDA 12"" SURTEK (120363).png",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PIJA GALV. 8 X 1 12"".webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PARA CONCRETO IRWIN  316"" X 39 MM LARGO.webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 34"" X 1 MTS.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PORTAELECTRODO DE 500 AMP. INFRA.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER LATON 25 MM GL (6939).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 3"" FOY (142655).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER RESIDENCIAL TRIPOLI (4187).png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TENAZA PTIERRA 300 AMP SURTEK (118007).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SIERRA CORTACIRCULOS BIMETAL 78"" (14L 30014 ).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,APACHE DERECHO.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MENSULA DE ACERO 10 X 16 BLANCO SURTEK (137827).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MENSULA DE ACERO 8 X 12 GRIS SURTEK (137820).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,C512.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"GUARDACABO PCABLE DE ACERO 14"" SURTEK (GC3).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,83519_U1_142652.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MICA TRANSP. AUM. 1.5 DIOPT. (8529).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JGO. SIERRAS CORTACIRCULOS 4PZA.(JCS4).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CANASTA O PIÑA GRIEGA NO.7 P58"".jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA ZINTRO DE 5 X 1.83 CB CUAD. RECT..webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DISCO LAMINADO FANDELI GRANO 60 4 12""(046064).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER MANIJA LBRILLANTE (6641).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CORTADORA BOSCH ( GCO2000).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DISCO LAMINADO FANDELI GRANO 60 412(64815).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCA PARA CONCRETO  MAK  38"" X 12"" D24418.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GUANTE MECANICO ANTIVIB. G URREA (USGVG).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SEGUETA LENOX (24DPP 624R).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RETOÑO DERECHO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA TRIANGULAR 8"" (120378).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DISCO PFERD GRANO 80 4 12"" POLIFAN (034338).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,DUELA Z. DE 3 X .915 CB CUAD. RECT. CHAPETON.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SOMBRERO.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,REMACHE POP 610 LF.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CABEZA DE LEON.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA PHILLIPS ALUM. 525 DOBLE CILINDRO.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"BROCHA MANGO PLASTICO 1 12"" FOY (142652).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"CARDA COPA ONDULADO 3"" X 58"" (123228).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,LUNA GRANDE.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X6.5 CAJA GDE. C-22.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"LIMA BASTARDA REDONDA 4"" SURTEK (120350).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,HOJA JULIETA.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,SOL GRANDE.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MODULO CONTEMPORANEO NO 2.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CHAPA DEXTER RESIDENCIAL TRIPOLI(6754).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"PASADOR DEXTER MAUSER 2"" LATON(4065).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X3 CB 1.00 MTS X 91.5 CM.png,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,JGO. RIEL CAJON TELESC. 40 CM 3604 (014512).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"VARILLA ROSCADA DE 38"" X 1 MTS.jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MASCARILLA SENCILLA(CODIGO-8288).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,RACK DESPACHADOR PMARROS 2 A 4LB (RMARRO).jpeg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,GALVATUBING LAM.GALV. Z ALUM REC 4.27.webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TABLERO ZINTRO 4X6 CAJA GDE. C-22.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"SOLD. ACERO INOX. 18""(ARCWEL308-L16)(29PZA).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,LINTERNA LED TSLIM RECA 400LM.jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,TUCAN.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CANDADO DEXTER METAL 40MM COMBO (6924).jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,FLOR DE CACTUS.avif,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"DESTORNILLADOR PLANO 316"" X 4"" SURTEK (D202).webp",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,PIJA MULT. 6X1 SURTEK (PM61)100PZ..jpg,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,CERROJO DOBLE CILINDRO BRILLANTE (6336).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"JGO DADOS TORX HEMB 38"" 10 PZ ( 5200TX ).jpg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
 ,,"FORJA ARTISTICA RENACIMIENTO, S.A DE C.V.png",,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,MICA TRANSP. 2.5 AUM. DIOPT. (8530).webp,,huerfano,Archivo en fotos_crudas sin producto correspondiente
+,,"TORNILLO HEX. GALV. 14"" X 3"".jpeg",,huerfano,Archivo en fotos_crudas sin producto correspondiente
