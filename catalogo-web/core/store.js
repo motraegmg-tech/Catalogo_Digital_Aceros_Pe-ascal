@@ -19,6 +19,19 @@ export function saveLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v));
 
 export let DATA = { productos: [], categorias: [], total: 0 };
 
+/**
+ * Set de stems (nombres de archivo sin extensión) de fotos que existen en disco.
+ * Se exporta como `const` para que todos los módulos compartan la MISMA referencia
+ * del objeto. Cuando cargarFotosManifest() lo llena, todos los importadores lo ven
+ * instantáneamente sin depender de la reasignación de DATA.
+ */
+export const fotosSet = new Set();
+
+export function cargarFotosManifest(stems) {
+  fotosSet.clear();
+  stems.forEach(s => fotosSet.add(s));
+}
+
 export const state = {
   q: '', cat: null, sub: null, page: 1,
   cart: loadLS(LS_CART, {}),

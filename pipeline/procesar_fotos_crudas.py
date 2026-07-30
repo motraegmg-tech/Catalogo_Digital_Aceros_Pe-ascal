@@ -437,18 +437,20 @@ def _pipeline_sin_fondo(datos: bytes, imagen_orig: Image.Image, sesion_ia) -> Im
     return canvas.convert("RGB")
 
 
-def estandarizar_imagen(ruta: Path, sesion_ia) -> tuple:
+def estandarizar_imagen(ruta: Path, sesion_ia, usar_rembg: bool = True) -> tuple:
     """
-    Pipeline inteligente de estandarización:
+    Pipeline inteligente de estandarización.
 
-    RUTA A — Imagen con fondo blanco detectado (catálogos, tiendas online):
-      → Solo centra y redimensiona en canvas 800×800. No aplica rembg.
-      → Preserva la calidad original del fabricante.
+    Si usar_rembg=True (modo por defecto o cuando el usuario lo pide):
+      RUTA A — Fondo blanco detectado → solo centra y redimensiona (preserva calidad).
+      RUTA B — Fondo de color       → rembg + recorte + canvas blanco 800×800.
 
-    RUTA B — Imagen con fondo de color / fotografía / fondo mixto:
-      → rembg elimina el fondo → recorte al producto → canvas 800×800 blanco.
+    Si usar_rembg=False (lote de catálogos/tiendas, el usuario lo elige):
+      Fuerza RUTA A para todas las imágenes: solo centra, ajusta tamaño y
+      pone en canvas 800×800 sin ningún procesamiento de fondo.
+      Ideal para fotos de fabricante que ya traen fondo blanco limpio.
 
-    Retorna (imagen_PIL, ruta_usada: str) para informar en el log.
+    Retorna (imagen_PIL, etiqueta_ruta: str) para el log.
     """
     datos = ruta.read_bytes()
     imagen_orig = Image.open(BytesIO(datos))
@@ -458,6 +460,10 @@ def estandarizar_imagen(ruta: Path, sesion_ia) -> tuple:
             f"Imagen demasiado pequeña: {imagen_orig.width}×{imagen_orig.height}px "
             f"(mínimo {MIN_EDGE_PX}px por lado)"
         )
+
+    if not usar_rembg:
+        # Modo rápido: no toca el fondo, solo centra y ajusta
+        return _pipeline_con_fondo(imagen_orig), "sin-rembg→solo-centrar"
 
     if tiene_fondo_blanco(imagen_orig):
         return _pipeline_con_fondo(imagen_orig), "fondo-blanco→solo-centrar"
@@ -562,11 +568,86 @@ def parse_args() -> argparse.Namespace:
         help=f"Ruta del CSV de auditoría. Default: {REPORTE_CSV}",
     )
     p.add_argument(
+        "--sin-rembg",
+        action="store_true",
+        dest="sin_rembg",
+        help=(
+            "Omite la eliminación de fondo (rembg) para todas las imágenes. "
+            "Solo centra, ajusta tamaño y guarda en canvas 800×800. "
+            "Ideal para lotes de catálogo/tienda que ya traen fondo blanco."
+        ),
+    )
+    p.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Activa logs de depuración.",
     )
     return p.parse_args()
+
+
+def _preguntar_modo_pipeline(sin_rembg_flag: bool) -> bool:
+    """
+    Si no se pasó --sin-rembg por CLI, pregunta interactivamente al usuario
+    si quiere usar rembg o saltar directo a centrar/ajustar.
+    Retorna True si se usará rembg, False si se saltea.
+    """
+    if sin_rembg_flag:
+        return False   # el flag ya decidió
+
+    print()
+    print("  ┌───────────────────────────────────────────────────────────────┐")
+    print("  │  ¿Qué modo de procesamiento quieres usar?              │")
+    print("  │                                                        │")
+    print("  │  [1] CON rembg   — elimina el fondo, luego centra      │")
+    print("  │      ✓ Fotos de productos con fondo de color            │")
+    print("  │      ✓ Fotografías propias o de contexto                │")
+    print("  │                                                        │")
+    print("  │  [2] SIN rembg   — solo centra, ajusta tamaño y guarda │")
+    print("  │      ✓ Fotos de catálogo / tienda online                │")
+    print("  │      ✓ Imágenes con fondo blanco ya limpio              │")
+    print("  │      ✓ Productos con detalles finos (rejas, cepillos)  │")
+    print("  └───────────────────────────────────────────────────────────────┘")
+    while True:
+        resp = input("  Elige [1/2]: ").strip()
+        if resp == "1":
+            print("  → Modo: rembg activado.\n")
+            return True
+        if resp == "2":
+            print("  → Modo: solo centrar/ajustar (sin rembg).\n")
+            return False
+        print("  Por favor escribe 1 o 2.")
+
+
+def _preguntar_manifest() -> None:
+    """
+    Al finalizar el pipeline pregunta si se quiere regenerar fotos-manifest.json
+    para que las nuevas imágenes aparezcan inmediatamente en el catálogo web.
+    """
+    import subprocess
+    manifest_script = BASE_DIR / "generar_manifest_fotos.py"
+    if not manifest_script.exists():
+        return
+
+    print()
+    print("  ┌───────────────────────────────────────────────────────────────┐")
+    print("  │  ¿Regenelar fotos-manifest.json ahora?                  │")
+    print("  │  Las nuevas fotos se reflejarán en el catálogo web      │")
+    print("  │  al recargar la página. [S/n]                          │")
+    print("  └───────────────────────────────────────────────────────────────┘")
+    resp = input("  ¿Generar manifest? [S/n]: ").strip().lower()
+    if resp in ("", "s", "si", "sí", "y", "yes"):
+        print()
+        result = subprocess.run(
+            [sys.executable, str(manifest_script)],
+            capture_output=False,
+        )
+        if result.returncode == 0:
+            print("  ✓ Manifest actualizado. Recarga el navegador para verlo.")
+        else:
+            print("  ✗ Error al generar el manifest (código:", result.returncode, ")")
+    else:
+        print("  → Manifest no regenerado. Ejécutalo manualmente cuando quieras:")
+        print(f"     python3 {manifest_script}")
 
 
 def main() -> int:
@@ -618,10 +699,16 @@ def main() -> int:
         log.info("Agrega --apply para ejecutar el pipeline.")
         return 0
 
-    # ── Pipeline real ────────────────────────────────────────────────────────
-    log.info("Cargando modelo de IA para recorte de fondo (u2net)...")
-    sesion_ia = new_session("u2net")
-    log.info("Modelo listo. Iniciando procesamiento...")
+    # ── Pipeline real ───────────────────────────────────────────────
+    usar_rembg = _preguntar_modo_pipeline(args.sin_rembg)
+
+    if usar_rembg:
+        log.info("Cargando modelo de IA para recorte de fondo (u2net)...")
+        sesion_ia = new_session("u2net")
+        log.info("Modelo listo. Iniciando procesamiento...")
+    else:
+        sesion_ia = None
+        log.info("Modo sin-rembg: se omite el modelo de IA. Iniciando procesamiento...")
 
     resultados: List[Resultado] = []
 
@@ -630,7 +717,7 @@ def main() -> int:
         log.info("%s %s | %s", prefix, match.cod, match.nom[:55])
 
         try:
-            imagen, ruta_usada = estandarizar_imagen(match.archivo_crudo, sesion_ia)
+            imagen, ruta_usada = estandarizar_imagen(match.archivo_crudo, sesion_ia, usar_rembg)
             ruta_guardada = guardar_imagen(imagen, match.archivo_destino)
             resultados.append(Resultado(
                 cod=match.cod,
@@ -653,9 +740,10 @@ def main() -> int:
             ))
             log.error("%s ✗ ERROR: %s", prefix, exc)
 
-    # ── Reporte y resumen ────────────────────────────────────────────────────
+    # ── Reporte y resumen ─────────────────────────────────────────────
     escribir_reporte(resultados, huerfanos, args.reporte)
     imprimir_resumen(resultados, huerfanos)
+    _preguntar_manifest()
     return 0
 
 

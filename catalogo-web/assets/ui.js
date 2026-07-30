@@ -1,4 +1,4 @@
-import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW } from '../core/store.js';
+import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet } from '../core/store.js';
 import { getCartItems } from '../core/cartService.js';
 import { searchAndSortProducts } from '../core/searchService.js';
 
@@ -43,18 +43,54 @@ export function thumb(p, onImageClick) {
   return box;
 }
 
-// Lógica de filtrado y búsqueda
+
+/**
+ * Determina si un producto tiene una foto que EXISTE físicamente en disco.
+ * Consulta fotosSet (importado de store.js), un Set de stems de archivos reales
+ * generado por pipeline/generar_manifest_fotos.py y cargado al inicio de la app.
+ */
+function tienefoto(p) {
+  if (fotosSet.size === 0) return false;
+  // URL externa: válida por definición
+  if (typeof p.foto === 'string' && /^https?:\/\//i.test(p.foto)) return true;
+  // Verificar si el archivo existe en disco vía el manifest
+  // p.id es el mismo valor que fuentesFoto() usa para construir fotos/{p.id}.webp
+  const stemFoto = typeof p.foto === 'string' ? p.foto.replace(/\.[^.]+$/, '') : '';
+  return fotosSet.has(p.id) || (stemFoto !== '' && fotosSet.has(stemFoto));
+}
+
+/**
+ * Ordena la lista poniendo primero los productos CON foto.
+ * El orden relativo dentro de cada grupo se preserva (sort estable).
+ * Solo se usa en modo navegación (sin búsqueda activa).
+ */
+function sortWithPhotosFirst(lista) {
+  // Separar en dos grupos y concatenar: con foto → sin foto
+  const conFoto = lista.filter(tienefoto);
+  const sinFoto = lista.filter(p => !tienefoto(p));
+  return conFoto.concat(sinFoto);
+}
+
 export function getSearchResults() {
   return state.q ? searchAndSortProducts(state.q, DATA.productos) : DATA.productos;
 }
 
 export function filteredProducts() {
-  return getSearchResults().filter(p => {
+  const result = getSearchResults().filter(p => {
     if (state.cat && p.cat !== state.cat) return false;
     if (state.sub && p.sub !== state.sub) return false;
     return true;
   });
+
+  // Cuando el usuario está navegando (sin término de búsqueda), mostrar primero
+  // los productos con foto para mejorar la experiencia visual del catálogo.
+  // Con búsqueda activa se respeta el ranking de relevancia de searchService.
+  if (!state.q.trim()) {
+    return sortWithPhotosFirst(result);
+  }
+  return result;
 }
+
 
 export function conteoPorCategoria(lista) {
   const m = new Map();
@@ -86,11 +122,11 @@ export function renderSidebar(onCatSelect) {
 
 export function renderSubchips(onCatSelect, onSubSelect) {
   const wrap = $('#subchips'); wrap.innerHTML = '';
-  
+
   if (state.q) {
     const res = getSearchResults();
     const conteos = conteoPorCategoria(res);
-    if (conteos.size <= 1) return; 
+    if (conteos.size <= 1) return;
     const all = el('button', 'chip' + (state.cat ? '' : ' on'), `Todo el catálogo · ${res.length.toLocaleString('es-MX')}`);
     all.onclick = () => onCatSelect(null);
     wrap.appendChild(all);
@@ -106,11 +142,11 @@ export function renderSubchips(onCatSelect, onSubSelect) {
   const cat = DATA.categorias.find(c => c.nombre === state.cat);
   const subs = cat ? asArray(cat.subs) : [];
   if (subs.length <= 1) return;
-  
+
   const all = el('button', 'chip' + (state.sub ? '' : ' on'), 'Todas');
   all.onclick = () => onSubSelect(null);
   wrap.appendChild(all);
-  
+
   subs.forEach(su => {
     const c = el('button', 'chip' + (state.sub === su.nombre ? ' on' : ''), `${esc(su.nombre)} · ${su.n}`);
     c.onclick = () => onSubSelect(su.nombre);
@@ -124,25 +160,25 @@ export function renderGrid(onAdd, onView) {
   const grid = $('#grid');
   const limit = state.page * CONFIG.pageSize;
   grid.innerHTML = '';
-  
+
   if (!list.length) {
     grid.appendChild(el('div', 'empty', DATA.total ? 'Sin resultados en todo el catálogo. Prueba con otro término, el código o la medida.' : 'No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.'));
   }
-  
+
   list.slice(0, limit).forEach(p => {
     const c = el('div', 'card');
     c.appendChild(thumb(p, onView));
     const body = el('div', 'card-body');
     const name = el('div', 'card-name', esc(p.nom)); name.onclick = () => onView(p);
     body.appendChild(name);
-    
+
     const meta = el('div', 'card-meta');
     const cl = clasifLabel(p);
     meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
     if (p.med) meta.appendChild(el('span', 'tag med', esc(p.med)));
     body.appendChild(meta);
     body.appendChild(el('div', 'card-cod', 'Cód: ' + esc(p.cod)));
-    
+
     const foot = el('div', 'card-foot');
     const add = el('button', 'btn-add', 'Agregar'); add.onclick = () => onAdd(p);
     const view = el('button', 'btn-view', 'Ver'); view.onclick = () => onView(p);
@@ -153,7 +189,7 @@ export function renderGrid(onAdd, onView) {
   $('#count').textContent = `${list.length.toLocaleString('es-MX')} productos`;
   const q = state.q.trim();
   $('#crumbs').textContent = q ? (state.cat ? `«${q}» en ${state.cat}` : `«${q}» en todo el catálogo`) : (state.cat || 'Todas las categorías');
-  
+
   const more = $('#btnMore');
   if (list.length > limit) { more.hidden = false; more.textContent = `Cargar más (${(list.length - limit).toLocaleString('es-MX')} restantes)`; }
   else { more.hidden = true; }
@@ -164,7 +200,7 @@ export function refreshCartUI(onSub, onAdd, onDel) {
   $('#cartCount').textContent = items.reduce((a, b) => a + b.qty, 0);
   const box = $('#cartItems');
   if (!items.length) { box.innerHTML = '<div class="cart-empty">Tu pedido está vacío.<br>Agrega productos para cotizar.</div>'; return; }
-  
+
   box.innerHTML = '';
   items.forEach(it => {
     const row = el('div', 'ci');
@@ -182,12 +218,12 @@ export function refreshCartUI(onSub, onAdd, onDel) {
 // Utilidades visuales
 export const catsAbierto = () => document.body.classList.contains('cats-open');
 export const toggleAdminUI = () => { state.edit = !state.edit; $('#btnAdmin').classList.toggle('on', state.edit); $('#adminBanner').hidden = !state.edit; };
-export const pulseCart = () => $('#btnCart').animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:220});
+export const pulseCart = () => $('#btnCart').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 220 });
 export const openCart = () => { closeCats(); $('#cart').hidden = false; $('#overlay').hidden = false; };
-export const closeCart = () => { $('#cart').hidden = true; if(!catsAbierto()) $('#overlay').hidden = true; };
-export const openCats = () => { closeCart(); document.body.classList.add('cats-open'); $('#btnCats').setAttribute('aria-expanded','true'); $('#overlay').hidden = false; };
-export const closeCats = () => { if(!catsAbierto()) return; document.body.classList.remove('cats-open'); $('#btnCats').setAttribute('aria-expanded','false'); if ($('#cart').hidden) $('#overlay').hidden = true; };
+export const closeCart = () => { $('#cart').hidden = true; if (!catsAbierto()) $('#overlay').hidden = true; };
+export const openCats = () => { closeCart(); document.body.classList.add('cats-open'); $('#btnCats').setAttribute('aria-expanded', 'true'); $('#overlay').hidden = false; };
+export const closeCats = () => { if (!catsAbierto()) return; document.body.classList.remove('cats-open'); $('#btnCats').setAttribute('aria-expanded', 'false'); if ($('#cart').hidden) $('#overlay').hidden = true; };
 export const toggleCats = () => { catsAbierto() ? closeCats() : openCats(); };
-export const trasElegirCat = () => { closeCats(); window.scrollTo({ top:0, behavior:'smooth' }); };
+export const trasElegirCat = () => { closeCats(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 export const applyView = () => { $('#grid').className = 'grid ' + (state.view === 'list' ? 'view-list' : 'view-grid'); document.querySelectorAll('.vt').forEach(b => { const on = b.dataset.view === state.view; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); };
 export const setView = (v) => { state.view = (v === 'list') ? 'list' : 'grid'; saveLS(LS_VIEW, state.view); applyView(); };

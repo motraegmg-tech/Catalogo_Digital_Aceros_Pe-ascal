@@ -1,5 +1,5 @@
 import { fetchCatalogo, agruparCategorias } from '../core/catalogService.js';
-import { state, DATA, setCatalogData, CONFIG } from '../core/store.js';
+import { state, DATA, setCatalogData, CONFIG, cargarFotosManifest } from '../core/store.js';
 import { addToCartLogic, setQtyLogic, buildWhatsAppUrl } from '../core/cartService.js';
 import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, PIN_SVG } from './ui.js';
 
@@ -60,6 +60,19 @@ function updateSucInfo(){
   if (a){ a.href = mapsUrl(su); a.innerHTML = PIN_SVG + `<span>${esc(su.dir)}</span>`; }
 }
 
+// --- Carga del manifest de fotos disponibles ---
+async function cargarManifestFotos() {
+  try {
+    const r = await fetch('data/fotos-manifest.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const stems = await r.json();
+    cargarFotosManifest(stems);
+    console.log(`[fotos-manifest] ${stems.length} fotos disponibles cargadas.`);
+  } catch (e) {
+    console.warn('[fotos-manifest] No se pudo cargar. Orden visual desactivado.', e.message);
+  }
+}
+
 // --- Carga Local de Respaldo ---
 function cargarRespaldoLocal(){
   return new Promise(resolve => {
@@ -99,6 +112,7 @@ async function init() {
   
   if (datos.productos.length) {
     setCatalogData(datos);
+    await cargarManifestFotos();   // saber qué fotos existen antes de renderizar
     renderAllUI();
   }
 
