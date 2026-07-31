@@ -46,6 +46,10 @@ import json
 import logging
 import math
 import re
+
+# Alias: este script ya tiene su propia cargar_productos() que devuelve
+# objetos Producto, así que el cargador compartido entra con otro nombre.
+from catalogo_fuente import cargar_productos as cargar_catalogo
 import sys
 from dataclasses import dataclass, field
 from io import BytesIO
@@ -473,16 +477,15 @@ def imprimir_modificados(resultados: List[ResultadoEscala]) -> None:
 # ===========================================================================
 
 def cargar_productos() -> List[Producto]:
-    """Lee productos.json y devuelve todos los productos que tienen foto."""
-    with PRODUCTOS_JSON.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data.get("productos"), list):
-        raise ValueError("productos.json no tiene la estructura esperada.")
+    """
+    Devuelve todos los productos que tienen foto.
 
+    La fuente es Supabase (con respaldo al archivo local si no hay red): las
+    medidas se editan desde el clasificador y este script escala segun ellas,
+    asi que leer del archivo del repositorio podia escalar con medidas viejas.
+    """
     result: List[Producto] = []
-    for p in data["productos"]:
-        if not isinstance(p, dict):
-            continue
+    for p in cargar_catalogo():
         foto = (p.get("foto") or "").strip()
         cod  = (p.get("cod") or p.get("id") or "").strip()
         nom  = (p.get("nom") or p.get("nombre") or "").strip()

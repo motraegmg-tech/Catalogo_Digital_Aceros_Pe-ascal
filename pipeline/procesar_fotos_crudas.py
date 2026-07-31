@@ -35,6 +35,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from catalogo_fuente import cargar_productos, filtrar_por_etiqueta
+
 try:
     from PIL import Image, ImageStat
     from rembg import new_session, remove
@@ -117,18 +119,17 @@ def _primer_valor(d: dict, claves: tuple) -> str:
 
 def cargar_productos_sin_foto() -> List[dict]:
     """
-    Lee productos.json y devuelve SOLO los productos marcados 'sin-foto'. NUNCA lo modifica.
+    Devuelve SOLO los productos marcados 'sin-foto'. NUNCA escribe nada.
+
+    Lee de Supabase (fuente de verdad) y cae al archivo local solo si no hay
+    red — así se trabaja siempre sobre las marcas vigentes, no sobre el
+    respaldo del repositorio, que puede ir por detrás.
 
     Los archivos que ya completamos y quitamos de 'sin-foto' seguirán en fotos_crudas/
     como histórico — aparecerán como huérfanos en el reporte, lo cual es correcto
     y esperado. No deben procesarse de nuevo.
     """
-    with PRODUCTOS_JSON.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data.get("productos"), list):
-        raise ValueError("productos.json no tiene la estructura esperada.")
-    todos = [p for p in data["productos"] if isinstance(p, dict)]
-    return [p for p in todos if "sin-foto" in (p.get("etq") or [])]
+    return filtrar_por_etiqueta(cargar_productos(), "sin-foto")
 
 
 

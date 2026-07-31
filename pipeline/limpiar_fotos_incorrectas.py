@@ -33,6 +33,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from catalogo_fuente import cargar_productos, filtrar_por_etiqueta
+
 # ===========================================================================
 # MÓDULO 1: Configuración y constantes
 # ===========================================================================
@@ -81,14 +83,14 @@ class Resultado:
 
 def cargar_productos_sin_foto() -> List[dict]:
     """
-    Lee productos.json y devuelve solo los marcados 'sin-foto'. NUNCA lo modifica.
+    Devuelve solo los productos marcados 'sin-foto'. NUNCA escribe nada.
+
+    Lee de Supabase (fuente de verdad) y cae al archivo local solo si no hay
+    red. Antes leía productos.json directo, que es un respaldo y podía estar
+    viejo: se procesaban productos que ya no estaban marcados, o se pasaban por
+    alto los marcados desde el clasificador hace un momento.
     """
-    with PRODUCTOS_JSON.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data.get("productos"), list):
-        raise ValueError("productos.json no tiene la estructura esperada.")
-    todos = [p for p in data["productos"] if isinstance(p, dict)]
-    return [p for p in todos if "sin-foto" in (p.get("etq") or [])]
+    return filtrar_por_etiqueta(cargar_productos(), "sin-foto")
 
 
 # ===========================================================================
