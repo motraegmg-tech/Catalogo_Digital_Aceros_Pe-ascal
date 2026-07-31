@@ -1,175 +1,1464 @@
-[
- "ADORNO FORJADO",
- "ANGULO",
- "ANGULO LIGERO",
- "BISAGRA LIBRO",
- "BISAGRA LIBRO ALTA R",
- "BISAGRA TUBULAR",
- "BOLSA CINCHO PLASTICO NGO SURTEK",
- "BOLSA CINCHO PLASTICO SURTEK",
- "BOMBO ALUMINIO",
- "BROCHA",
- "BROCHA MANGO PLASTICO FOY",
- "BROCHA MANGO PLASTICO SURTEK",
- "BROCHA S",
- "Brocas",
- "Brocas Irwin",
- "Brocas Urrea",
- "CANAL U",
- "CANASTA O PIÑ GRIEGA P",
- "CARAMELO",
- "CARDA COPA ONDULADA",
- "CARDA COPA TRENZADA",
- "CHAPETON LAMINA",
- "CHAPETON LATON MOLD",
- "CLAVOS CLAV NEU SURTEK",
- "CODO SOLDABLE",
- "CODO SOLDABLE GRADOS",
- "CORTACIRCULOS BIMETAL URREA",
- "CORTAPERNOS SURTEK",
- "CUADRADO",
- "CUADRADO MACIZO",
- "CUADRADO TUBULAR",
- "Candados Dexter",
- "Chapas y cerraduras Dexter",
- "Chapas y cerraduras Phillips",
- "DADO IMPACTO PT SURTEK",
- "DUELA Z CHAPETON",
- "DUELA Z FLOR",
- "DUELA Z FLOR CHAPETON",
- "DUELA Z FLOR CUAD",
- "DUELA Z LISA",
- "DUELA Z LISA CHAPETON",
- "DUELA Z LISA LAMITEC",
- "DUELA Z REC CHAPETON",
- "DUELA ZINTRO",
- "DUELA ZINTRO CB CUAD RECT",
- "DUELA ZINTRO CB LAMITEC",
- "DUELA ZINTRO RED COMBINADA",
- "DUELA ZINTRO SQ",
- "DUELA ZINTRO SQ LAMITEC",
- "Discos",
- "ESCUADRA METALICA",
- "ESFERA MACIZA",
- "ESFERA PERF",
- "ESQUINERO GALVANIZADO",
- "FIGURA CUAD MART C",
- "FIGURA CUADRADO B",
- "FIGURA CUADRADO C",
- "FLEXOMETRO CADENA MOD",
- "GALVATUBING LAM GALV Z ALUM REC",
- "GALVATUBING RECTANGULAR C",
- "GRAPA COSTILLA",
- "HSS EN",
- "JALADERA PUERTA TIPO H DEXTER",
- "JALADERA TRENZADA COLOR",
- "JGO RIEL CAJON TELESC",
- "KG LAM GALV ROLL",
- "LANZA LISA",
- "LENTE PROTECTOR POLI AMBAR CAB A",
- "LIMA MUSA REDONDA SURTEK",
- "LIMA PLANA BASTARDA",
- "LIMA ROTATIVA",
- "Láminas metálicas",
- "Láminas plásticas",
- "MALLA CICLON ALT MTS",
- "MARRO C MANGO LB FOY",
- "MARTILLO BOLA OZ FOY",
- "MEDIA ESFERA",
- "MENSULA ACERO NEGRA SURTEK",
- "METAL DESPLEGADO",
- "MINI ESMERILADORA DEWALT",
- "MINI ESMERILADORA MAKITA",
- "MONTEN PINTADO",
- "MT CADENA GALV SURTEK",
- "MT LAM GALV LISA",
- "MT LAMINA NEGRA LISA",
- "NIVEL ALUM",
- "NUMERO LATON B",
- "PANTALLA",
- "PASADOR DEXTER BARRA PLANA",
- "PASADOR DEXTER CADENA",
- "PASADOR DEXTER MAUSER LATON",
- "PASADOR DEXTER MAUSER NS",
- "PASADOR LATON",
- "PASADOR MAUSER",
- "PASADOR P",
- "PASADOR PISO COLONIAL",
- "PASADOR R",
- "PASADOR REFORZADO",
- "PASADOR SENCILLO",
- "PERRO HIERRO MALEABLE SURTEK",
- "PISTOLA BAJA PRESION SURTEK",
- "PISTOLA GRAV PLAST SURTEK",
- "PLACA",
- "PLACA FIJACION",
- "PLANTA SOLD SWEISS A V",
- "PORTAELECTRODO AMP INFRA",
- "PORTAELECTRODO AMP RED FORCE",
- "POSICIONADOR MAGNETICO",
- "PRENSA TIPO C",
- "PTR",
- "PTR C",
- "PTR GALVANIZADO C",
- "Puntas",
- "RECTANGULAR",
- "RECTANGULAR C",
- "REDONDO",
- "REG BARRIL HULE",
- "REG COSTILLA HULE",
- "REG CUADRADO HULE",
- "REG HONGO PLASTICO",
- "RESORTE CORTINA",
- "RONDANA PLANA GALV",
- "RONDANA PRESION GALV",
- "ROSETON",
- "RUEDA DIABLO BAL D",
- "RUEDA FLAP GRANO",
- "RUEDA GIRATORIA PLANA ROJA HITOOLS",
- "RUEDA PISO EN U CAP MASTER RAIL",
- "RUEDA PISO EN V CAP MASTER RAIL",
- "Remaches",
- "Remaches POP",
- "SEGUETA LENOX",
- "SIERRA CORTA CIRCULOS",
- "SIERRA CORTA CIRCULOS SURTEK",
- "SIERRA CORTACIRCULOS BIMETAL",
- "SOLERA",
- "SOLERA DECOR",
- "SUPER PICO N",
- "Soldadura (consumibles)",
- "TABLERO CAS LIENZO",
- "TABLERO EN V",
- "TABLERO ZINTRO X CAJA GDE C",
- "TABLERO ZINTRO X CB",
- "TABLERO ZINTRO X REC",
- "TABLERO ZINTRO X SQ",
- "TAPON BOLA",
- "TAPON PLASTICO PTR",
- "TAPON PLASTICO TUBO",
- "TAPON SIN BOLA",
- "TAQUETE ANCLA",
- "TAQUETE EXPANSIVO Z",
- "TEE SOLDABLE TUBO",
- "TEJUELO PULIDO",
- "TENAZA TIERRA AMP SURTEK",
- "TENSOR ACERO SURTEK",
- "TIJERA HOJALATERO",
- "TIRA CORT EUROPEA",
- "TIRA CORT PLANA",
- "TROL SURTEK",
- "TUBO COMBINADO",
- "TUBO INDUSTRIAL C",
- "TUBO MODUL EXT CUA C",
- "TUBO MODULADO O COLO",
- "TUBO NEGRO",
- "TUBO NEGRO C",
- "TUBO TRENZADO",
- "TUERCA HEXAGONAL GALV",
- "Tornillería",
- "VARILLA ROSCADA",
- "VIDRIO CARETA S",
- "VIGA IPR",
- "ZOCLO CEJA",
- "ZOCLO DOBLE CEJA"
-]
+{
+ "decidido": "2026-07-31",
+ "por": "Gonzalo",
+ "reglas": {
+  "ubicacion": "categoria principal (donde tiene mas productos)",
+  "minimo": 3
+ },
+ "aprobadas": [
+  {
+   "nombre": "Discos",
+   "cat": "Abrasivos",
+   "n": 115,
+   "subgrupos": [
+    "Corte",
+    "Desbaste",
+    "Diamante",
+    "Laminado (flap)",
+    "Otros",
+    "Lija",
+    "Sierra"
+   ]
+  },
+  {
+   "nombre": "Soldadura (consumibles)",
+   "cat": "Abrasivos",
+   "n": 29,
+   "subgrupos": [
+    "Otros",
+    "7018",
+    "6013",
+    "MIG / microalambre",
+    "Inoxidable",
+    "6010"
+   ]
+  },
+  {
+   "nombre": "CARDA COPA TRENZADA",
+   "cat": "Abrasivos",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "LIMA ROTATIVA",
+   "cat": "Abrasivos",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RUEDA FLAP GRANO",
+   "cat": "Abrasivos",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Puntas montadas para desbaste",
+   "cat": "Abrasivos",
+   "n": 5,
+   "subgrupos": [
+    "Para desbaste"
+   ]
+  },
+  {
+   "nombre": "CARDA COPA ONDULADA",
+   "cat": "Abrasivos",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PORTAELECTRODO AMP INFRA",
+   "cat": "Abrasivos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PORTAELECTRODO AMP RED FORCE",
+   "cat": "Abrasivos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Chapas y cerraduras Dexter",
+   "cat": "Ferreteria",
+   "n": 121,
+   "subgrupos": [
+    "Otras",
+    "De perilla",
+    "Con mano der./izq.",
+    "De manija",
+    "Cerrojo de cilindro",
+    "De gancho",
+    "De cañón",
+    "De barra",
+    "Para mueble",
+    "Fija",
+    "Para baño"
+   ]
+  },
+  {
+   "nombre": "Tornillería",
+   "cat": "Ferreteria",
+   "n": 80,
+   "subgrupos": [
+    "Pija",
+    "Hexagonal",
+    "Birlo",
+    "De coche",
+    "Otros",
+    "Galvanizado"
+   ]
+  },
+  {
+   "nombre": "Brocas",
+   "cat": "Ferreteria",
+   "n": 63,
+   "subgrupos": [
+    "Para concreto",
+    "Para metal",
+    "Escalonada",
+    "Cobalto"
+   ]
+  },
+  {
+   "nombre": "Candados Dexter",
+   "cat": "Ferreteria",
+   "n": 44,
+   "subgrupos": [
+    "Otros",
+    "De combinación",
+    "De latón",
+    "Laminado",
+    "Antipalanca",
+    "De acero"
+   ]
+  },
+  {
+   "nombre": "Brocas Irwin",
+   "cat": "Ferreteria",
+   "n": 40,
+   "subgrupos": [
+    "Para metal",
+    "Cobalto",
+    "Para concreto"
+   ]
+  },
+  {
+   "nombre": "Remaches POP",
+   "cat": "Ferreteria",
+   "n": 32,
+   "subgrupos": [
+    "Estándar",
+    "Cabeza ancha (LF)"
+   ]
+  },
+  {
+   "nombre": "Brocas Urrea",
+   "cat": "Ferreteria",
+   "n": 18,
+   "subgrupos": [
+    "Para concreto",
+    "Cobalto",
+    "Para metal"
+   ]
+  },
+  {
+   "nombre": "CORTACIRCULOS BIMETAL URREA",
+   "cat": "Ferreteria",
+   "n": 13,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Chapas y cerraduras Phillips",
+   "cat": "Ferreteria",
+   "n": 11,
+   "subgrupos": [
+    "Con mano der./izq.",
+    "Otras",
+    "Para mueble",
+    "Cerrojo de cilindro"
+   ]
+  },
+  {
+   "nombre": "NUMERO LATON B",
+   "cat": "Ferreteria",
+   "n": 10,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAPON PLASTICO PTR",
+   "cat": "Ferreteria",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RONDANA PLANA GALV",
+   "cat": "Ferreteria",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUERCA HEXAGONAL GALV",
+   "cat": "Ferreteria",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "VARILLA ROSCADA",
+   "cat": "Ferreteria",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Remaches",
+   "cat": "Ferreteria",
+   "n": 7,
+   "subgrupos": [
+    "De golpe",
+    "Otros"
+   ]
+  },
+  {
+   "nombre": "RONDANA PRESION GALV",
+   "cat": "Ferreteria",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ZOCLO CEJA",
+   "cat": "Ferreteria",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ESCUADRA METALICA",
+   "cat": "Ferreteria",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "JGO RIEL CAJON TELESC",
+   "cat": "Ferreteria",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TIJERA HOJALATERO",
+   "cat": "Ferreteria",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAPON PLASTICO TUBO",
+   "cat": "Ferreteria",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAQUETE EXPANSIVO Z",
+   "cat": "Ferreteria",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ESQUINERO GALVANIZADO",
+   "cat": "Ferreteria",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "JALADERA TRENZADA COLOR",
+   "cat": "Ferreteria",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PRENSA TIPO C",
+   "cat": "Ferreteria",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BISAGRA LIBRO",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BISAGRA LIBRO ALTA R",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PLACA FIJACION",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR DEXTER BARRA PLANA",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR DEXTER MAUSER LATON",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR DEXTER MAUSER NS",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAQUETE ANCLA",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SEGUETA LENOX",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR R",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DADO IMPACTO PT SURTEK",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "LIMA MUSA REDONDA SURTEK",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MENSULA ACERO NEGRA SURTEK",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PISTOLA BAJA PRESION SURTEK",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PISTOLA GRAV PLAST SURTEK",
+   "cat": "Ferreteria",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "JALADERA PUERTA TIPO H DEXTER",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR DEXTER CADENA",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RUEDA GIRATORIA PLANA ROJA HITOOLS",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RUEDA DIABLO BAL D",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "FLEXOMETRO CADENA MOD",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR REFORZADO",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR SENCILLO",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR P",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RUEDA PISO EN U CAP MASTER RAIL",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RUEDA PISO EN V CAP MASTER RAIL",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR LATON",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR MAUSER",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ZOCLO DOBLE CEJA",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "LIMA PLANA BASTARDA",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MARRO C MANGO LB FOY",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MARTILLO BOLA OZ FOY",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "NIVEL ALUM",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TENAZA TIERRA AMP SURTEK",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TIRA CORT PLANA",
+   "cat": "Ferreteria",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Puntas ornamentales",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 48,
+   "subgrupos": [
+    "Sin perfil definido",
+    "Ornamental para cuadrado",
+    "Ornamental para redondo",
+    "De lanza"
+   ]
+  },
+  {
+   "nombre": "MEDIA ESFERA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 10,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "FIGURA CUADRADO C",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 10,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ADORNO FORJADO",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 9,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CHAPETON LAMINA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 9,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ESFERA PERF",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAPON BOLA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TAPON SIN BOLA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TEJUELO PULIDO",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ESFERA MACIZA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "FIGURA CUAD MART C",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ROSETON",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "GRAPA COSTILLA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CANASTA O PIÑ GRIEGA P",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "FIGURA CUADRADO B",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "LANZA LISA",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PASADOR PISO COLONIAL",
+   "cat": "Fierro Vaciado y Decorativo",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SIERRA CORTACIRCULOS BIMETAL",
+   "cat": "Herramienta electrica",
+   "n": 11,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SIERRA CORTA CIRCULOS",
+   "cat": "Herramienta electrica",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SIERRA CORTA CIRCULOS SURTEK",
+   "cat": "Herramienta electrica",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MINI ESMERILADORA DEWALT",
+   "cat": "Herramienta electrica",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MINI ESMERILADORA MAKITA",
+   "cat": "Herramienta electrica",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PLANTA SOLD SWEISS A V",
+   "cat": "Herramienta electrica",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "POSICIONADOR MAGNETICO",
+   "cat": "Herramienta manual",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BOLSA CINCHO PLASTICO NGO SURTEK",
+   "cat": "Herramienta manual",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BOLSA CINCHO PLASTICO SURTEK",
+   "cat": "Herramienta manual",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CORTAPERNOS SURTEK",
+   "cat": "Herramienta manual",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PERRO HIERRO MALEABLE SURTEK",
+   "cat": "Herramienta manual",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TENSOR ACERO SURTEK",
+   "cat": "Herramienta manual",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TROL SURTEK",
+   "cat": "Herramienta manual",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "Láminas metálicas",
+   "cat": "Lamina y cubiertas",
+   "n": 44,
+   "subgrupos": [
+    "Otras",
+    "Galvateja",
+    "Para techar",
+    "Negra",
+    "Perforada"
+   ]
+  },
+  {
+   "nombre": "Láminas plásticas",
+   "cat": "Lamina y cubiertas",
+   "n": 37,
+   "subgrupos": [
+    "Acrílico",
+    "Policarbonato",
+    "Polipropileno",
+    "PVC"
+   ]
+  },
+  {
+   "nombre": "METAL DESPLEGADO",
+   "cat": "Lamina y cubiertas",
+   "n": 15,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MT LAMINA NEGRA LISA",
+   "cat": "Lamina y cubiertas",
+   "n": 11,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MT LAM GALV LISA",
+   "cat": "Lamina y cubiertas",
+   "n": 9,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z LISA",
+   "cat": "Lamina y cubiertas",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "KG LAM GALV ROLL",
+   "cat": "Lamina y cubiertas",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO RED COMBINADA",
+   "cat": "Lamina y cubiertas",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO CB CUAD RECT",
+   "cat": "Lamina y cubiertas",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO SQ",
+   "cat": "Lamina y cubiertas",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO ZINTRO X CAJA GDE C",
+   "cat": "Lamina y cubiertas",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "GALVATUBING LAM GALV Z ALUM REC",
+   "cat": "Lamina y cubiertas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z LISA CHAPETON",
+   "cat": "Lamina y cubiertas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO ZINTRO X CB",
+   "cat": "Lamina y cubiertas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO ZINTRO X REC",
+   "cat": "Lamina y cubiertas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO ZINTRO X SQ",
+   "cat": "Lamina y cubiertas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SUPER PICO N",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 11,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 9,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SOLERA DECOR",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z LISA LAMITEC",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO EN V",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO SQ LAMITEC",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z REC CHAPETON",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z CHAPETON",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z FLOR CUAD",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA ZINTRO CB LAMITEC",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RESORTE CORTINA",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CLAVOS CLAV NEU SURTEK",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TABLERO CAS LIENZO",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MALLA CICLON ALT MTS",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z FLOR",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "DUELA Z FLOR CHAPETON",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BOMBO ALUMINIO",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TIRA CORT EUROPEA",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MT CADENA GALV SURTEK",
+   "cat": "Metal desplegado, protecciones y cercas",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "SOLERA",
+   "cat": "Perfiles Macizos",
+   "n": 32,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ANGULO",
+   "cat": "Perfiles Macizos",
+   "n": 14,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "VIGA IPR",
+   "cat": "Perfiles Macizos",
+   "n": 13,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "REDONDO",
+   "cat": "Perfiles Macizos",
+   "n": 11,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PLACA",
+   "cat": "Perfiles Macizos",
+   "n": 7,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CANAL U",
+   "cat": "Perfiles Macizos",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CUADRADO",
+   "cat": "Perfiles Macizos",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "REG CUADRADO HULE",
+   "cat": "Perfiles Macizos",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "HSS EN",
+   "cat": "Perfiles Macizos",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CUADRADO MACIZO",
+   "cat": "Perfiles Macizos",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "MONTEN PINTADO",
+   "cat": "Perfiles Macizos",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "ANGULO LIGERO",
+   "cat": "Perfiles Macizos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CARAMELO",
+   "cat": "Perfiles Macizos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PTR C",
+   "cat": "Perfiles Tubulares",
+   "n": 25,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RECTANGULAR",
+   "cat": "Perfiles Tubulares",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BISAGRA TUBULAR",
+   "cat": "Perfiles Tubulares",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PTR GALVANIZADO C",
+   "cat": "Perfiles Tubulares",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CUADRADO TUBULAR",
+   "cat": "Perfiles Tubulares",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "GALVATUBING RECTANGULAR C",
+   "cat": "Perfiles Tubulares",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PTR",
+   "cat": "Perfiles Tubulares",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "RECTANGULAR C",
+   "cat": "Perfiles Tubulares",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BROCHA MANGO PLASTICO FOY",
+   "cat": "Pintura y quimicos",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BROCHA MANGO PLASTICO SURTEK",
+   "cat": "Pintura y quimicos",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BROCHA",
+   "cat": "Pintura y quimicos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "BROCHA S",
+   "cat": "Pintura y quimicos",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "PANTALLA",
+   "cat": "Seguridad (EPP)",
+   "n": 15,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CHAPETON LATON MOLD",
+   "cat": "Seguridad (EPP)",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "LENTE PROTECTOR POLI AMBAR CAB A",
+   "cat": "Seguridad (EPP)",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "VIDRIO CARETA S",
+   "cat": "Seguridad (EPP)",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO NEGRO",
+   "cat": "Tuberia y conexiones",
+   "n": 15,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO INDUSTRIAL C",
+   "cat": "Tuberia y conexiones",
+   "n": 10,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CODO SOLDABLE",
+   "cat": "Tuberia y conexiones",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "REG BARRIL HULE",
+   "cat": "Tuberia y conexiones",
+   "n": 8,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO TRENZADO",
+   "cat": "Tuberia y conexiones",
+   "n": 6,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TEE SOLDABLE TUBO",
+   "cat": "Tuberia y conexiones",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO MODULADO O COLO",
+   "cat": "Tuberia y conexiones",
+   "n": 5,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO NEGRO C",
+   "cat": "Tuberia y conexiones",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO COMBINADO",
+   "cat": "Tuberia y conexiones",
+   "n": 4,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "CODO SOLDABLE GRADOS",
+   "cat": "Tuberia y conexiones",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "REG HONGO PLASTICO",
+   "cat": "Tuberia y conexiones",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "REG COSTILLA HULE",
+   "cat": "Tuberia y conexiones",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  },
+  {
+   "nombre": "TUBO MODUL EXT CUA C",
+   "cat": "Tuberia y conexiones",
+   "n": 3,
+   "subgrupos": [
+    "—"
+   ]
+  }
+ ],
+ "descartadas": [
+  "HOJA LIJA GRANO",
+  "Chapas y cerraduras",
+  "Candados",
+  "JGO SUJETADOR HULE",
+  "MACHUELO NC SURTEK",
+  "MACHUELO NS SURTEK",
+  "MENSULA ACERO X BLANCO SURTEK"
+ ]
+}

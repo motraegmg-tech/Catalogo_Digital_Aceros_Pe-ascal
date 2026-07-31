@@ -108,10 +108,14 @@ const REGLAS = [
     sub: (n) => primero(n, TIPO_CANDADO, 'Otros') },
   { id: 'chapa', ficha: 'Chapas y cerraduras', marca: true,
     match: /\b(CHAPA|CERRADURA|CERROJO)\b/, sub: (n) => primero(n, FUNC_CHAPA, 'Otras') },
-  { id: 'punta', ficha: 'Puntas', match: /^PUNTA\b/,
-    sub: (n) => primero(n, [[/MONTADA|DESBASTE|ABRASIV/, 'Montada para desbaste'],
-      [/DESARMADOR|PHILL|PLANA|TORX|\bHEX\b|\bPH\d/, 'De desarmador'],
-      [/LANZA/, 'Ornamental de lanza'], ...PUNTA_ORNAMENTAL], 'Ornamental') },
+  /* Las puntas montadas son abrasivos y las ornamentales son herrería: mismo
+     nombre, productos y compradores distintos. Van en fichas separadas. */
+  { id: 'punta-abrasiva', ficha: 'Puntas montadas para desbaste', match: /^PUNTA\b/,
+    filtro: (n) => /MONTADA|DESBASTE|ABRASIV/.test(n), sub: () => 'Para desbaste' },
+  { id: 'punta-desarm', ficha: 'Puntas de desarmador', match: /^PUNTA\b/,
+    filtro: (n) => /DESARMADOR|PHILL|TORX|\bHEX\b|\bPH\d/.test(n), sub: () => 'De desarmador' },
+  { id: 'punta-orn', ficha: 'Puntas ornamentales', match: /^PUNTA\b/,
+    sub: (n) => primero(n, [[/LANZA/, 'De lanza'], ...PUNTA_ORNAMENTAL], 'Sin perfil definido') },
   { id: 'lamina-plast', ficha: 'Láminas plásticas',
     match: /^LAMINA|^LÁMINA/, filtro: (n) => TIPO_LAMINA_PLAST.some(([re]) => re.test(n)),
     sub: (n) => primero(n, TIPO_LAMINA_PLAST, 'Otras') },
@@ -223,8 +227,16 @@ async function main() {
       ? (cats.length === 1 && !alertas.length ? 'alta' : alertas.length <= 1 ? 'media' : 'baja')
       : (!alertas.length && conMedida === f.items.length ? 'alta' : alertas.length <= 1 ? 'media' : 'baja');
 
+    /* Categoría principal = donde tiene más productos. Decisión de Gonzalo
+       (2026-07-31): una ficha que abarca dos categorías se muestra completa
+       solo ahí, no repetida ni partida. */
+    const cuentaCat = {};
+    for (const x of f.items) cuentaCat[x.p.cat] = (cuentaCat[x.p.cat] || 0) + 1;
+    const principal = Object.entries(cuentaCat).sort((a, b) => b[1] - a[1])[0][0];
+
     familias.push({
-      cat: cats.sort()[0], cats, sub: [...new Set(f.items.map(x => x.p.sub))].slice(0, 3).join(' / '),
+      cat: principal, cats, cuentaCat,
+      sub: [...new Set(f.items.map(x => x.p.sub))].slice(0, 3).join(' / '),
       nombre: f.titulo, origen: f.origen, n: f.items.length, conMedida,
       distintas: new Set(f.items.map(x => x.p.med).filter(Boolean)).size,
       marcas, alertas, confianza,

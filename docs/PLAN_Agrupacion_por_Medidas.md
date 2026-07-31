@@ -131,6 +131,18 @@ por Perfiles Macizos, y ver cómo queda antes de seguir.
 3. **Carrito multi-medida** — agregar varias medidas de una vez.
 4. **Extender al resto de categorías**, viendo resultados entre fase y fase.
 
+## Decidido — listo para programar (2026-07-31)
+
+Gonzalo revisó las 181 propuestas: **174 aprobadas**, que cubren **1,583 productos**.
+Navegando por categoría, el catálogo pasa de 3,150 a **1,741 fichas**. Las decisiones
+quedaron en `datos/familias_aprobadas.json`.
+
+| Decisión | Qué se hace |
+|---|---|
+| Ficha que abarca dos categorías | Se muestra completa **solo en su categoría principal** (donde tiene más productos). Los cruces son marginales — Brocas es 61 en Ferretería contra 2 en Herramienta eléctrica — así que casi no esconde nada. |
+| Puntas | **Separadas**: "Puntas ornamentales" (48, Fierro Vaciado) y "Puntas montadas para desbaste" (5, Abrasivos). Mismo nombre, productos y compradores distintos. |
+| Las 7 sin marcar | **Descartadas.** Sus 83 productos se siguen mostrando sueltos. Entre ellas iban "Chapas y cerraduras" y "Candados" sin marca, que eran los sobrantes sin marca reconocida. |
+
 ## Lo que necesito que decidas
 
 1. **Nivel de agrupación.** Dijiste "que aparezcan las subclasificaciones de Perfiles
