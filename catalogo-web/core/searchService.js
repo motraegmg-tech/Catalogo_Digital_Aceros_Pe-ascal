@@ -3,6 +3,15 @@ export function normalize(s) {
   return (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+/**
+ * \u00danico criterio de orden alfab\u00e9tico del cat\u00e1logo (A\u2192Z). Lo usan la grilla, las
+ * fichas de familia y sus tablas de medidas, para que todo se lea igual.
+ * `numeric` evita que \u00abSOLERA 10\u00bb caiga antes de \u00abSOLERA 2\u00bb; `sensitivity:'base'`
+ * ignora acentos y may\u00fasculas, que en el cat\u00e1logo se escriben de las dos formas.
+ */
+export const alfa = (a, b) =>
+  (a || '').localeCompare(b || '', 'es', { numeric: true, sensitivity: 'base' });
+
 export function buildHaystack(p) {
   if (p._hay == null) {
     p._hay = `${normalize(p.nom)} ${normalize(p.cod)} ${normalize(p.sub)} ${normalize(p.med)} ${normalize(p.cat)}`;
@@ -35,7 +44,8 @@ export function searchAndSortProducts(query, products) {
     const startsB = nomB.startsWith(q) ? 1 : 0;
     if (startsA !== startsB) return startsB - startsA;
 
-    // Prioridad 3: Orden alfabético por defecto para el resto
-    return nomA.localeCompare(nomB);
+    // Prioridad 3: Orden alfabético ascendente (A→Z) para el resto, con el mismo
+    // criterio que la navegación: «SOLERA 2» antes que «SOLERA 10».
+    return nomA.localeCompare(nomB, 'es', { numeric: true, sensitivity: 'base' });
   });
 }

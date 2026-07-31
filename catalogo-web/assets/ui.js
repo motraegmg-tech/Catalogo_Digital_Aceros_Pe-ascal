@@ -1,6 +1,7 @@
 import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet } from '../core/store.js';
-import { getCartItems } from '../core/cartService.js';
-import { searchAndSortProducts } from '../core/searchService.js';
+import { getCartItems, cantidadEnCarrito } from '../core/cartService.js';
+import { searchAndSortProducts, normalize, alfa } from '../core/searchService.js';
+import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida } from '../core/familiaService.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -59,15 +60,19 @@ function tienefoto(p) {
   return fotosSet.has(p.id) || (stemFoto !== '' && fotosSet.has(stemFoto));
 }
 
+/** Orden alfabético A→Z aplicado al nombre de un producto (ver `alfa`). */
+export const alfaNombre = (a, b) => alfa(a.nom, b.nom);
+
 /**
  * Ordena la lista poniendo primero los productos CON foto.
- * El orden relativo dentro de cada grupo se preserva (sort estable).
+ * Decisión de Gonzalo (2026-07-31): dentro de cada grupo el orden es alfabético
+ * ascendente por nombre, en todas las categorías y subcategorías.
  * Solo se usa en modo navegación (sin búsqueda activa).
  */
 function sortWithPhotosFirst(lista) {
-  // Separar en dos grupos y concatenar: con foto → sin foto
-  const conFoto = lista.filter(tienefoto);
-  const sinFoto = lista.filter(p => !tienefoto(p));
+  // Separar en dos grupos, ordenar cada uno A→Z y concatenar: con foto → sin foto
+  const conFoto = lista.filter(tienefoto).sort(alfaNombre);
+  const sinFoto = lista.filter(p => !tienefoto(p)).sort(alfaNombre);
   return conFoto.concat(sinFoto);
 }
 
@@ -91,6 +96,59 @@ export function filteredProducts() {
   return result;
 }
 
+
+/* ===== Agrupación en fichas de familia =====
+   Decisión de Gonzalo (2026-07-31): la agrupación NO sustituye la vista actual,
+   convive con ella. Solo entra al bajar a una categoría, que es donde estorba el
+   ruido de veinte soleras seguidas. En "Todas las categorías" y en la búsqueda
+   el catálogo sigue mostrando producto por producto. */
+
+// Con una sola medida no hay nada que elegir: ese producto va como ficha suelta.
+const MIN_EN_FICHA = 2;
+
+export const agrupando = () => !!state.cat && !state.q.trim() && hayFamilias();
+
+/**
+ * Lo que se pinta en la grilla: fichas de familia y productos sueltos mezclados.
+ * Devuelve siempre entradas {tipo:'familia'|'producto'}, agrupe o no, para que
+ * renderGrid tenga una sola forma de recorrer.
+ *
+ * Una familia se muestra completa SOLO en su categoría principal (donde tiene
+ * más productos). En las otras categorías sus productos aparecen sueltos: así la
+ * ficha nunca sale duplicada ni partida, y aun así no se esconde nada.
+ */
+export function filteredEntries() {
+  const lista = filteredProducts();
+  if (!agrupando()) return lista.map(p => ({ tipo: 'producto', p }));
+
+  const fichas = new Map();
+  const descartadas = new Set();
+
+  for (const p of lista) {
+    const f = familiaDe(p);
+    if (!f || f.cat !== state.cat || fichas.has(f.id) || descartadas.has(f.id)) continue;
+    // El chip de subcategoría se aplica dentro de la ficha: si el usuario pidió
+    // "Soleras", la ficha muestra soleras y su conteo dice la verdad.
+    const dentro = productosDeFamilia(f.id).filter(x => !state.sub || x.sub === state.sub);
+    if (dentro.length < MIN_EN_FICHA) { descartadas.add(f.id); continue; }
+    fichas.set(f.id, { tipo: 'familia', fam: f, productos: ordenarPorMedida(dentro) });
+  }
+
+  const sueltos = lista
+    .filter(p => { const f = familiaDe(p); return !f || !fichas.has(f.id); })
+    .map(p => ({ tipo: 'producto', p }));
+
+  // Las fichas primero: son el resumen de la categoría. Entre ellas van en orden
+  // alfabético por nombre de familia, igual que los productos sueltos de abajo,
+  // para que toda la categoría se lea A→Z sin importar el tipo de tarjeta.
+  const ordenadas = [...fichas.values()].sort((a, b) => alfa(a.fam.nombre, b.fam.nombre));
+  return ordenadas.concat(sueltos);
+}
+
+/** Portada de la ficha: la primera medida que sí tiene foto; si ninguna, la de en medio. */
+function portadaDe(productos) {
+  return productos.find(tienefoto) || productos[Math.floor(productos.length / 2)];
+}
 
 export function conteoPorCategoria(lista) {
   const m = new Map();
@@ -155,8 +213,60 @@ export function renderSubchips(onCatSelect, onSubSelect) {
 }
 
 // Renderizado del Grid
-export function renderGrid(onAdd, onView) {
-  const list = filteredProducts();
+function cardProducto(p, onAdd, onView) {
+  const c = el('div', 'card');
+  c.appendChild(thumb(p, onView));
+  const body = el('div', 'card-body');
+  const name = el('div', 'card-name', esc(p.nom)); name.onclick = () => onView(p);
+  body.appendChild(name);
+
+  const meta = el('div', 'card-meta');
+  const cl = clasifLabel(p);
+  meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
+  // La medida es el dato que más se consulta al cotizar: va en su propio
+  // recuadro, rotulado y a tamaño legible, no como una etiqueta más.
+  if (p.med) meta.appendChild(el('span', 'med-box', '<i>Medida</i><b>' + esc(p.med) + '</b>'));
+  body.appendChild(meta);
+  body.appendChild(el('div', 'card-cod', 'Cód: ' + esc(p.cod)));
+
+  const foot = el('div', 'card-foot');
+  const add = el('button', 'btn-add', 'Agregar'); add.onclick = () => onAdd(p);
+  const view = el('button', 'btn-view', 'Ver'); view.onclick = () => onView(p);
+  foot.append(add, view); body.appendChild(foot); c.appendChild(body);
+  return c;
+}
+
+function cardFamilia(entry, onViewFam) {
+  const { fam, productos } = entry;
+  const abrir = () => onViewFam(entry);
+  const c = el('div', 'card card-fam');
+  c.appendChild(thumb(portadaDe(productos), abrir));
+  c.appendChild(el('span', 'fam-badge', `${productos.length} productos`));
+
+  const body = el('div', 'card-body');
+  const name = el('div', 'card-name', esc(fam.nombre)); name.onclick = abrir;
+  body.appendChild(name);
+
+  const meta = el('div', 'card-meta');
+  meta.appendChild(el('span', 'tag sub', esc(fam.cat)));
+  const medidas = new Set(productos.map(p => (p.med || '').trim()).filter(Boolean)).size;
+  if (medidas > 1) meta.appendChild(el('span', 'med-box', `<i>Medidas</i><b>${medidas} para elegir</b>`));
+  body.appendChild(meta);
+
+  // Los subgrupos son la promesa de la ficha: qué vas a encontrar al abrirla.
+  const grupos = [...new Set(productos.map(p => subgrupoDe(p.cod)))].filter(g => g && g !== '—');
+  body.appendChild(el('div', 'card-cod', grupos.length > 1
+    ? esc(grupos.slice(0, 3).join(' · ')) + (grupos.length > 3 ? ` +${grupos.length - 3}` : '')
+    : `${productos.length} códigos`));
+
+  const foot = el('div', 'card-foot');
+  const btn = el('button', 'btn-add', 'Elegir medidas'); btn.onclick = abrir;
+  foot.appendChild(btn); body.appendChild(foot); c.appendChild(body);
+  return c;
+}
+
+export function renderGrid(onAdd, onView, onViewFam) {
+  const list = filteredEntries();
   const grid = $('#grid');
   const limit = state.page * CONFIG.pageSize;
   grid.innerHTML = '';
@@ -165,36 +275,173 @@ export function renderGrid(onAdd, onView) {
     grid.appendChild(el('div', 'empty', DATA.total ? 'Sin resultados en todo el catálogo. Prueba con otro término, el código o la medida.' : 'No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.'));
   }
 
-  list.slice(0, limit).forEach(p => {
-    const c = el('div', 'card');
-    c.appendChild(thumb(p, onView));
-    const body = el('div', 'card-body');
-    const name = el('div', 'card-name', esc(p.nom)); name.onclick = () => onView(p);
-    body.appendChild(name);
-
-    const meta = el('div', 'card-meta');
-    const cl = clasifLabel(p);
-    meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
-    // La medida es el dato que más se consulta al cotizar: va en su propio
-    // recuadro, rotulado y a tamaño legible, no como una etiqueta más.
-    if (p.med) meta.appendChild(el('span', 'med-box', '<i>Medida</i><b>' + esc(p.med) + '</b>'));
-    body.appendChild(meta);
-    body.appendChild(el('div', 'card-cod', 'Cód: ' + esc(p.cod)));
-
-    const foot = el('div', 'card-foot');
-    const add = el('button', 'btn-add', 'Agregar'); add.onclick = () => onAdd(p);
-    const view = el('button', 'btn-view', 'Ver'); view.onclick = () => onView(p);
-    foot.append(add, view); body.appendChild(foot); c.appendChild(body);
-    grid.appendChild(c);
+  list.slice(0, limit).forEach(e => {
+    grid.appendChild(e.tipo === 'familia' ? cardFamilia(e, onViewFam) : cardProducto(e.p, onAdd, onView));
   });
 
-  $('#count').textContent = `${list.length.toLocaleString('es-MX')} productos`;
+  // Cuando hay fichas, el conteo dice las dos cosas: cuántas tarjetas se ven y
+  // cuántos productos hay detrás. Si no, se queda como siempre.
+  const nFichas = list.reduce((a, e) => a + (e.tipo === 'familia' ? 1 : 0), 0);
+  const nProd = list.reduce((a, e) => a + (e.tipo === 'familia' ? e.productos.length : 1), 0);
+  const num = (n) => n.toLocaleString('es-MX');
+  $('#count').textContent = nFichas
+    ? `${num(list.length)} fichas · ${num(nProd)} productos`
+    : `${num(nProd)} productos`;
+
   const q = state.q.trim();
   $('#crumbs').textContent = q ? (state.cat ? `«${q}» en ${state.cat}` : `«${q}» en todo el catálogo`) : (state.cat || 'Todas las categorías');
 
   const more = $('#btnMore');
-  if (list.length > limit) { more.hidden = false; more.textContent = `Cargar más (${(list.length - limit).toLocaleString('es-MX')} restantes)`; }
+  if (list.length > limit) { more.hidden = false; more.textContent = `Cargar más (${num(list.length - limit)} restantes)`; }
   else { more.hidden = true; }
+}
+
+/* ===== Ficha de familia =====
+   La tabla de medidas con su cantidad. Cada fila es un producto con su código:
+   al confirmar entran todas de golpe al pedido, cada una como su propia línea. */
+
+const FILAS_VISIBLES = 12;    // por subgrupo, antes de "ver las restantes"
+const UMBRAL_FILTRO = 15;     // a partir de aquí la ficha trae su propio buscador
+
+export function buildFichaFamilia(entry, onAgregar) {
+  const { fam, productos } = entry;
+  const pend = Object.create(null);   // cod -> cuánto se va a agregar
+  const abiertos = new Set();         // subgrupos desplegados por completo
+  let filtro = '';
+
+  const root = el('div', 'fam');
+
+  // --- Encabezado: foto de portada y de qué familia se trata
+  const head = el('header', 'fam-head');
+  const foto = el('div', 'fam-foto');
+  const ph = thumb(portadaDe(productos)); ph.style.cursor = 'default';
+  foto.appendChild(ph);
+  const grupos = ordenSubgrupos(fam.id).filter(g => g && g !== '—');
+  const txt = el('div', 'fam-head-txt', `
+    <div class="modal-cat">${esc(fam.cat)}</div>
+    <h2 class="fam-name">${esc(fam.nombre)}</h2>
+    <p class="fam-meta">${productos.length} productos${grupos.length > 1 ? ` · ${grupos.length} grupos` : ''} · elige medida y cantidad</p>`);
+  head.append(foto, txt);
+  root.appendChild(head);
+
+  // --- Buscador dentro de la familia (solo si hay bastantes medidas)
+  if (productos.length > UMBRAL_FILTRO) {
+    const tools = el('div', 'fam-tools');
+    const inp = el('input', 'fam-filtro');
+    inp.type = 'search';
+    inp.placeholder = 'Filtrar por medida, código o nombre…';
+    let t;
+    inp.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => { filtro = inp.value; pintar(); }, 120);
+    });
+    tools.appendChild(inp);
+    root.appendChild(tools);
+  }
+
+  const cuerpo = el('div', 'fam-body');
+  root.appendChild(cuerpo);
+
+  // --- Pie: qué llevas y el botón que lo manda todo al pedido
+  const foot = el('footer', 'fam-foot');
+  const resumen = el('div', 'fam-resumen');
+  const btn = el('button', 'btn-quote');
+  btn.onclick = () => {
+    const porCodigo = new Map(productos.map(p => [p.cod, p]));
+    const lineas = Object.entries(pend)
+      .map(([cod, qty]) => ({ p: porCodigo.get(cod), qty }))
+      .filter(l => l.p);
+    if (lineas.length) onAgregar(lineas);
+  };
+  foot.append(resumen, btn);
+  root.appendChild(foot);
+
+  function actualizar() {
+    const medidas = Object.keys(pend).length;
+    const piezas = Object.values(pend).reduce((a, b) => a + b, 0);
+    resumen.textContent = medidas
+      ? `${medidas} ${medidas === 1 ? 'medida elegida' : 'medidas elegidas'}`
+      : 'Elige la cantidad de cada medida';
+    btn.disabled = !piezas;
+    btn.textContent = piezas
+      ? `Agregar ${piezas} producto${piezas === 1 ? '' : 's'} al pedido`
+      : 'Agregar al pedido';
+  }
+
+  function fila(p) {
+    const row = el('div', 'fam-row');
+    row.appendChild(el('span', 'fam-med', esc(p.med || '—')));
+
+    const info = el('span', 'fam-prod', `<b>${esc(p.nom)}</b><i>${esc(p.cod)}</i>`);
+    const ya = cantidadEnCarrito(p.id);
+    if (ya) info.appendChild(el('em', 'fam-ya', `Ya en tu pedido: ${ya}`));
+    row.appendChild(info);
+
+    const qty = el('div', 'qty fam-qty');
+    const val = el('span', null, String(pend[p.cod] || 0));
+    const mover = (d) => {
+      const n = Math.max(0, (pend[p.cod] || 0) + d);
+      if (n) pend[p.cod] = n; else delete pend[p.cod];
+      val.textContent = String(n);
+      row.classList.toggle('on', n > 0);
+      actualizar();
+    };
+    const menos = el('button', null, '−'); menos.onclick = () => mover(-1);
+    menos.setAttribute('aria-label', `Quitar uno de ${p.cod}`);
+    const mas = el('button', null, '+'); mas.onclick = () => mover(1);
+    mas.setAttribute('aria-label', `Agregar uno de ${p.cod}`);
+    qty.append(menos, val, mas);
+    row.appendChild(qty);
+    row.classList.toggle('on', (pend[p.cod] || 0) > 0);
+    return row;
+  }
+
+  function pintar() {
+    cuerpo.innerHTML = '';
+    const terms = normalize(filtro).trim().split(/\s+/).filter(Boolean);
+    const pasa = (p) => !terms.length || terms.every(t => normalize(`${p.nom} ${p.cod} ${p.med}`).includes(t));
+
+    const porGrupo = new Map();
+    productos.forEach(p => {
+      if (!pasa(p)) return;
+      const g = subgrupoDe(p.cod) || '—';
+      if (!porGrupo.has(g)) porGrupo.set(g, []);
+      porGrupo.get(g).push(p);
+    });
+
+    if (!porGrupo.size) {
+      cuerpo.appendChild(el('div', 'fam-vacio', `Ninguna medida coincide con «${esc(filtro)}».`));
+      return;
+    }
+
+    const orden = ordenSubgrupos(fam.id);
+    const pos = (g) => { const i = orden.indexOf(g); return i < 0 ? 999 : i; };
+    const nombres = [...porGrupo.keys()].sort((a, b) => pos(a) - pos(b));
+
+    nombres.forEach(g => {
+      const filas = porGrupo.get(g);
+      const sec = el('section', 'fam-grupo');
+      if (nombres.length > 1) sec.appendChild(el('h3', 'fam-grupo-tit', `${esc(g === '—' ? 'Medidas' : g)}<span>${filas.length}</span>`));
+
+      const tabla = el('div', 'fam-tabla');
+      tabla.appendChild(el('div', 'fam-row fam-row-head', '<span>Medida</span><span>Producto</span><span>Cantidad</span>'));
+      // Con filtro activo se muestra todo: el usuario ya acotó lo que quería ver.
+      const tope = (terms.length || abiertos.has(g)) ? filas.length : FILAS_VISIBLES;
+      filas.slice(0, tope).forEach(p => tabla.appendChild(fila(p)));
+      sec.appendChild(tabla);
+
+      if (filas.length > tope) {
+        const ver = el('button', 'fam-mas', `Ver las ${filas.length - tope} restantes`);
+        ver.onclick = () => { abiertos.add(g); pintar(); };
+        sec.appendChild(ver);
+      }
+      cuerpo.appendChild(sec);
+    });
+  }
+
+  pintar();
+  actualizar();
+  return root;
 }
 
 export function refreshCartUI(onSub, onAdd, onDel) {

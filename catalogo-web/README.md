@@ -13,6 +13,11 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
 - **3,222 productos** reales en **14 categorías** con subcategorías.
 - Navegación por categoría/subcategoría + **búsqueda** tolerante a acentos (nombre, código, medida).
 - **Ficha** de producto con foto (o marcador "Sin foto").
+- **Fichas de familia**: dentro de una categoría, los productos que solo cambian de medida
+  (las 32 soleras) o de modelo dentro de una marca/función (los discos de corte) se
+  presentan como **una sola tarjeta**. Al abrirla trae la **tabla de medidas** con su
+  código y un contador por fila, y un botón que manda **todas las medidas elegidas de una
+  vez** al pedido. Detalle abajo.
 - **Carrito → WhatsApp**: arma el pedido y lo envía al WhatsApp de la **sucursal elegida**
   (5 sucursales con su número). No muestra precios: el equipo cotiza al recibirlo.
 - **Modo Admin** (botón "Admin"): edición inline de campos (demo guardada en el navegador).
@@ -32,6 +37,52 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
   `[DOMINIO]`. **Para reemplazar la imagen hay que renombrar el archivo** (`-v3`, `-v4`…):
   Facebook y WhatsApp la cachean por URL, y añadir `?v=N` a la página no sirve porque el
   `og:url` canónico devuelve al rastreador a la ficha ya guardada.
+
+## Fichas de familia (agrupación por medida)
+
+Una categoría con veinte soleras seguidas obliga al cliente a buscar su medida a fuerza de
+paciencia. La ficha de familia junta esas veinte en **una tarjeta** y mueve la elección de
+medida adentro. Es agrupación de **presentación**: cada medida sigue siendo su propio
+producto con su propio código, y así entra al carrito y al mensaje de WhatsApp.
+
+**Dónde agrupa y dónde no** (decisión de Gonzalo, 2026-07-31):
+
+| Dónde está el cliente | Qué ve |
+|---|---|
+| **Todas las categorías** | Todas las fichas, **una por producto** — sin agrupar |
+| **Dentro de una categoría** | Las familias aprobadas como ficha única, más los productos sueltos |
+| **Buscando algo** | Resultados **producto por producto** (la búsqueda no agrupa) |
+
+Solo se agrupa **lo aprobado a mano**: una familia sin aprobar sigue mostrando sus productos
+sueltos. Hoy son **173 fichas** que cubren **1,576 productos**; navegando por categoría el
+catálogo pasa de 3,222 a **1,831 tarjetas**.
+
+Dentro de la categoría el orden es **alfabético A→Z**: primero las fichas de familia (el
+resumen de la categoría) y debajo los productos sueltos. Dentro de la ficha, en cambio, las
+filas van **por medida de menor a mayor**, comparando todos los números (`1/8 X 1/2"` →
+`1/8 X 1"` → `1/8 X 1 1/2"` → `3/16 X 1/2"`), con milímetros convertidos a pulgadas.
+
+Una familia que abarca dos categorías se muestra completa **solo en su categoría principal**
+(donde tiene más productos), para no salir duplicada ni partida. Sus pocos productos de otra
+categoría siguen apareciendo ahí como tarjetas sueltas, así que no se esconde nada: hoy son
+12 productos de 3,222.
+
+### Cómo se regeneran
+
+```
+node pipeline/proponer_familias.mjs          # propone (no decide nada)
+   → datos/familias_propuestas.json/.csv
+node pipeline/generar_revision_familias.mjs  # pantalla para aprobar/descartar
+   → datos/revision_familias.html
+   ↳ las decisiones se guardan en datos/familias_aprobadas.json
+node pipeline/generar_familias_catalogo.mjs  # publica solo lo aprobado
+   → catalogo-web/data/familias.json (+ .js para el modo sin servidor)
+```
+
+**Hay que volver a correr el último paso cada vez que cambie `data/productos.json`**: solo
+entra a una ficha lo que siga publicado y clasificado, así que un producto retirado, oculto o
+devuelto a "POR CLASIFICAR" sale de la familia. Si `familias.json` no carga, el catálogo
+funciona exactamente como antes, producto por producto.
 
 ## Clasificador de catálogo (herramienta interna)
 `clasificador.html` es la herramienta de curación manual: permite revisar y mover
@@ -165,7 +216,11 @@ catalogo-web/
             icon-192 / 512 / maskable-512.png   iconos PWA
             logo-ap.jpg/.png     versión metalizada, ya NO se usa en el catálogo
                                  (sigue en clasificador.html)
+  core/     store.js · catalogService.js · searchService.js · cartService.js
+            familiaService.js   qué productos van juntos en una ficha de familia
   data/     productos.js (app) · productos.json (import futuro)
+            familias.json/.js   fichas de familia aprobadas (generado, ver arriba)
+            fotos-manifest.json qué fotos existen realmente en disco
   fotos/    imágenes por código (LEEME.txt)
 ```
 

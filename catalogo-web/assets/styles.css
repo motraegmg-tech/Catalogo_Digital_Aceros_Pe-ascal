@@ -130,6 +130,15 @@ select,input{font-family:inherit}
 .tag.pend{background:#fdf3e3;color:#8a6414;border:1px solid #e3c98e;font-weight:700}
 .card-cod{font-size:10.5px;color:var(--gris-claro);font-family:'Consolas',monospace}
 .card-foot{margin-top:auto;display:flex;gap:6px}
+/* Tarjeta de familia: una sola ficha para todas las medidas de un producto. El
+   distintivo es el sello con el número de productos; el resto del lenguaje
+   visual se mantiene para que la grilla no se sienta de dos materiales. */
+.card-fam{position:relative;border-color:var(--aqua-2)}
+.fam-badge{
+  position:absolute;top:9px;left:9px;z-index:2;pointer-events:none;
+  background:var(--oxido);color:#fff;border-radius:999px;padding:3px 10px;
+  font-size:10.5px;font-weight:700;box-shadow:0 2px 7px rgba(19,23,26,.32);
+}
 .btn-add{flex:1;background:var(--aqua-3);color:#fff;border:0;border-radius:8px;padding:8px;font-size:12.5px;font-weight:600}
 .btn-add:hover{background:var(--aqua)}
 .btn-view{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
@@ -157,6 +166,53 @@ select,input{font-family:inherit}
 .btn-quote:hover{background:var(--oxido-2)}
 .editable[contenteditable="true"]{outline:1px dashed var(--zintro);outline-offset:3px;border-radius:3px;background:#f7faf4}
 .fname{font-size:11px;color:var(--gris);font-family:monospace;margin-top:10px;background:#f4f5f6;border:1px dashed var(--line);padding:6px 8px;border-radius:6px}
+
+/* ===== Ficha de familia (tabla de medidas) =====
+   Mismo modal que la ficha de producto, pero a lo ancho y en una sola columna:
+   una tabla de 32 medidas no cabe partida en dos. Encabezado y pie fijos, la
+   tabla desplaza por dentro, para que el botón de agregar esté siempre a la vista. */
+.modal-card-ancho{max-width:960px;display:flex;flex-direction:column;overflow:hidden}
+.modal-body-fam{display:flex;flex:1;min-height:0}
+.fam{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0}
+
+.fam-head{display:flex;align-items:center;gap:16px;padding:20px 58px 16px 20px;border-bottom:1px solid var(--line)}
+.fam-foto{flex:0 0 96px;width:96px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.fam-foto .thumb{aspect-ratio:1/1}
+.fam-head-txt{min-width:0}
+.fam-name{font-size:22px;font-weight:700;line-height:1.2;margin:4px 0 6px}
+.fam-meta{margin:0;font-size:12.5px;color:var(--gris)}
+
+.fam-tools{padding:12px 20px 0}
+.fam-filtro{width:100%;padding:10px 13px;border:1px solid var(--line);border-radius:10px;background:var(--hueso);font-size:14px;outline:none}
+.fam-filtro:focus{border-color:var(--aqua);background:#fff;box-shadow:0 0 0 3px rgba(14,126,140,.14)}
+
+.fam-body{flex:1;min-height:0;overflow:auto;padding:4px 20px 16px}
+.fam-grupo{margin:0}
+.fam-grupo-tit{display:flex;align-items:center;gap:8px;margin:18px 0 7px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--aqua-2)}
+.fam-grupo:first-child .fam-grupo-tit{margin-top:10px}
+.fam-grupo-tit span{background:#dff0f2;border-radius:999px;padding:1px 8px;font-size:10.5px;letter-spacing:0}
+.fam-tabla{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fam-row{display:grid;grid-template-columns:132px 1fr 108px;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}
+.fam-row:first-child{border-top:0}
+.fam-row-head{background:var(--hueso);padding:7px 12px;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gris)}
+.fam-row-head span:last-child{text-align:center}
+/* Una fila con cantidad elegida se marca: al bajar por 30 medidas hay que poder
+   ver de un vistazo cuáles ya llevas. */
+.fam-row.on{background:#eaf6f8;box-shadow:inset 3px 0 0 var(--aqua)}
+.fam-med{font-size:14.5px;font-weight:700;color:var(--aqua-2);overflow-wrap:anywhere}
+.fam-prod{display:flex;flex-direction:column;gap:1px;min-width:0}
+.fam-prod b{font-size:12.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.fam-prod i{font-style:normal;font-size:10.5px;color:var(--gris-claro);font-family:'Consolas',monospace}
+.fam-ya{font-style:normal;font-size:10.5px;font-weight:700;color:var(--zintro-2)}
+.fam-qty{justify-content:center}
+.fam-mas{width:100%;margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600;color:var(--carbon)}
+.fam-mas:hover{border-color:var(--aqua);color:var(--aqua-2)}
+.fam-vacio{padding:34px 10px;text-align:center;font-size:13px;color:var(--gris)}
+
+.fam-foot{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid var(--line);background:var(--hueso)}
+.fam-resumen{flex:1;min-width:0;font-size:12.5px;color:var(--gris)}
+.fam-foot .btn-quote{flex:0 0 auto}
+.fam-foot .btn-quote:disabled{background:var(--acero);cursor:default}
 
 /* ===== Carrito ===== */
 .overlay{position:fixed;inset:0;background:rgba(21,25,28,.45);z-index:55}
@@ -275,6 +331,24 @@ select,input{font-family:inherit}
   .modal-name{font-size:17px}
   .spec b{min-width:78px}
   .btn-quote{padding:14px;font-size:14px}
+
+  /* --- Ficha de familia --- */
+  .modal-card-ancho{max-height:94vh;max-height:94dvh}
+  .fam-head{gap:12px;padding:14px 48px 12px 14px}
+  .fam-foto{flex:0 0 66px;width:66px}
+  .fam-name{font-size:18px;margin:2px 0 4px}
+  .fam-tools{padding:10px 14px 0}
+  .fam-filtro{font-size:16px}                      /* 16px: sin zoom automático en iOS */
+  .fam-body{padding:2px 14px 12px}
+  /* La fila se dobla: medida y producto en una columna, el contador al lado. */
+  .fam-row{grid-template-columns:1fr auto;gap:4px 10px;padding:10px}
+  .fam-row-head{display:none}
+  .fam-med{grid-column:1;grid-row:1}
+  .fam-prod{grid-column:1;grid-row:2}
+  .fam-qty{grid-column:2;grid-row:1/span 2}
+  .fam-foot{flex-direction:column;align-items:stretch;gap:9px;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+  .fam-resumen{text-align:center}
+  .fam-foot .btn-quote{width:100%}
 
   /* --- Carrito a pantalla completa --- */
   .cart{width:100%;max-width:100%;height:100vh;height:100dvh}

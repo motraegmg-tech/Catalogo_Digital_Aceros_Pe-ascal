@@ -1,6 +1,8 @@
 # Plan — Agrupar productos por medida (fichas de familia)
 
-> Estado: **propuesta, pendiente de visto bueno de Gonzalo.** No se ha programado nada.
+> Estado: **programado y funcionando en el catálogo (2026-07-31).**
+> Las cuatro fases están hechas. Ver [«Lo que quedó programado»](#lo-que-quedó-programado)
+> al final y la sección *Fichas de familia* de [`catalogo-web/README.md`](../catalogo-web/README.md).
 
 ## El problema
 
@@ -125,11 +127,11 @@ por Perfiles Macizos, y ver cómo queda antes de seguir.
 
 ## Fases propuestas
 
-1. **Agrupador + revisión** — el clasificador muestra las 432 familias sugeridas para
-   aprobar, renombrar o romper. Sin tocar el catálogo público.
-2. **Ficha de familia en el catálogo** — activada solo para las familias aprobadas.
-3. **Carrito multi-medida** — agregar varias medidas de una vez.
-4. **Extender al resto de categorías**, viendo resultados entre fase y fase.
+1. ✅ **Agrupador + revisión** — pantalla para aprobar, renombrar o romper las familias
+   sugeridas, sin tocar el catálogo público.
+2. ✅ **Ficha de familia en el catálogo** — activada solo para las familias aprobadas.
+3. ✅ **Carrito multi-medida** — agregar varias medidas de una vez.
+4. ✅ **Extender al resto de categorías** — 173 fichas en 12 de las 14 categorías.
 
 ## Decidido — listo para programar (2026-07-31)
 
@@ -143,19 +145,54 @@ quedaron en `datos/familias_aprobadas.json`.
 | Puntas | **Separadas**: "Puntas ornamentales" (48, Fierro Vaciado) y "Puntas montadas para desbaste" (5, Abrasivos). Mismo nombre, productos y compradores distintos. |
 | Las 7 sin marcar | **Descartadas.** Sus 83 productos se siguen mostrando sueltos. Entre ellas iban "Chapas y cerraduras" y "Candados" sin marca, que eran los sobrantes sin marca reconocida. |
 
-## Lo que necesito que decidas
+## Las cuatro preguntas abiertas — resueltas
 
-1. **Nivel de agrupación.** Dijiste "que aparezcan las subclasificaciones de Perfiles
-   Macizos". Eso funciona ahí porque sus subcategorías (Ángulos, Soleras…) ya son
-   familias. Pero `Ferretería › Ferretería` tiene 906 productos de todo tipo: agrupar
-   por subcategoría daría una ficha gigante. **Propongo agrupar por familia de nombre,
-   no por subcategoría** — en Perfiles Macizos el resultado es el que describes, y en
-   Ferretería sigue teniendo sentido.
+| Pregunta | Cómo quedó |
+|---|---|
+| **Nivel de agrupación** | Por **familia de nombre**, no por subcategoría. En Perfiles Macizos da justo lo que pediste (Ángulos, Soleras, Redondos…) y en Ferretería, que tiene 906 productos de todo tipo, sigue teniendo sentido en vez de una ficha gigante. |
+| **Familias de 2 productos** | Se **proponen** a partir de 3. Una ya aprobada que quede en 2 (por el chip de subcategoría o porque un producto salió del catálogo) sigue mostrándose como ficha; con 1 vuelve a ser tarjeta suelta. |
+| **Portada de la familia** | **Automática**: la primera medida que sí tiene foto; si ninguna la tiene, la de en medio. Así la ficha nunca sale con el marcador "Sin foto" habiendo una foto disponible dentro. |
+| **Nombre de la familia** | El **nombre limpio automático** ("SOLERA") o el de la regla ("Discos", "Brocas Urrea"). Se puede cambiar a mano en `datos/familias_aprobadas.json` sin tocar código. |
 
-2. **Familias de 2 productos.** ¿Vale la pena una ficha de familia para dos medidas, o
-   a partir de 3? (Propongo 3: con dos, agrupar estorba más de lo que ayuda.)
+## Lo que quedó programado
 
-3. **Portada de la familia.** ¿Foto del producto de medida intermedia (automático), o
-   la eliges tú en el clasificador?
+**Lo que ve el cliente**
 
-4. **Nombre de la familia.** ¿El nombre limpio automático ("SOLERA"), o lo escribes tú?
+- La grilla de una categoría muestra **fichas de familia** — tarjeta con sello rojo
+  («14 productos»), cuántas medidas hay para elegir, los subgrupos que trae dentro y el
+  botón **Elegir medidas**.
+- La **ficha** abre a lo ancho: portada, tabla de medidas con código y contador por fila,
+  y las filas elegidas resaltadas. Se abre con 12 medidas por subgrupo y un
+  «Ver las 20 restantes»; arriba de 15 medidas trae su **buscador interno**.
+- El botón del pie dice **«Agregar 3 productos al pedido»** y manda **todas las medidas
+  elegidas de una vez**, cada una como su propia línea con su código.
+- **Todas las categorías** y la **búsqueda** siguen mostrando producto por producto.
+
+**Cómo está armado**
+
+| Pieza | Qué hace |
+|---|---|
+| `pipeline/generar_familias_catalogo.mjs` | Cruza propuestas + aprobadas + catálogo → `catalogo-web/data/familias.json` |
+| `catalogo-web/core/familiaService.js` | Resuelve códigos contra el catálogo cargado y ordena las medidas |
+| `catalogo-web/assets/ui.js` | `filteredEntries()` decide qué se agrupa; `buildFichaFamilia()` pinta la tabla |
+| `catalogo-web/core/cartService.js` | `addManyToCartLogic()` — varias medidas de un golpe |
+
+**Números de hoy**
+
+| | |
+|---|---|
+| Fichas de familia publicadas | **173** en 12 de las 14 categorías |
+| Productos que cubren | **1,576** |
+| Navegando por categoría | 3,222 productos → **1,831 tarjetas** |
+| Perfiles Macizos | 148 productos → **53 tarjetas** (12 de familia; Soleras es 1 en vez de 32) |
+
+**Dos cosas que conviene tener presentes**
+
+1. **Hay que regenerar `familias.json` cuando cambie `productos.json`.** Solo entra a una
+   ficha lo que siga publicado y clasificado — al conectar esto se encontraron 7 códigos
+   aprobados que ya habían vuelto a "POR CLASIFICAR" y estaban colgando de una ficha.
+2. **Los cruces entre categorías se muestran, no se esconden.** El plan decía que una
+   familia se ve completa solo en su categoría principal; sus pocos productos de otra
+   categoría siguen apareciendo ahí como tarjetas sueltas, así no desaparece nada de la
+   categoría que el cliente está viendo. Son 12 productos de 3,222, y nunca coinciden en
+   la misma pantalla.

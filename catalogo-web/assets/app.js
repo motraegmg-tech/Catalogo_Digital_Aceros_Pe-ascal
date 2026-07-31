@@ -1,7 +1,8 @@
 import { fetchCatalogo, agruparCategorias } from '../core/catalogService.js';
 import { state, DATA, setCatalogData, CONFIG, cargarFotosManifest, CAT_OCULTA } from '../core/store.js';
-import { addToCartLogic, setQtyLogic, buildWhatsAppUrl } from '../core/cartService.js';
-import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, PIN_SVG } from './ui.js';
+import { addToCartLogic, addManyToCartLogic, setQtyLogic, buildWhatsAppUrl } from '../core/cartService.js';
+import { cargarFamilias, indexarFamilias } from '../core/familiaService.js';
+import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, buildFichaFamilia, PIN_SVG } from './ui.js';
 
 // --- Orquestador Principal de UI ---
 function renderAllUI() {
@@ -10,8 +11,10 @@ function renderAllUI() {
     (cat) => { state.cat = cat; state.sub = null; state.page = 1; renderAllUI(); },
     (sub) => { state.sub = sub; state.page = 1; renderAllUI(); }
   );
-  renderGrid(handleAddToCart, handleViewProduct);
+  pintarGrid();
 }
+
+const pintarGrid = () => renderGrid(handleAddToCart, handleViewProduct, handleViewFamilia);
 
 // --- Controladores delegados ---
 function handleAddToCart(p) {
@@ -23,6 +26,27 @@ function handleAddToCart(p) {
 function handleSetQty(id, delta) {
   setQtyLogic(id, delta);
   refreshCartUI(id => handleSetQty(id, -1), id => handleSetQty(id, 1), id => handleSetQty(id, -9999));
+}
+
+/* La ficha de producto y la de familia comparten el mismo modal; solo cambia el
+   ancho y la retícula, porque una tabla de 32 medidas no cabe en dos columnas. */
+function abrirModal(esFamilia) {
+  $('#modalBody').className = 'modal-body' + (esFamilia ? ' modal-body-fam' : '');
+  document.querySelector('#modal .modal-card').classList.toggle('modal-card-ancho', !!esFamilia);
+  $('#modal').hidden = false;
+}
+
+function handleViewFamilia(entry) {
+  const b = $('#modalBody');
+  b.innerHTML = '';
+  b.appendChild(buildFichaFamilia(entry, (lineas) => {
+    addManyToCartLogic(lineas);
+    refreshCartUI(id => handleSetQty(id, -1), id => handleSetQty(id, 1), id => handleSetQty(id, -9999));
+    $('#modal').hidden = true;
+    pulseCart();
+    openCart();
+  }));
+  abrirModal(true);
 }
 
 function handleViewProduct(p) {
@@ -46,7 +70,7 @@ function handleViewProduct(p) {
   
   b.append(photo, info);
   $('#mQuote').onclick = () => { handleAddToCart(p); $('#modal').hidden=true; openCart(); };
-  $('#modal').hidden = false;
+  abrirModal(false);
 }
 
 // --- Utilidades Sucursales ---
@@ -74,15 +98,33 @@ async function cargarManifestFotos() {
 }
 
 // --- Carga Local de Respaldo ---
-function cargarRespaldoLocal(){
+function cargarScript(src, global){
   return new Promise(resolve => {
-    if (window.CATALOGO) return resolve(window.CATALOGO);
+    if (window[global]) return resolve(window[global]);
     const s = document.createElement('script');
-    s.src = '../data/productos.js';
-    s.onload  = () => resolve(window.CATALOGO || null);
+    s.src = src;
+    s.onload  = () => resolve(window[global] || null);
     s.onerror = () => resolve(null);
     document.head.appendChild(s);
   });
+}
+
+const cargarRespaldoLocal = () => cargarScript('../data/productos.js', 'CATALOGO');
+
+// --- Carga de las fichas de familia (qué productos van juntos en una tarjeta) ---
+// Es opcional por diseño: si no carga, hayFamilias() queda en false y el catálogo
+// se comporta como siempre, producto por producto. Nunca debe impedir el arranque.
+async function cargarFichasFamilia() {
+  let doc = null;
+  try {
+    const r = await fetch('data/familias.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    doc = await r.json();
+  } catch (e) {
+    doc = await cargarScript('../data/familias.js', 'FAMILIAS');   // camino sin servidor
+    if (!doc) { console.warn('[familias] Sin agrupación por familias:', e.message); return; }
+  }
+  console.log(`[familias] ${cargarFamilias(doc)} fichas de familia cargadas.`);
 }
 
 // --- Inicialización Principal ---
@@ -116,7 +158,10 @@ async function init() {
   
   if (datos.productos.length) {
     setCatalogData(datos);
-    await cargarManifestFotos();   // saber qué fotos existen antes de renderizar
+    // Saber qué fotos existen y qué productos van juntos ANTES de renderizar:
+    // ambas cosas cambian lo que se pinta, así que se resuelven en paralelo.
+    await Promise.all([cargarManifestFotos(), cargarFichasFamilia()]);
+    indexarFamilias();             // cruza los códigos aprobados con este catálogo
     renderAllUI();
   }
 
@@ -125,7 +170,7 @@ async function init() {
     t = setTimeout(() => { state.q = e.target.value; state.cat = null; state.sub = null; state.page = 1; renderAllUI(); }, 140); 
   });
   
-  $('#btnMore').onclick = () => { state.page++; renderGrid(handleAddToCart, handleViewProduct); };
+  $('#btnMore').onclick = () => { state.page++; pintarGrid(); };
   $('#btnCart').onclick = openCart;
   $('#cartClose').onclick = closeCart;
   $('#overlay').onclick = () => { closeCart(); closeCats(); };

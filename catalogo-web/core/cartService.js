@@ -1,11 +1,31 @@
 import { state, saveLS, CONFIG, LS_CART } from './store.js';
 
 export function addToCartLogic(p) {
-  const c = state.cart[p.id] || { id: p.id, cod: p.cod, nom: p.nom, qty: 0 };
-  c.qty += 1;
-  state.cart[p.id] = c;
-  saveLS(LS_CART, state.cart);
+  addManyToCartLogic([{ p, qty: 1 }]);
 }
+
+/**
+ * Agrega varias medidas de una vez (ficha de familia). Cada medida entra como su
+ * propia línea con su propio código: la agrupación es de presentación, el pedido
+ * y el mensaje de WhatsApp siguen siendo producto por producto.
+ * Guarda una sola vez al final en vez de una por línea.
+ */
+export function addManyToCartLogic(lineas) {
+  let cambio = false;
+  lineas.forEach(({ p, qty }) => {
+    const n = Math.trunc(qty);
+    if (!p || !(n > 0)) return;
+    const c = state.cart[p.id] || { id: p.id, cod: p.cod, nom: p.nom, qty: 0 };
+    c.qty += n;
+    state.cart[p.id] = c;
+    cambio = true;
+  });
+  if (cambio) saveLS(LS_CART, state.cart);
+  return cambio;
+}
+
+/** Cuánto hay ya en el pedido de este producto (se muestra en la ficha de familia). */
+export const cantidadEnCarrito = (id) => (state.cart[id] || {}).qty || 0;
 
 export function setQtyLogic(id, d) {
   const c = state.cart[id];
