@@ -293,20 +293,34 @@ const SBC = (window.supabase && window.SUPA_CFG)
 const SB = { user:null, estado: SBC ? 'anon' : 'nosoporte', ultimo:null, error:null };
 // estado: nosoporte | anon (sin sesión) | on (sesión activa) | sync | error
 const SB_SEP = '';
-// Clave de comparación: categoría + subcategoría + marcas + proveedor + su interruptor
-function sbClave(p){
-  return (p.cat||'')+SB_SEP+(p.sub||'')+SB_SEP+etqKey(p)
+/* Identidad de esta pestaña. Viaja en `productos.updated_by` para que, cuando
+   Realtime devuelva el eco de nuestra propia escritura, sepamos ignorarlo. */
+const SB_YO = 'clasif-' + Math.random().toString(36).slice(2, 10);
+
+/* La comparación va en DOS claves porque el push las trata distinto:
+   - grupo: muchos productos comparten el mismo destino, así que se actualizan
+     en lote con un solo update ... in (...).
+   - fila: medida y descripción son propias de cada producto; no se agrupan y
+     van en un update por producto. Antes NO se sincronizaban: por eso las
+     medidas y los nombres solo existían en los archivos locales. */
+function sbClaveGrupo(p){
+  return (p.cat||'')+SB_SEP+(p.sub||'')+SB_SEP+(p.sub2||'')+SB_SEP+etqKey(p)
        + SB_SEP+(p.prov||'')+SB_SEP+(p.mprov?'1':'0');
 }
+function sbClaveFila(p){
+  return (p.med||'')+SB_SEP+(p.nom||'');
+}
+function sbClave(p){ return { g: sbClaveGrupo(p), f: sbClaveFila(p) }; }
+
 // Estado que asumimos ya está en Supabase (arranca == base local == BD desplegada)
 const SB_BASE = new Map(DATA.productos.map(p => [p.cod, sbClave(p)]));
-const SB_DIRTY = new Set();   // códigos cuya categoría/subcategoría difieren de Supabase
+const SB_DIRTY = new Set();   // códigos cuyos datos difieren de Supabase
 
 function marcarSucios(){
   if (!SBC) return;
   for (const p of PRODUCTOS){
-    const key = sbClave(p);
-    if (SB_BASE.get(p.cod) !== key) SB_DIRTY.add(p.cod);
+    const b = SB_BASE.get(p.cod);
+    if (!b || b.g !== sbClaveGrupo(p) || b.f !== sbClaveFila(p)) SB_DIRTY.add(p.cod);
     else SB_DIRTY.delete(p.cod);
   }
   renderSbEstado();
@@ -323,29 +337,57 @@ async function sincronizarSupabase(origen){
   if (!SBC) return false;
   if (!SB.user){ if (origen!=='auto') aviso('⚠ Inicia sesión para sincronizar en línea.'); return false; }
   if (!SB_DIRTY.size){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
-  // Agrupa por destino (categoria|subcategoria) para actualizar en lote
+
+  /* Dos pasadas. Los campos de destino (categoría, subcategoría, sub2, marcas,
+     proveedor) se agrupan: reclasificar 200 productos a la misma rama es UN
+     update. Medida y descripción son propias de cada producto, así que van
+     una por una — normalmente son pocas, se editan de a un producto. */
   const grupos = new Map();
+  const filas = [];
   for (const p of PRODUCTOS){
     if (!SB_DIRTY.has(p.cod)) continue;
-    const key = sbClave(p);
-    if (!grupos.has(key)) grupos.set(key, []);
-    grupos.get(key).push(p.cod);
+    const base = SB_BASE.get(p.cod) || { g:null, f:null };
+    const g = sbClaveGrupo(p);
+    if (base.g !== g){ if (!grupos.has(g)) grupos.set(g, []); grupos.get(g).push(p.cod); }
+    if (base.f !== sbClaveFila(p)) filas.push(p);
   }
   SB.estado='sync'; renderSbEstado();
   let escritos = 0, fallo = null;
+  const hechos = new Set();
+
   for (const [key, cods] of grupos){
-    const [cat, sub, etqs, prov, mprov] = key.split(SB_SEP);
+    const [cat, sub, sub2, etqs, prov, mprov] = key.split(SB_SEP);
     for (let i=0;i<cods.length;i+=200){          // trocea por límite de URL de .in()
       const lote = cods.slice(i, i+200);
       const { error } = await SBC.from('productos')
-        .update({ categoria: cat, subcategoria: sub, etiquetas: etqs ? etqs.split(',') : [],
-                  proveedor: prov, mostrar_proveedor: mprov==='1' })
+        .update({ categoria: cat, subcategoria: sub, sub2: sub2 || null,
+                  etiquetas: etqs ? etqs.split(',') : [],
+                  proveedor: prov, mostrar_proveedor: mprov==='1', updated_by: SB_YO })
         .in('codigo', lote);
       if (error){ fallo = error; break; }
-      for (const c of lote){ SB_BASE.set(c, key); SB_DIRTY.delete(c); escritos++; }
+      for (const c of lote){ hechos.add(c); escritos++; }
     }
     if (fallo) break;
   }
+
+  if (!fallo){
+    for (const p of filas){
+      const { error } = await SBC.from('productos')
+        .update({ medidas: p.med || '', descripcion: p.nom || '', updated_by: SB_YO })
+        .eq('codigo', p.cod);
+      if (error){ fallo = error; break; }
+      if (!hechos.has(p.cod)) escritos++;
+      hechos.add(p.cod);
+    }
+  }
+
+  // Solo lo confirmado deja de estar sucio; si algo falló, se reintenta luego.
+  const porCod = new Map(PRODUCTOS.map(p => [p.cod, p]));
+  for (const cod of hechos){
+    const p = porCod.get(cod);
+    if (p){ SB_BASE.set(cod, sbClave(p)); SB_DIRTY.delete(cod); }
+  }
+
   if (fallo){
     SB.estado='error'; SB.error = fallo.message || String(fallo); renderSbEstado();
     aviso('⚠ Error al sincronizar con Supabase: '+SB.error);
@@ -360,7 +402,12 @@ function sbAplicarSesion(session){
   SB.user = session?.user || null;
   SB.estado = SB.user ? 'on' : 'anon';
   renderSbEstado();
-  if (SB.user){ marcarSucios(); programarSyncSupabase(); }   // sube lo pendiente al entrar
+  if (SB.user){
+    marcarSucios(); programarSyncSupabase();   // sube lo pendiente al entrar
+    iniciarRealtime();                         // RLS solo emite eventos con sesión
+  } else {
+    pararRealtime();                           // sin sesión queda el pull por reloj
+  }
 }
 
 async function sbLogin(){
@@ -440,7 +487,7 @@ let PULL_T = null;
 async function descargarClasificacionSB(){
   const conSesion = !!SB.user;
   const tabla  = conSesion ? 'productos' : 'catalogo_publico';
-  const campos = 'codigo,categoria,subcategoria,foto,etiquetas,proveedor,mostrar_proveedor';
+  const campos = 'codigo,categoria,subcategoria,sub2,medidas,descripcion,foto,etiquetas,proveedor,mostrar_proveedor';
   const filas = [];
   const pageSize = 1000;
   for (let page=0;;page++){
@@ -469,15 +516,18 @@ async function traerCambiosSupabase(origen){
   let cambios = 0;
   for (const p of DATA.productos){
     const r = mapa.get(p.cod); if (!r) continue;
-    const cat = r.categoria || '', sub = r.subcategoria || '';
+    const cat = r.categoria || '', sub = r.subcategoria || '', sub2 = r.sub2 || '';
+    const med = r.medidas || '', nom = r.descripcion || p.nom;
     const etq = Array.isArray(r.etiquetas) ? r.etiquetas : [];
     const foto = (r.foto && r.foto!==p.foto) ? r.foto : p.foto;   // sólo pisa la foto si en línea hay una
     // Sin sesión el proveedor llega enmascarado (NULL): se conserva el local.
     const prov  = provConfiable ? (r.proveedor || '') : p.prov;
     const mprov = !!r.mostrar_proveedor;
-    if (p.cat===cat && p.sub===sub && foto===p.foto && p.prov===prov && p.mprov===mprov &&
+    if (p.cat===cat && p.sub===sub && (p.sub2||'')===sub2 && (p.med||'')===med && p.nom===nom &&
+        foto===p.foto && p.prov===prov && p.mprov===mprov &&
         JSON.stringify(etq)===JSON.stringify(p.etq||[])) continue;
-    p.cat=cat; p.sub=sub; p.foto=foto; p.etq=etq; p.prov=prov; p.mprov=mprov; cambios++;
+    p.cat=cat; p.sub=sub; p.sub2=sub2; p.med=med; p.nom=nom;
+    p.foto=foto; p.etq=etq; p.prov=prov; p.mprov=mprov; cambios++;
   }
   PULL.estado='ok'; PULL.ultimo=new Date(); renderPullEstado();
   if (cambios){
@@ -503,7 +553,80 @@ function renderPullEstado(){
   if (!h) return;
   if (!SBC){ h.textContent = 'Traer del equipo: no disponible aquí.'; return; }
   const hora = PULL.ultimo ? PULL.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : '—';
-  h.textContent = `Equipo: ${AUTO_PULL?'se actualiza solo':'manual'} · última ${hora}`;
+  const modo = RT.estado==='on' ? '● en vivo' : (AUTO_PULL ? 'se actualiza solo' : 'manual');
+  h.textContent = `Equipo: ${modo} · última ${hora}`;
+}
+
+/* ---------- tiempo real (Supabase Realtime) ----------
+   El pull por reloj tarda hasta 45 s y se auto-bloquea mientras trabajas. Con
+   Realtime, Postgres empuja cada UPDATE en cuanto ocurre. Requiere sesión: RLS
+   deja leer `productos` solo a `authenticated`, así que sin login no llegan
+   eventos y el pull por reloj sigue siendo el respaldo.
+
+   Los cambios se acumulan en un búfer y se aplican juntos cada 500 ms: al
+   reclasificar 200 productos de golpe llegan 200 eventos y no queremos 200
+   redibujados. El eco de nuestra propia escritura se descarta por updated_by. */
+const RT = { estado: 'off', canal: null, ultimo: null };   // off | conectando | on | error
+const RT_BUF = new Map();
+let RT_T = null;
+
+function iniciarRealtime(){
+  if (!SBC || RT.canal) return;
+  RT.estado = 'conectando'; renderPullEstado();
+  RT.canal = SBC
+    .channel('clasificador-productos')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'productos' }, (payload) => {
+      const r = payload.new;
+      if (!r || r.updated_by === SB_YO) return;      // eco de lo que acabamos de escribir
+      RT_BUF.set(r.codigo, r);
+      clearTimeout(RT_T);
+      RT_T = setTimeout(aplicarCambiosRealtime, 500);
+    })
+    .subscribe((st) => {
+      RT.estado = st === 'SUBSCRIBED' ? 'on'
+                : (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') ? 'error' : 'conectando';
+      renderPullEstado();
+    });
+}
+
+function pararRealtime(){
+  if (!RT.canal) return;
+  try { SBC.removeChannel(RT.canal); } catch {}
+  RT.canal = null; RT.estado = 'off'; RT_BUF.clear();
+  renderPullEstado();
+}
+
+/* Vuelca el búfer sobre la base en memoria. Igual que el pull: se toca DATA
+   (la base) y luego construirProductos() reaplica TUS deltas encima, así que
+   un cambio del equipo nunca pisa lo que tú tienes sin guardar. */
+function aplicarCambiosRealtime(){
+  if (!RT_BUF.size) return;
+  // Si estás en medio de algo, espera: no le movemos el piso a nadie.
+  if (!puedePullAuto()){ RT_T = setTimeout(aplicarCambiosRealtime, 1500); return; }
+
+  const porCod = new Map(DATA.productos.map(p => [p.cod, p]));
+  let cambios = 0;
+  for (const [cod, r] of RT_BUF){
+    const p = porCod.get(cod); if (!p) continue;
+    const cat = r.categoria || '', sub = r.subcategoria || '', sub2 = r.sub2 || '';
+    const med = r.medidas || '', nom = r.descripcion || p.nom;
+    const etq = Array.isArray(r.etiquetas) ? r.etiquetas : [];
+    const foto = (r.foto && r.foto !== p.foto) ? r.foto : p.foto;
+    const prov = SB.user ? (r.proveedor || '') : p.prov;
+    const mprov = !!r.mostrar_proveedor;
+    if (p.cat===cat && p.sub===sub && (p.sub2||'')===sub2 && (p.med||'')===med && p.nom===nom &&
+        foto===p.foto && p.prov===prov && p.mprov===mprov &&
+        JSON.stringify(etq)===JSON.stringify(p.etq||[])) continue;
+    p.cat=cat; p.sub=sub; p.sub2=sub2; p.med=med; p.nom=nom;
+    p.foto=foto; p.etq=etq; p.prov=prov; p.mprov=mprov;
+    SB_BASE.set(cod, sbClave(p));    // ya es el estado vigente en línea: no re-subir
+    cambios++;
+  }
+  RT_BUF.clear();
+  RT.ultimo = new Date(); PULL.ultimo = RT.ultimo;
+  if (!cambios){ renderPullEstado(); return; }
+  construirProductos(); calcularSugerencias(); renderAll();
+  aviso('● '+fmt(cambios)+' producto(s) actualizados por el equipo');
 }
 
 /* ¿Es buen momento para un pull automático? No mientras trabajas una selección,
@@ -518,13 +641,15 @@ function puedePullAuto(){
   if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return false;
   return true;
 }
+/* Con Realtime conectado esto es solo una red de seguridad (por si se cae la
+   conexión y se pierde algún evento), así que basta con espaciarlo mucho. */
 function programarPullAuto(){
   if (!SBC) return;
   clearTimeout(PULL_T);
   PULL_T = setTimeout(async ()=>{
     if (puedePullAuto()) await traerCambiosSupabase('auto');
     programarPullAuto();
-  }, 45000);
+  }, RT.estado==='on' ? 300000 : 45000);
 }
 
 /* ---------- productos efectivos (base + deltas) ---------- */
@@ -532,7 +657,9 @@ const BMAP = new Map(DATA.productos.map(p=>[p.id,p]));
 let PRODUCTOS = [], IDX = new Map(), TAXMAP = new Map();
 function construirProductos(){
   PRODUCTOS = DATA.productos.map(p=>{
-    const q = Object.assign({}, p); q.sub2 = '';
+    // sub2 ya viaja a Supabase, así que se respeta el de la base y los deltas
+    // locales lo sobrescriben. (Antes se forzaba a '' porque solo existía aquí.)
+    const q = Object.assign({}, p); q.sub2 = p.sub2 || '';
     const e = WORK.ediciones[p.id]; if (e) Object.assign(q, e);
     const a = WORK.asignaciones[p.id]; if (a){ q.cat=a.cat; q.sub=a.sub; q.sub2=a.sub2||''; }
     q.etq = WORK.etiquetas[p.id] ? WORK.etiquetas[p.id].slice()
@@ -2374,12 +2501,40 @@ function selfTest(){
       t('mostrar proveedor undo', productosDeProveedor(provPrueba).every(x=>!x.mprov));
     }
     t('etiqueta proveedor-por-revisar registrada', ETQMAP.has('proveedor-por-revisar'));
-    // La clave de sync debe distinguir proveedor e interruptor, o no se subirían
-    t('sbClave incluye proveedor', (()=>{
+    // La clave de sync debe distinguir cada campo que se sube, o no viajaría.
+    // Ojo: sbClave() devuelve un objeto {g,f}, así que hay que comparar sus
+    // partes — con !== se compararían referencias y la prueba pasaría siempre.
+    t('sbClave distingue proveedor', (()=>{
       const a = PRODUCTOS[0];
       const b = Object.assign({}, a, {prov:(a.prov||'')+'X'});
       const c = Object.assign({}, a, {mprov:!a.mprov});
-      return sbClave(a)!==sbClave(b) && sbClave(a)!==sbClave(c);
+      return sbClaveGrupo(a)!==sbClaveGrupo(b) && sbClaveGrupo(a)!==sbClaveGrupo(c);
+    })());
+    t('sbClave distingue sub2 y categoría', (()=>{
+      const a = PRODUCTOS[0];
+      const b = Object.assign({}, a, {sub2:(a.sub2||'')+'X'});
+      const c = Object.assign({}, a, {cat:(a.cat||'')+'X'});
+      return sbClaveGrupo(a)!==sbClaveGrupo(b) && sbClaveGrupo(a)!==sbClaveGrupo(c);
+    })());
+    // Medida y descripción son las que ANTES no se sincronizaban
+    t('sbClave distingue medida y descripción', (()=>{
+      const a = PRODUCTOS[0];
+      const b = Object.assign({}, a, {med:(a.med||'')+'X'});
+      const c = Object.assign({}, a, {nom:(a.nom||'')+'X'});
+      return sbClaveFila(a)!==sbClaveFila(b) && sbClaveFila(a)!==sbClaveFila(c);
+    })());
+    // Un cambio de medida NO debe alterar la clave de grupo (si no, cada
+    // producto sería su propio lote y el push masivo dejaría de agrupar)
+    t('medida no rompe la agrupación', (()=>{
+      const a = PRODUCTOS[0];
+      const b = Object.assign({}, a, {med:(a.med||'')+'X'});
+      return sbClaveGrupo(a)===sbClaveGrupo(b);
+    })());
+    t('construirProductos respeta sub2 de la base', (()=>{
+      const p = DATA.productos.find(x=>x.sub2);
+      if (!p) return true;                       // nada que comprobar
+      if (WORK.asignaciones[p.id] || WORK.ediciones[p.id]) return true;   // hay delta local
+      return (IDX.get(p.id)||{}).sub2 === p.sub2;
     })());
     const csv = construirCSV();
     const csvLineas = csv.trim().split('\r\n');
