@@ -39,7 +39,7 @@ function handleViewProduct(p) {
     <div class="modal-name${ovrName}">${esc(p.nom)}</div>
     <div class="spec"><b>Código</b><span>${esc(p.cod)}</span></div>
     <div class="spec"><b>Tipo</b><span class="${ovrName}">${esc(p.sub||'—')}</span></div>
-    <div class="spec"><b>Medidas</b><span class="${ovrName}">${esc(p.med||'—')}</span></div>
+    <div class="spec spec-med"><b>Medida</b><span class="${ovrName}">${esc(p.med||'—')}</span></div>
     ${p.prov ? `<div class="spec"><b>Proveedor</b><span>${esc(p.prov)}</span></div>` : ''}
     ${state.edit ? `<div class="fname">Foto esperada: fotos/${p.id}.webp</div>` : ''}
     <div class="modal-cta"><button class="btn-quote" id="mQuote">Agregar al pedido y cotizar</button></div>`;

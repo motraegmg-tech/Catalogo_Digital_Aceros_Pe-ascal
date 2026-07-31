@@ -118,6 +118,15 @@ select,input{font-family:inherit}
 .tag{font-size:10px;background:var(--platino);color:var(--carbon);border-radius:5px;padding:2px 7px}
 .tag.sub{background:#e4f2e4;color:var(--zintro-2);border:1px solid #c2e2c2}
 .tag.med{background:#dff0f2;color:var(--aqua-2);border:1px solid #bce3e8}
+/* Recuadro de medida: es el dato que más se consulta al cotizar, así que va
+   rotulado y a tamaño legible en vez de como una etiqueta chica más. */
+.med-box{display:inline-flex;align-items:baseline;gap:6px;width:100%;
+  background:#dff0f2;border:1.5px solid #9fd4dd;border-left:4px solid var(--aqua);
+  border-radius:7px;padding:5px 9px;line-height:1.25}
+.med-box i{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#4d8f99;flex:none}
+.med-box b{font-size:14px;font-weight:700;color:var(--aqua-2);
+  overflow-wrap:anywhere}
 .tag.pend{background:#fdf3e3;color:#8a6414;border:1px solid #e3c98e;font-weight:700}
 .card-cod{font-size:10.5px;color:var(--gris-claro);font-family:'Consolas',monospace}
 .card-foot{margin-top:auto;display:flex;gap:6px}
@@ -138,6 +147,11 @@ select,input{font-family:inherit}
 .modal-name{font-size:20px;font-weight:700;margin:6px 0 12px;line-height:1.25}
 .spec{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
 .spec b{min-width:96px;color:var(--gris)}
+/* En la ficha, la medida es lo que decide la compra: se destaca. */
+.spec-med{align-items:center;background:#dff0f2;border:1.5px solid #9fd4dd;
+  border-left:4px solid var(--aqua);border-radius:8px;padding:9px 11px;margin:6px 0}
+.spec-med b{color:#4d8f99;font-size:10px;letter-spacing:.07em;text-transform:uppercase}
+.spec-med span{font-size:17px;font-weight:700;color:var(--aqua-2)}
 .modal-cta{margin-top:18px;display:flex;gap:10px}
 .btn-quote{background:var(--oxido);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:700;font-size:14px;flex:1}
 .btn-quote:hover{background:var(--oxido-2)}

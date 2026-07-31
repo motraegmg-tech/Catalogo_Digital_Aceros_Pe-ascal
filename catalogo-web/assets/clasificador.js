@@ -1912,7 +1912,7 @@ function pcard(p){
   const cl = clasifTag(p);
   meta.appendChild(el('span','tag '+(cl.pend?'pend':'sub'), esc(cl.txt)));
   if (p.sub2) meta.appendChild(el('span','tag sub', esc(p.sub2)));
-  if (p.med) meta.appendChild(el('span','tag med', esc(p.med)));
+  if (p.med) meta.appendChild(el('span','med-box','<i>Medida</i><b>'+esc(p.med)+'</b>'));
   body.appendChild(meta);
   body.appendChild(el('div','pcard-cod','Cód: '+esc(p.cod)));
   c.appendChild(body);

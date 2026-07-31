@@ -231,6 +231,14 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .tag{font-size:10px;background:var(--platino);color:var(--carbon);border-radius:5px;padding:2px 7px}
 .tag.sub{background:#e4f2e4;color:var(--zintro-2);border:1px solid #c2e2c2}
 .tag.med{background:#dff0f2;color:var(--aqua-2);border:1px solid #bce3e8}
+/* Mismo recuadro de medida que el catálogo público: al curar conviene verla
+   igual de grande que la verá el cliente, para detectar las mal escritas. */
+.med-box{display:inline-flex;align-items:baseline;gap:6px;
+  background:#dff0f2;border:1.5px solid #9fd4dd;border-left:4px solid var(--aqua);
+  border-radius:7px;padding:5px 9px;line-height:1.25}
+.med-box i{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#4d8f99;flex:none}
+.med-box b{font-size:14px;font-weight:700;color:var(--aqua-2);overflow-wrap:anywhere}
 .tag.pend{background:#fdf3e3;color:#8a6414;border:1px solid #e3c98e;font-weight:700}
 .pcard-cod{font-size:10.5px;color:var(--gris-claro);font-family:var(--mono)}
 

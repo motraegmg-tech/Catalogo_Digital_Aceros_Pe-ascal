@@ -175,7 +175,9 @@ export function renderGrid(onAdd, onView) {
     const meta = el('div', 'card-meta');
     const cl = clasifLabel(p);
     meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
-    if (p.med) meta.appendChild(el('span', 'tag med', esc(p.med)));
+    // La medida es el dato que más se consulta al cotizar: va en su propio
+    // recuadro, rotulado y a tamaño legible, no como una etiqueta más.
+    if (p.med) meta.appendChild(el('span', 'med-box', '<i>Medida</i><b>' + esc(p.med) + '</b>'));
     body.appendChild(meta);
     body.appendChild(el('div', 'card-cod', 'Cód: ' + esc(p.cod)));
 
