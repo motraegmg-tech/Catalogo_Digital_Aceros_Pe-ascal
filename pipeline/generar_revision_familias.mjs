@@ -10,10 +10,14 @@ const ROOT = join(__dirname, '..');
 const fams = JSON.parse(await readFile(join(ROOT, 'datos', 'familias_propuestas.json'), 'utf8'));
 
 // Compacta: la pantalla no necesita la foto ni el nombre completo repetido.
+const corta = (s) => s.length > 62 ? s.slice(0, 60) + '…' : s;
 const datos = fams.map((f, i) => ({
   i, c: f.cat, s: f.sub, f: f.nombre, n: f.n, d: f.distintas,
-  q: f.confianza, a: f.alertas,
-  p: f.productos.map(p => [p.cod, p.med, p.nom.length > 62 ? p.nom.slice(0, 60) + '…' : p.nom]),
+  q: f.confianza, a: f.alertas, o: f.origen.startsWith('regla') ? 'regla' : 'nombre',
+  g: f.subgrupos.map(s => ({
+    t: s.nombre, n: s.n,
+    p: s.productos.map(p => [p.cod, p.med, corta(p.nom)]),
+  })),
 }));
 
 const total = datos.reduce((a, f) => a + f.n, 0);
@@ -114,6 +118,14 @@ tr:last-child td{border-bottom:0}
 .td-med{font-weight:650;color:var(--acento);white-space:nowrap}
 .td-cod{color:var(--tenue);font-size:12px;white-space:nowrap}
 .vacia{color:var(--tenue);font-style:italic}
+.sub-tit{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--acento);margin:14px 0 0;padding-top:10px;border-top:1px solid var(--linea-2);
+  display:flex;align-items:center;gap:8px}
+.sub-tit:first-child{border-top:0;margin-top:6px;padding-top:0}
+.sub-tit span{font-size:11px;font-weight:600;color:var(--tenue);background:var(--acento-suave);
+  padding:2px 7px;border-radius:20px;letter-spacing:0}
+.o-regla{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--tenue);
+  border:1px solid var(--linea);padding:2px 6px;border-radius:4px}
 
 .pie{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--linea);
   padding:11px 0;box-shadow:0 -1px 3px rgba(16,22,25,.07);z-index:6}
@@ -155,6 +167,11 @@ textarea.ver{display:block}
     <option value="baja">Baja (${datos.filter(f => f.q === 'baja').length})</option>
   </select>
   <select id="fc"><option value="">Todas las categorías</option>${cats.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+  <select id="fo">
+    <option value="">Todo tipo de agrupación</option>
+    <option value="regla">Por marca / función (${datos.filter(f => f.o === 'regla').length})</option>
+    <option value="nombre">Por medida (${datos.filter(f => f.o === 'nombre').length})</option>
+  </select>
   <select id="fd">
     <option value="">Decididas y sin decidir</option>
     <option value="pend">Solo sin decidir</option>
@@ -194,15 +211,17 @@ function contar(){
 }
 
 function visibles(){
-  const q = $('#fq').value, c = $('#fc').value, d = $('#fd').value;
+  const q = $('#fq').value, c = $('#fc').value, d = $('#fd').value, o = $('#fo').value;
   const b = $('#fb').value.trim().toLowerCase();
   return FAM.filter(f => {
     if (q && f.q !== q) return false;
     if (c && f.c !== c) return false;
+    if (o && f.o !== o) return false;
     const dec = D[f.i] || 'pend';
     if (d && dec !== d) return false;
     if (b){
-      const heno = (f.f + ' ' + f.c + ' ' + f.s + ' ' + f.p.map(p => p[0] + ' ' + p[1] + ' ' + p[2]).join(' ')).toLowerCase();
+      const heno = (f.f + ' ' + f.c + ' ' + f.g.map(g =>
+        g.t + ' ' + g.p.map(p => p[0] + ' ' + p[1] + ' ' + p[2]).join(' ')).join(' ')).toLowerCase();
       if (!heno.includes(b)) return false;
     }
     return true;
@@ -223,7 +242,7 @@ function render(){
           <span class="chip q-\${f.q}">\${f.q}</span>
           <div class="centro">
             <div class="nom">\${esc(f.f)}</div>
-            <div class="ruta">\${esc(f.s)} · \${f.n} productos · \${f.d} medidas distintas</div>
+            <div class="ruta">\${f.n} productos · \${f.g.length} subgrupo\${f.g.length > 1 ? 's' : ''}: \${esc(f.g.slice(0, 4).map(g => g.t + ' (' + g.n + ')').join(', '))}\${f.g.length > 4 ? '…' : ''}</div>
             \${f.a.length ? \`<div class="alertas">⚠ \${esc(f.a.join(' · '))}</div>\` : ''}
           </div>
           <div class="acciones">
@@ -232,12 +251,14 @@ function render(){
           </div>
         </div>
         <div class="detalle">
-          <table><thead><tr><th>Medida</th><th>Código</th><th>Nombre actual</th></tr></thead><tbody>
-          \${f.p.map(p => \`<tr>
-            <td class="td-med mono">\${p[1] ? esc(p[1]) : '<span class="vacia">sin medida</span>'}</td>
-            <td class="td-cod mono">\${esc(p[0])}</td>
-            <td>\${esc(p[2])}</td></tr>\`).join('')}
-          </tbody></table>
+          \${f.g.map(g => \`
+            <div class="sub-tit">\${esc(g.t)} <span>\${g.n}</span></div>
+            <table><thead><tr><th>Medida</th><th>Código</th><th>Nombre actual</th></tr></thead><tbody>
+            \${g.p.map(p => \`<tr>
+              <td class="td-med mono">\${p[1] ? esc(p[1]) : '<span class="vacia">sin medida</span>'}</td>
+              <td class="td-cod mono">\${esc(p[0])}</td>
+              <td>\${esc(p[2])}</td></tr>\`).join('')}
+            </tbody></table>\`).join('')}
         </div>
       </article>\`).join('')}\`).join('');
   contar();
@@ -257,7 +278,7 @@ $('#lista').addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('fila')){ e.preventDefault(); e.target.click(); }
 });
 
-for (const id of ['#fq', '#fc', '#fd']) $(id).addEventListener('change', render);
+for (const id of ['#fq', '#fc', '#fd', '#fo']) $(id).addEventListener('change', render);
 $('#fb').addEventListener('input', render);
 
 $('#bSiAlta').addEventListener('click', () => {
