@@ -51,6 +51,23 @@ Perfiles Macizos                       Perfiles Macizos
 
 Con buscador dentro de la familia cuando pase de ~15 medidas.
 
+## Dónde agrupa y dónde no (decidido por Gonzalo, 2026-07-31)
+
+La agrupación **no sustituye** la vista actual: convive con ella.
+
+| Dónde está el cliente | Qué ve |
+|---|---|
+| **Todas las categorías** | **Todas las fichas, una por producto** — igual que hoy, sin agrupar |
+| Dentro de una categoría | Las familias aprobadas como ficha única, más los productos sueltos |
+| Buscando algo | Resultados producto por producto (la búsqueda no agrupa) |
+
+Así la vista general sigue siendo el catálogo completo — útil para quien explora o
+compara — y el agrupamiento solo entra donde de verdad estorba el ruido: al bajar a
+una categoría con veinte soleras seguidas.
+
+Además, **solo se agrupa lo aprobado**. Una familia sin aprobar sigue mostrando sus
+productos sueltos, así que se puede encender de a poco.
+
 ## Lo que NO cambia (importante)
 
 **Cada medida sigue siendo su propio producto, con su propio código.** La agrupación
