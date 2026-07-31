@@ -1,5 +1,5 @@
 import { fetchCatalogo, agruparCategorias } from '../core/catalogService.js';
-import { state, DATA, setCatalogData, CONFIG, cargarFotosManifest } from '../core/store.js';
+import { state, DATA, setCatalogData, CONFIG, cargarFotosManifest, CAT_OCULTA } from '../core/store.js';
 import { addToCartLogic, setQtyLogic, buildWhatsAppUrl } from '../core/cartService.js';
 import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, PIN_SVG } from './ui.js';
 
@@ -105,7 +105,11 @@ async function init() {
       // El archivo local es la copia INTERNA: trae el proveedor de todos los
       // productos. Aquí se respeta el mismo interruptor que aplica la vista de
       // Supabase, para que el respaldo nunca publique lo que la base oculta.
-      const productos = local.productos.map(p => Object.assign({}, p, { prov: p.mprov ? (p.prov || '') : '' }));
+      // Y se descartan los descontinuados: la vista de Supabase ya los filtra,
+      // así que el respaldo no puede ser la vía por la que se cuelen.
+      const productos = local.productos
+        .filter(p => p.cat !== CAT_OCULTA)
+        .map(p => Object.assign({}, p, { prov: p.mprov ? (p.prov || '') : '' }));
       datos = { productos, categorias: agruparCategorias(productos), total: productos.length };
     }
   }

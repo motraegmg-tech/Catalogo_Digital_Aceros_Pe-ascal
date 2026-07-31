@@ -10,6 +10,12 @@ export const CONFIG = {
   pageSize: 48,
 };
 
+/* Categoría de retiro: lo que se clasifique aquí NO se muestra al cliente.
+   El filtro de verdad está en la vista `catalogo_publico` de Supabase, así que
+   estos productos ni siquiera se descargan. Este nombre se usa para filtrar
+   también el respaldo local, que es el otro camino por el que podrían colarse. */
+export const CAT_OCULTA = 'Productos Descontinuados / Ocultos';
+
 export const LS_CART = 'ap_cart';
 export const LS_OVR = 'ap_overrides';
 export const LS_VIEW = 'ap_view';

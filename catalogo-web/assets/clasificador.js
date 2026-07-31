@@ -8,6 +8,11 @@
    productos con campo efectivo sub2. Los avances v1 se migran solos. */
 
 const POR = 'POR CLASIFICAR';
+/* Categoría de retiro. Lo que se clasifique aquí desaparece del catálogo del
+   cliente: la vista `catalogo_publico` de Supabase la filtra, así que esos
+   productos ni siquiera se descargan. Aquí SÍ se siguen viendo y editando,
+   para poder devolverlos al catálogo cuando haga falta. */
+const CAT_OCULTA = 'Productos Descontinuados / Ocultos';
 const LS_KEY = 'ap_clasificador_v1';
 const SEP = '';                 // separador interno (valores compuestos)
 const PAGE_LISTA = 100, PAGE_PREVIA = 60;
@@ -58,12 +63,19 @@ function rutaTxt(cat, sub, sub2){ return cat + (sub&&sub!==cat?' › '+sub:'') +
 
 /* ---------- estado persistente (WORK) ---------- */
 /* Taxonomía v2: [{nombre, subs:[{nombre, subs:[string]}]}] (3er nivel = strings) */
+/* La categoría de retiro debe existir SIEMPRE, aunque esté vacía: la taxonomía
+   se deriva de las categorías que ya tienen productos, así que sin esto no
+   habría dónde soltar el primero. */
+function asegurarCatOculta(tax){
+  if (!tax.some(c=>norm(c.nombre)===norm(CAT_OCULTA))) tax.push({ nombre:CAT_OCULTA, subs:[] });
+  return tax;
+}
 function taxDesdeBase(){
-  return DATA.categorias
+  return asegurarCatOculta(DATA.categorias
     .filter(c=>c.nombre!==POR)
     .map(c=>({ nombre:c.nombre,
       subs: asArray(c.subs).map(s=>s.nombre).filter(s=>s!==c.nombre)
-        .sort(alfa).map(s=>({nombre:s, subs:[]})) }));
+        .sort(alfa).map(s=>({nombre:s, subs:[]})) })));
 }
 function nuevoTrabajo(){
   return { version:2, creado:hoyISO(), guardado:null, baseGenerado:DATA.generado||'',
@@ -78,6 +90,7 @@ function migrar(w){
       : {nombre:s.nombre, subs:(s.subs||[]).map(x=>typeof x==='string'?x:x.nombre)}),
   }));
   w.version = 2;
+  asegurarCatOculta(w.taxonomia);   // trabajos guardados antes de que existiera
   w.asignaciones = w.asignaciones||{}; w.ediciones = w.ediciones||{};
   w.etiquetas = w.etiquetas||{}; w.bitacora = w.bitacora||[];
   return w;
