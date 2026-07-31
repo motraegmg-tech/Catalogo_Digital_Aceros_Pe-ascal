@@ -13,6 +13,13 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
 - **3,222 productos** reales en **14 categorías** con subcategorías.
 - Navegación por categoría/subcategoría + **búsqueda** tolerante a acentos (nombre, código, medida).
 - **Ficha** de producto con foto (o marcador "Sin foto").
+- **Orden alfabético A→Z de corrido** (decisión de Gonzalo, 2026-07-31). Navegando, *todo*
+  va A→Z en **una sola pasada**: los productos, la lista de categorías, los chips de
+  subcategoría y las tarjetas de la grilla —sean fichas de familia o productos sueltos, van
+  entremezcladas. Buscando manda el ranking de relevancia de `searchService`.
+  ⚠️ Esto **reemplaza** la regla anterior de «con foto primero», que partía el catálogo en
+  dos abecedarios: se bajaba hasta la Z y volvía a empezar en la A con los 357 sin foto.
+  Para recuperarla habría que volver a partir la lista en `filteredProducts()`.
 - **Fichas de familia**: dentro de una categoría, los productos que solo cambian de medida
   (las 32 soleras) o de modelo dentro de una marca/función (los discos de corte) se
   presentan como **una sola tarjeta**. Al abrirla trae la **tabla de medidas** con su
@@ -57,10 +64,15 @@ Solo se agrupa **lo aprobado a mano**: una familia sin aprobar sigue mostrando s
 sueltos. Hoy son **173 fichas** que cubren **1,576 productos**; navegando por categoría el
 catálogo pasa de 3,222 a **1,831 tarjetas**.
 
-Dentro de la categoría el orden es **alfabético A→Z**: primero las fichas de familia (el
-resumen de la categoría) y debajo los productos sueltos. Dentro de la ficha, en cambio, las
-filas van **por medida de menor a mayor**, comparando todos los números (`1/8 X 1/2"` →
-`1/8 X 1"` → `1/8 X 1 1/2"` → `3/16 X 1/2"`), con milímetros convertidos a pulgadas.
+Dentro de la ficha las filas van **por medida de menor a mayor**, comparando todos los
+números (`1/8 X 1/2"` → `1/8 X 1"` → `1/8 X 1 1/2"` → `3/16 X 1/2"`), con milímetros
+convertidos a pulgadas.
+
+La tarjeta de familia lleva la **misma etiqueta de subcategoría** que un producto suelto
+(«Solera», «Ángulos»), calculada sobre los productos que la ficha muestra hoy —no sobre el
+dato guardado al aprobarla—, y la ficha abre con la ruta **Categoría › Subcategoría**. Las
+14 familias que traen subgrupos de verdad (Discos → Corte · Desbaste · Diamante…) los
+muestran como secciones dentro de la tabla.
 
 Una familia que abarca dos categorías se muestra completa **solo en su categoría principal**
 (donde tiene más productos), para no salir duplicada ni partida. Sus pocos productos de otra

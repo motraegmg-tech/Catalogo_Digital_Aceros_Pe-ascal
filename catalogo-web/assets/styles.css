@@ -179,6 +179,8 @@ select,input{font-family:inherit}
 .fam-foto{flex:0 0 96px;width:96px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .fam-foto .thumb{aspect-ratio:1/1}
 .fam-head-txt{min-width:0}
+/* Ruta "Categoría › Subcategoría": el separador no compite con los nombres. */
+.fam-head-txt .modal-cat span{color:var(--acero-2);margin:0 3px;font-weight:400}
 .fam-name{font-size:22px;font-weight:700;line-height:1.2;margin:4px 0 6px}
 .fam-meta{margin:0;font-size:12.5px;color:var(--gris)}
 

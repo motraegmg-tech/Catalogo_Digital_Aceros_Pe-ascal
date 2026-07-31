@@ -23,6 +23,24 @@ export function clasifLabel(p) {
   return { txt: 'Por clasificar', pend: true };
 }
 
+/**
+ * La misma etiqueta, para una ficha de familia. Se calcula sobre los productos
+ * que la ficha muestra hoy —no sobre el dato guardado al aprobarla— para que no
+ * envejezca cuando algo se reclasifica.
+ *
+ * Una familia puede abarcar varias subcategorías (Ángulos + Cuadrados): se
+ * nombran las dos primeras. Si ninguna aporta detalle, cae a la categoría, igual
+ * que un producto suelto.
+ */
+export function clasifLabelFamilia(fam, productos) {
+  const subs = [...new Set(productos.map(p => p.sub))]
+    .filter(s => s && s !== POR_CLASIF && s !== fam.cat)
+    .sort(alfa);
+  if (subs.length) return { txt: subs.slice(0, 2).join(' · ') + (subs.length > 2 ? ` +${subs.length - 2}` : ''), pend: false };
+  if (fam.cat && fam.cat !== POR_CLASIF) return { txt: fam.cat, pend: false };
+  return { txt: 'Por clasificar', pend: true };
+}
+
 function fuentesFoto(p) {
   const out = [];
   if (typeof p.foto === 'string' && /^https?:\/\//i.test(p.foto)) out.push(p.foto);
@@ -63,19 +81,6 @@ function tienefoto(p) {
 /** Orden alfabético A→Z aplicado al nombre de un producto (ver `alfa`). */
 export const alfaNombre = (a, b) => alfa(a.nom, b.nom);
 
-/**
- * Ordena la lista poniendo primero los productos CON foto.
- * Decisión de Gonzalo (2026-07-31): dentro de cada grupo el orden es alfabético
- * ascendente por nombre, en todas las categorías y subcategorías.
- * Solo se usa en modo navegación (sin búsqueda activa).
- */
-function sortWithPhotosFirst(lista) {
-  // Separar en dos grupos, ordenar cada uno A→Z y concatenar: con foto → sin foto
-  const conFoto = lista.filter(tienefoto).sort(alfaNombre);
-  const sinFoto = lista.filter(p => !tienefoto(p)).sort(alfaNombre);
-  return conFoto.concat(sinFoto);
-}
-
 export function getSearchResults() {
   return state.q ? searchAndSortProducts(state.q, DATA.productos) : DATA.productos;
 }
@@ -87,12 +92,11 @@ export function filteredProducts() {
     return true;
   });
 
-  // Cuando el usuario está navegando (sin término de búsqueda), mostrar primero
-  // los productos con foto para mejorar la experiencia visual del catálogo.
-  // Con búsqueda activa se respeta el ranking de relevancia de searchService.
-  if (!state.q.trim()) {
-    return sortWithPhotosFirst(result);
-  }
+  /* Navegando (sin término de búsqueda) el orden es alfabético A→Z **de corrido**,
+     una sola pasada. Antes los productos con foto iban primero y los sin foto
+     después, pero eso partía el catálogo en dos abecedarios: se bajaba hasta la Z
+     y volvía a empezar en la A. Buscando manda el ranking de searchService. */
+  if (!state.q.trim()) return result.slice().sort(alfaNombre);
   return result;
 }
 
@@ -107,6 +111,9 @@ export function filteredProducts() {
 const MIN_EN_FICHA = 2;
 
 export const agrupando = () => !!state.cat && !state.q.trim() && hayFamilias();
+
+/** El nombre con el que una tarjeta se ordena y se lee, sea de familia o de producto. */
+export const rotulo = (e) => e.tipo === 'familia' ? e.fam.nombre : e.p.nom;
 
 /**
  * Lo que se pinta en la grilla: fichas de familia y productos sueltos mezclados.
@@ -138,11 +145,11 @@ export function filteredEntries() {
     .filter(p => { const f = familiaDe(p); return !f || !fichas.has(f.id); })
     .map(p => ({ tipo: 'producto', p }));
 
-  // Las fichas primero: son el resumen de la categoría. Entre ellas van en orden
-  // alfabético por nombre de familia, igual que los productos sueltos de abajo,
-  // para que toda la categoría se lea A→Z sin importar el tipo de tarjeta.
-  const ordenadas = [...fichas.values()].sort((a, b) => alfa(a.fam.nombre, b.fam.nombre));
-  return ordenadas.concat(sueltos);
+  /* Una sola corrida A→Z mezclando fichas y sueltos. Ponerlas en dos bloques
+     —primero todas las fichas, luego todos los productos— hacía que la categoría
+     llegara a la Z y volviera a empezar en la A: la ficha de SOLERA quedaba
+     lejísimos de la solera suelta que no entró en ninguna familia. */
+  return [...fichas.values(), ...sueltos].sort((a, b) => alfa(rotulo(a), rotulo(b)));
 }
 
 /** Portada de la ficha: la primera medida que sí tiene foto; si ninguna, la de en medio. */
@@ -169,7 +176,9 @@ export function renderSidebar(onCatSelect) {
   all.onclick = () => onCatSelect(null);
   s.appendChild(all);
 
-  DATA.categorias.forEach(c => {
+  // A→Z, no en el orden en que aparecen en los datos: la lista de categorías se
+  // recorre con la vista y hay que poder ir directo a la que se busca.
+  [...DATA.categorias].sort((a, b) => alfa(a.nombre, b.nombre)).forEach(c => {
     const n = conteos ? (conteos.get(c.nombre) || 0) : c.n;
     if (!n) return;
     const b = el('button', 'cat-btn' + (state.cat === c.nombre ? ' on' : ''), `<span>${esc(c.nombre)}</span><span class="n">${n.toLocaleString('es-MX')}</span>`);
@@ -188,7 +197,8 @@ export function renderSubchips(onCatSelect, onSubSelect) {
     const all = el('button', 'chip' + (state.cat ? '' : ' on'), `Todo el catálogo · ${res.length.toLocaleString('es-MX')}`);
     all.onclick = () => onCatSelect(null);
     wrap.appendChild(all);
-    [...conteos.entries()].sort((a, b) => b[1] - a[1]).forEach(([nombre, n]) => {
+    // Buscando manda la relevancia: la categoría con más aciertos va primero.
+    [...conteos.entries()].sort((a, b) => b[1] - a[1] || alfa(a[0], b[0])).forEach(([nombre, n]) => {
       const c = el('button', 'chip' + (state.cat === nombre ? ' on' : ''), `${esc(nombre)} · ${n.toLocaleString('es-MX')}`);
       c.onclick = () => onCatSelect(nombre);
       wrap.appendChild(c);
@@ -205,7 +215,8 @@ export function renderSubchips(onCatSelect, onSubSelect) {
   all.onclick = () => onSubSelect(null);
   wrap.appendChild(all);
 
-  subs.forEach(su => {
+  // También A→Z: navegando, todo el catálogo se lee en el mismo orden.
+  [...subs].sort((a, b) => alfa(a.nombre, b.nombre)).forEach(su => {
     const c = el('button', 'chip' + (state.sub === su.nombre ? ' on' : ''), `${esc(su.nombre)} · ${su.n}`);
     c.onclick = () => onSubSelect(su.nombre);
     wrap.appendChild(c);
@@ -248,7 +259,10 @@ function cardFamilia(entry, onViewFam) {
   body.appendChild(name);
 
   const meta = el('div', 'card-meta');
-  meta.appendChild(el('span', 'tag sub', esc(fam.cat)));
+  // Misma etiqueta que un producto suelto: la subcategoría, que es lo que ubica
+  // la ficha. La categoría ya la sabe el cliente, que está parado en ella.
+  const cl = clasifLabelFamilia(fam, productos);
+  meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
   const medidas = new Set(productos.map(p => (p.med || '').trim()).filter(Boolean)).size;
   if (medidas > 1) meta.appendChild(el('span', 'med-box', `<i>Medidas</i><b>${medidas} para elegir</b>`));
   body.appendChild(meta);
@@ -317,8 +331,12 @@ export function buildFichaFamilia(entry, onAgregar) {
   const ph = thumb(portadaDe(productos)); ph.style.cursor = 'default';
   foto.appendChild(ph);
   const grupos = ordenSubgrupos(fam.id).filter(g => g && g !== '—');
+  // Ruta completa "Categoría › Subcategoría": dentro de la ficha ya no está el
+  // contexto de la grilla, así que hay que decir de dónde salió.
+  const cl = clasifLabelFamilia(fam, productos);
+  const ruta = cl.txt === fam.cat ? esc(fam.cat) : `${esc(fam.cat)} <span>›</span> ${esc(cl.txt)}`;
   const txt = el('div', 'fam-head-txt', `
-    <div class="modal-cat">${esc(fam.cat)}</div>
+    <div class="modal-cat">${ruta}</div>
     <h2 class="fam-name">${esc(fam.nombre)}</h2>
     <p class="fam-meta">${productos.length} productos${grupos.length > 1 ? ` · ${grupos.length} grupos` : ''} · elige medida y cantidad</p>`);
   head.append(foto, txt);

@@ -159,9 +159,13 @@ quedaron en `datos/familias_aprobadas.json`.
 **Lo que ve el cliente**
 
 - La grilla de una categoría muestra **fichas de familia** — tarjeta con sello rojo
-  («14 productos»), cuántas medidas hay para elegir, los subgrupos que trae dentro y el
-  botón **Elegir medidas**.
-- La **ficha** abre a lo ancho: portada, tabla de medidas con código y contador por fila,
+  («14 productos»), su **subcategoría** («Solera», «Ángulos») igual que un producto suelto,
+  cuántas medidas hay para elegir, los subgrupos que trae dentro y el botón
+  **Elegir medidas**. Las fichas van **entremezcladas A→Z con los productos sueltos**, no en
+  un bloque aparte: `ANGULO` (ficha) · `ANGULO 1/8" X 1" PESADO` (suelto) · `ANGULO LIGERO`
+  (ficha) · `ANGULO RANURADO` (suelto)…
+- La **ficha** abre a lo ancho con la ruta **Categoría › Subcategoría**: portada, tabla de
+  medidas con código y contador por fila,
   y las filas elegidas resaltadas. Se abre con 12 medidas por subgrupo y un
   «Ver las 20 restantes»; arriba de 15 medidas trae su **buscador interno**.
 - El botón del pie dice **«Agregar 3 productos al pedido»** y manda **todas las medidas
