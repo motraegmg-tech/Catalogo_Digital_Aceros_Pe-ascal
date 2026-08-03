@@ -117,11 +117,22 @@ function persistir(){
   programarSyncSupabase();       // sincronización en línea: sube cambios a Supabase
 }
 
+/* ---------- modo MOTRAE (?dev=1) ----------
+   El clasificador lo usa a diario el encargado de Aceros Peñascal, que no
+   programa. Las herramientas que sólo tienen sentido con el repositorio
+   delante —escribir en la carpeta data/, exportar los archivos del catálogo—
+   se esconden salvo que se abra con `?dev=1`.
+
+   No es seguridad (cualquiera puede escribir eso en la barra de direcciones):
+   es quitar de en medio botones que a un trabajador sólo pueden confundirlo,
+   como un selector de carpetas que le pregunta si escribir archivos ahí. */
+const MODO_DEV = new URLSearchParams(location.search).get('dev') === '1';
+
 /* ---------- conexión directa con el catálogo (File System Access) ----------
-   Con la carpeta catalogo-web/data/ conectada (elegida UNA vez por el usuario),
-   cada cambio reescribe productos.js y productos.json ahí mismo: los cambios
-   viven en el código original del catálogo. El permiso queda recordado en
-   IndexedDB; al reabrir, el navegador puede pedir reconfirmar con un clic. */
+   Sólo en modo MOTRAE. Con la carpeta catalogo-web/data/ conectada (elegida UNA
+   vez), cada cambio reescribe productos.js y productos.json ahí mismo. Hoy es
+   un camino secundario: la fuente de verdad es Supabase y esos archivos son el
+   respaldo del repositorio, que se regenera mejor con `node sync-local.mjs`. */
 const FS = { dir:null, estado:'off', ultimo:null }; // off | prompt | on | error | nosoporte
 const IDB_NOMBRE = 'ap_clasificador_fs', IDB_STORE = 'handles';
 
@@ -161,6 +172,10 @@ async function idbDel(k){
 }
 
 async function initFs(){
+  /* Sin modo MOTRAE no se toca nada: ni se lee IndexedDB ni se comprueban
+     permisos de carpeta. Así el navegador nunca le enseña a un trabajador un
+     aviso de acceso a archivos que no sabría cómo interpretar. */
+  if (!MODO_DEV){ FS.estado='off'; return; }
   if (!window.showDirectoryPicker){ FS.estado='nosoporte'; renderFsEstado(); return; }
   try{
     const dir = await idbGet('dir');
@@ -257,6 +272,7 @@ async function guardarEnCatalogo(origen){
 }
 
 function renderFsEstado(){
+  if (!MODO_DEV) return;
   const btn = $('#fsBtn'), txt = $('#fsTxt');
   if (!btn || !txt) return;
   const hora = FS.ultimo ? FS.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : null;
@@ -283,6 +299,7 @@ function renderFsEstado(){
 }
 
 function pintarFsDatos(){
+  if (!MODO_DEV) return;
   const d = $('#fsDatosTxt'); if (!d) return;
   const hora = FS.ultimo ? FS.ultimo.toLocaleString('es-MX') : '—';
   const estados = {
@@ -2864,6 +2881,10 @@ function renderAll(){
 
 /* ---------- init ---------- */
 function init(){
+  /* Lo de MOTRAE, fuera de la vista del encargado salvo con ?dev=1. Va lo
+     primero para que esos botones no lleguen ni a parpadear en pantalla. */
+  if (MODO_DEV) document.querySelectorAll('.solo-dev').forEach(n=>{ n.hidden = false; });
+
   construirProductos();
   calcularSugerencias();
   llenarProveedores();

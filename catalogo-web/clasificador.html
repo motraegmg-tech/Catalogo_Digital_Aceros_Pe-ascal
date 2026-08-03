@@ -58,9 +58,13 @@
 </nav>
 
 <div class="autosave-note">
-  <button id="fsBtn" class="fs-btn" hidden></button>
-  <span id="fsTxt"></span>
-  <span class="sep-dot">·</span>
+  <!-- Escritura directa en la carpeta del repositorio: herramienta de MOTRAE,
+       no del encargado. Sólo aparece con ?dev=1 (ver MODO_DEV en clasificador.js). -->
+  <span class="solo-dev" hidden>
+    <button id="fsBtn" class="fs-btn" hidden></button>
+    <span id="fsTxt"></span>
+    <span class="sep-dot">·</span>
+  </span>
   <span id="sbTxt" class="sb-head"></span>
   <span class="sep-dot">·</span>
   <span id="pullTxt" class="sb-head"></span>
@@ -277,12 +281,14 @@
     <button class="modal-close" id="datosClose" aria-label="Cerrar">×</button>
     <h3 class="modal-title">Guardar, importar y exportar</h3>
     <div id="datosStats" class="datos-stats"></div>
-    <div class="datos-sec">Conexión directa con el catálogo</div>
-    <div id="fsDatosTxt" class="datos-stats"></div>
-    <div class="datos-row">
-      <button id="btnFsConectar" class="btn-datos">🔗 Conectar carpeta data/</button>
-      <button id="btnFsGuardar" class="btn-datos">⟳ Guardar en el catálogo ahora</button>
-      <button id="btnFsDesconectar" class="btn-datos btn-danger">Desconectar</button>
+    <div class="solo-dev" hidden>
+      <div class="datos-sec">Conexión directa con el catálogo <span class="dev-tag">MOTRAE</span></div>
+      <div id="fsDatosTxt" class="datos-stats"></div>
+      <div class="datos-row">
+        <button id="btnFsConectar" class="btn-datos">🔗 Conectar carpeta data/</button>
+        <button id="btnFsGuardar" class="btn-datos">⟳ Guardar en el catálogo ahora</button>
+        <button id="btnFsDesconectar" class="btn-datos btn-danger">Desconectar</button>
+      </div>
     </div>
     <div class="datos-sec">Sincronización en línea (Supabase)</div>
     <div id="sbEstadoTxt" class="datos-stats"></div>
@@ -331,19 +337,23 @@
       <button id="sbSync" class="btn-datos">☁ Sincronizar ahora</button>
       <button id="sbLogout" class="btn-datos btn-danger">Cerrar sesión</button>
     </div>
-    <p class="datos-nota">Inicia sesión <b>una vez</b>: cada reclasificación se guarda sola en la base en línea (<code>Supabase</code>) y el catálogo público la refleja al refrescar. Con la <b>conexión directa</b> de arriba activa, además se reescriben los archivos locales <code>data/</code>. Sin sesión, tus cambios se guardan localmente y quedan pendientes de subir.</p>
+    <p class="datos-nota">Inicia sesión <b>una vez</b>: cada cambio se guarda solo en la base en línea y el catálogo lo refleja al refrescar. Sin sesión, tus cambios se quedan en esta computadora y nadie más los ve.</p>
     <div class="datos-sec">Avance de trabajo</div>
     <div class="datos-row">
       <button id="expAvance" class="btn-datos">💾 Guardar avance (.json)</button>
       <button id="impAvance" class="btn-datos">📂 Importar avance</button>
     </div>
-    <div class="datos-sec">Entregables</div>
-    <div class="datos-row">
-      <button id="expCSV" class="btn-datos">📄 catalogo_categorizado.csv</button>
-      <button id="expJS" class="btn-datos">🧩 productos.js (catálogo)</button>
-      <button id="expJSON" class="btn-datos">🗄 productos.json (Supabase)</button>
+    <p class="datos-nota">Copia de seguridad de <b>tu</b> avance en esta computadora. No hace falta para el día a día: lo que importa ya está en la base.</p>
+    <div class="solo-dev" hidden>
+      <div class="datos-sec">Entregables <span class="dev-tag">MOTRAE</span></div>
+      <div class="datos-row">
+        <button id="expCSV" class="btn-datos">📄 catalogo_categorizado.csv</button>
+        <button id="expJS" class="btn-datos">🧩 productos.js (catálogo)</button>
+        <button id="expJSON" class="btn-datos">🗄 productos.json (Supabase)</button>
+      </div>
+      <p class="datos-nota">Archivos para el repositorio. Para regenerarlos desde la base lo normal es
+        <code>node sync-local.mjs</code>; estos botones son el camino manual.</p>
     </div>
-    <p class="datos-nota">Con la <b>conexión directa</b> activa, <code>productos.js</code> y <code>productos.json</code> se reescriben solos en <code>catalogo-web/data/</code> tras cada cambio (el catálogo se actualiza al refrescarlo). Los exportadores de abajo quedan como respaldo manual.</p>
     <div class="datos-sec danger">Zona de riesgo</div>
     <div class="datos-row">
       <button id="btnReset" class="btn-datos btn-danger">Reiniciar trabajo (borrar avance)</button>

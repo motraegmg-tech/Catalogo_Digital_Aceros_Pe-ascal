@@ -5,9 +5,23 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
 **Supabase + Next.js** sin rehacer la interfaz.
 
 ## Cómo abrirlo
-- **Rápido:** doble clic en `index.html` (los datos se cargan desde `data/productos.js`).
-- **Como app/PWA instalable:** servir la carpeta por HTTP, p. ej. `npx serve` en
-  `catalogo-web\` y abrir la URL. (El manifest y la instalación requieren HTTP.)
+
+| | Enlace / forma | Notas |
+|---|---|---|
+| **Catálogo** (clientes) | https://catalogo-digital-aceros-penascal.vercel.app/ | |
+| **Panel de administración** | …/clasificador.html | Lo usa el encargado |
+| Panel en modo MOTRAE | …/clasificador.html**?dev=1** | Añade las herramientas del repositorio |
+
+⚠️ **El catálogo ya NO se abre con doble clic.** Usa módulos ES (`<script type="module">`),
+y Chrome y Edge los bloquean bajo `file://` (origen opaco → CORS). Necesita servirse por HTTP:
+en la nube lo hace Vercel; en local, `npx serve` dentro de `catalogo-web\`. *(El README decía lo
+contrario desde que el catálogo pasó a módulos; corregido el 2026-08-03.)*
+
+El **clasificador** sí sigue abriéndose con doble clic: usa scripts clásicos a propósito, para
+que nunca dependa de tener un servidor a mano.
+
+**Un trabajador no necesita instalar nada**: navegador y el enlace. Ni repositorio, ni Node, ni
+permisos de carpeta.
 
 ## Qué incluye (estado actual)
 - **3,222 productos** reales en **14 categorías** con subcategorías.
@@ -307,16 +321,29 @@ Está dividido en **cinco pestañas**, una por tipo de trabajo:
 - **Seguridad del trabajo**: autoguardado en localStorage (solo deltas), botón
   Deshacer (Ctrl+Z), bitácora de cambios, exportar/importar avance (.json, formato
   v2 con 3 niveles; los respaldos v1 se migran solos al importarlos).
-- **Conexión directa con el catálogo**: con el botón "🔗 Conectar con el catálogo"
-  (barra superior) eliges UNA vez la carpeta `catalogo-web/data/`; desde entonces
-  **cada cambio reescribe solo `productos.js` y `productos.json`** ahí mismo — los
-  cambios viven en el código original y el catálogo se actualiza al refrescarlo.
-  El permiso queda recordado (IndexedDB); al reabrir, el navegador puede pedir
-  reconfirmar con un clic ("Reconectar"). Requiere Edge/Chrome (File System
-  Access API).
-- **Entregables (respaldo manual)**: exporta `catalogo_categorizado.csv` (columnas
-  del pipeline + `subtipo` para el 3er nivel) y `productos.js` / `productos.json`
-  regenerados (incluyen campo `sub2`), por si prefieres reemplazar a mano.
+
+### Modo MOTRAE (`?dev=1`)
+
+Dos herramientas dejaron de tener sentido para quien usa el panel a diario y **sólo aparecen
+abriéndolo como `clasificador.html?dev=1`**:
+
+- **Conexión directa con el catálogo**: elegir UNA vez la carpeta `catalogo-web/data/` para que
+  cada cambio reescriba ahí `productos.js` y `productos.json` (File System Access; Edge/Chrome).
+- **Entregables**: exportar `catalogo_categorizado.csv`, `productos.js` y `productos.json`.
+
+**Por qué se escondieron** (2026-08-03): nacieron cuando el catálogo leía de esos archivos y
+escribirlos era la única forma de publicar. Hoy la fuente de verdad es Supabase y esos archivos
+son el respaldo del repositorio — que se regenera mejor con `node sync-local.mjs`, sin depender
+de una API del navegador que además fallaba en la máquina de Gonzalo. Para escribir en esa
+carpeta hay que tener el repositorio clonado, cosa que un trabajador no tiene ni debe tener.
+
+Lo que sí molestaba: un botón que abre un selector de carpetas y, si el trabajador elige mal,
+le pregunta *«La carpeta no contiene productos.js, ¿escribir los archivos aquí de todos modos?»*.
+Sin `?dev=1` el código **ni siquiera consulta IndexedDB ni pide permisos**, así que el navegador
+nunca le enseña un aviso de acceso a archivos.
+
+No es una medida de seguridad —cualquiera puede escribir `?dev=1`—, es quitar de en medio lo que
+sólo puede confundir.
 - **Vista catálogo**: alterna la lista de trabajo por una cuadrícula de tarjetas
   para ver cómo va quedando cada categoría.
 - **Proveedores** (desde la ficha del producto): los **3,222** productos traen su
@@ -384,9 +411,9 @@ La otra mitad de la historia son las **tres capas de guardado**, y que la **fuen
 compartida es Supabase**:
 
 1. **localStorage** del navegador — tu avance, por máquina.
-2. **Archivo local** `data/productos.js`/`.json` — se reescribe en tu disco con la
-   *Conexión directa* (File System Access). Es una copia/respaldo, **no** el punto
-   de encuentro entre las dos personas.
+2. **Archivo local** `data/productos.js`/`.json` — respaldo del repositorio, **no** el punto de
+   encuentro entre dos personas. Se regenera con `node sync-local.mjs` (o desde el clasificador
+   en [modo MOTRAE](#modo-motrae-dev1)).
 3. **Tabla `productos` de Supabase** — lo compartido. El catálogo público lee de aquí.
 
 - **Subir (push) — automático:** inicia sesión **una vez** en *Guardar / Exportar →
