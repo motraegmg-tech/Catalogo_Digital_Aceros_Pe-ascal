@@ -25,6 +25,7 @@ const AJUSTES = new Map();       // clave -> valor (json)
 let SUCS = [];                   // [{id?, clave, nombre, whatsapp, direccion, orden, activa}]
 let POPU = [];                   // filas de productos_populares
 let BUSQ = [];                   // filas de busquedas_populares
+let SOLICITUDES = [];            // quién está pidiendo acceso al panel
 let DESTACADOS = [];             // [{t:'p'|'f', c:'código o id'}]
 
 const PLUS = { panel:'productos', cargado:false, famQ:'', famCat:'', famCrit:'', popRango:'90' };
@@ -140,7 +141,8 @@ function irAPanel(nombre){
   if (enProd) renderSelbar();
   if (nombre === 'familias')   renderFamilias();
   if (nombre === 'destacados') renderDestacados();
-  if (nombre === 'ajustes')    renderAjustes();
+  // Las solicitudes caducan solas: se releen al entrar, no se guardan en caché.
+  if (nombre === 'ajustes')    cargarSolicitudes().then(renderAjustes);
   if (nombre === 'guia')       renderGuia();
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -1226,6 +1228,8 @@ function renderAjustes(){
     });
   }
 
+  renderAutorizador();
+  renderSolicitudes();
   renderSinonimos();
 
   // --- Criterios de agrupación ---
@@ -1261,6 +1265,82 @@ function renderAjustes(){
       cri.appendChild(caja);
     });
   }
+}
+
+/* ---------- quién autoriza las cuentas nuevas ----------
+   El PIN de alta se manda a este correo. Va en `ajustes` con publico=false para
+   que la dirección del dueño no viaje en el JSON que cualquiera puede
+   descargar del catálogo. */
+function autorizador(){
+  const v = AJUSTES.get('correo_autorizador');
+  return (v && typeof v === 'object') ? v : { correo:'', nombre:'' };
+}
+
+function renderAutorizador(){
+  const caja = $('#autorizadorCaja'); if (!caja) return;
+  const a = autorizador();
+  caja.innerHTML = `
+    <div class="autoriza-grid">
+      <div class="f-field"><label>Correo que recibe los PIN</label>
+        <input data-a="correo" type="email" value="${esc(a.correo||'')}" placeholder="dueño@acerospenascal.com" /></div>
+      <div class="f-field"><label>Cómo llamarlo</label>
+        <input data-a="nombre" value="${esc(a.nombre||'')}" placeholder="p. ej. Don Ramón, dueño" /></div>
+    </div>`;
+  caja.querySelectorAll('[data-a]').forEach(n=>{
+    n.oninput = ()=>{
+      const v = Object.assign({}, autorizador(), {[n.dataset.a]: n.value.trim()});
+      AJUSTES.set('correo_autorizador', v);
+    };
+  });
+  if (!a.correo){
+    caja.appendChild(el('div','autoriza-ojo',
+      '⚠ Sin este correo nadie puede darse de alta desde el panel. Ponlo y pulsa «☁ Publicar cambios».'));
+  }
+}
+
+/* Las solicitudes pendientes. Sólo las ven los editores (RLS), y el PIN sólo
+   aparece cuando el envío del correo falló — para que el responsable pueda
+   dictarlo por teléfono en vez de quedarse atascado. */
+async function cargarSolicitudes(){
+  if (!SBC || !SB.user) { SOLICITUDES = []; return; }
+  try{
+    const { data, error } = await SBC.from('solicitudes_acceso')
+      .select('*').eq('usada', false)
+      .gte('expira_en', new Date().toISOString())
+      .order('creada_en', { ascending:false }).limit(20);
+    SOLICITUDES = (!error && Array.isArray(data)) ? data : [];
+  }catch{ SOLICITUDES = []; }
+}
+
+function renderSolicitudes(){
+  const caja = $('#solicitudesCaja'); if (!caja) return;
+  caja.innerHTML = '';
+  if (!SB.user){
+    caja.appendChild(el('div','caja-nota','Inicia sesión para ver quién está pidiendo acceso.'));
+    return;
+  }
+  if (!SOLICITUDES.length){
+    caja.appendChild(el('div','caja-nota','No hay nadie esperando acceso ahora mismo.'));
+    return;
+  }
+  caja.appendChild(el('h4','soli-tit', `Pidiendo acceso ahora (${fmt(SOLICITUDES.length)})`));
+  SOLICITUDES.forEach(s=>{
+    const min = Math.max(0, Math.round((new Date(s.expira_en) - Date.now())/60000));
+    const fila = el('div','soli-fila');
+    fila.appendChild(el('span','soli-quien',
+      `${esc(s.nombre||'(sin nombre)')}<i>${esc(s.correo)}</i>`));
+    fila.appendChild(el('span','soli-tiempo', `caduca en ${min} min`));
+    if (s.pin_claro){
+      // El correo no salió: aquí está el PIN para dictarlo.
+      fila.appendChild(el('span','soli-pin', `PIN <b>${esc(s.pin_claro)}</b>`));
+    } else {
+      fila.appendChild(el('span','soli-enviado', `PIN enviado a ${esc(s.autorizador||'—')}`));
+    }
+    if (s.intentos) fila.appendChild(el('span','soli-intentos', `${s.intentos} intento(s) fallido(s)`));
+    caja.appendChild(fila);
+  });
+  caja.appendChild(el('p','caja-nota',
+    'Dale el PIN <b>sólo a quien reconozcas</b>. Si no sabes quién es, ignóralo: sin el PIN no puede entrar y la solicitud caduca sola.'));
 }
 
 /* ---------- diccionario de búsqueda ----------
@@ -1370,6 +1450,17 @@ async function publicarAjustes(){
     if (error){ aviso('⚠ Sucursal «'+s.nombre+'»: '+error.message); return; }
     if (data && data[0]) s.id = data[0].id;
   }
+  /* El correo del responsable NO es público: si viajara en el JSON que baja el
+     catálogo, la dirección del dueño quedaría a la vista de cualquiera. */
+  const a = autorizador();
+  if (a.correo && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(a.correo)){
+    aviso('⚠ El correo que recibe los PIN no es válido.'); return;
+  }
+  const { error: errAut } = await SBC.from('ajustes')
+    .upsert({ clave:'correo_autorizador', valor:a, publico:false, updated_by:SB_YO }, { onConflict:'clave' });
+  if (errAut){ aviso('⚠ No se pudo guardar quién autoriza: '+errAut.message); return; }
+  AJUSTES.set('correo_autorizador', a);
+
   const okT = await guardarAjuste('textos_catalogo', AJUSTES.get('textos_catalogo')||{});
   const okC = await guardarAjuste('criterios_agrupacion', criterios());
   // Sólo se publican las traducciones completas: una a medio escribir no aporta.
@@ -1395,7 +1486,15 @@ function renderGuia(){
        registrado en la <b>Bitácora</b> y se puede deshacer con <b>↩ Deshacer</b> (o Ctrl+Z).</p>
 
     <div class="guia-aviso">
-      <b>Antes que nada: inicia sesión.</b> Pulsa <b>«Guardar / Exportar»</b> arriba a la derecha y
+      <b>¿Es tu primera vez?</b> Pulsa <b>«Guardar / Exportar» → «＋ Crear mi cuenta»</b>, pon tu
+      nombre y tu correo, y pide el PIN. <b>El PIN no te llega a ti</b>: le llega al responsable
+      del catálogo, que te lo dará si te reconoce. Con ese número y la contraseña que elijas,
+      tu cuenta queda lista al instante. Es la forma de que nadie de fuera pueda entrar aunque
+      encuentre esta página.
+    </div>
+
+    <div class="guia-aviso">
+      <b>Y todos los días: inicia sesión.</b> Pulsa <b>«Guardar / Exportar»</b> arriba a la derecha y
       escribe tu correo y contraseña. Mira el indicador de arriba:
       <br>· <b>«● En línea»</b> → todo lo que hagas se guarda para todos. Perfecto.
       <br>· <b>«○ Sin sesión»</b> → tus cambios se quedan sólo en esta computadora y nadie más los ve.
@@ -1704,7 +1803,10 @@ function initPlus(){
   // Sesión y tiempo real van juntos: RLS no emite eventos a quien no ha entrado,
   // y el conteo de pedidos tampoco se puede leer sin ella.
   if (SBC) SBC.auth.onAuthStateChange((_ev, session)=>{
-    if (session?.user){ cargarPopulares(false); cargarEnLinea(true); iniciarRealtimePlus(); }
+    if (session?.user){
+      cargarPopulares(false); cargarEnLinea(true); iniciarRealtimePlus();
+      cargarSolicitudes().then(()=>{ if (PLUS.panel==='ajustes') renderSolicitudes(); });
+    }
     else pararRealtimePlus();
   });
 

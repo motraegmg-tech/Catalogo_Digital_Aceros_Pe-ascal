@@ -581,6 +581,37 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .dlg-foto-acts .btn-datos{padding:8px 12px;font-size:12px}
 .dlg-foto-nota{flex-basis:100%;font-size:10.5px;line-height:1.4;color:var(--gris)}
 
+/* ---- Alta de cuenta con PIN del responsable ---- */
+.alta-caja{margin-top:10px;border:2px solid var(--aqua-3);border-radius:12px;padding:13px 15px;background:#eaf7f9}
+.alta-pasos{display:flex;gap:8px;margin-bottom:10px}
+.alta-paso{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 11px;color:var(--gris)}
+.alta-paso.on{background:var(--aqua-3);border-color:var(--aqua-3);color:#fff}
+.alta-txt{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:var(--carbon)}
+.alta-estado{margin-top:9px;font-size:12px;line-height:1.45;color:var(--gris)}
+.alta-estado.mal{color:var(--oxido);font-weight:600}
+.alta-estado.bien{color:var(--zintro-2);font-weight:600}
+.alta-estado.ojo{color:#8a6414}
+
+/* ---- Quién autoriza y quién está pidiendo entrar ---- */
+.autoriza-caja{background:#fff;border:1px solid var(--line);border-left:4px solid var(--oxido);
+  border-radius:12px;padding:12px 14px;margin-bottom:11px}
+.autoriza-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.autoriza-ojo{margin-top:8px;font-size:11.5px;color:#8a6414;background:#fdf3e3;
+  border:1px solid #e3c98e;border-radius:8px;padding:7px 10px}
+.solicitudes-caja{display:grid;gap:7px}
+.soli-tit{margin:4px 0 2px;font-size:13px;color:var(--grafito)}
+.soli-fila{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fff;
+  border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px}
+.soli-quien{flex:1;min-width:150px;font-weight:600;color:var(--carbon)}
+.soli-quien i{display:block;font-style:normal;font-weight:400;font-size:10.5px;color:var(--gris)}
+.soli-tiempo{font-size:10.5px;color:var(--gris)}
+.soli-enviado{font-size:10.5px;color:var(--zintro-2)}
+.soli-intentos{font-size:10.5px;color:var(--oxido)}
+.soli-pin{background:#fdf3e3;border:1px solid #e3c98e;border-radius:8px;padding:4px 11px;
+  font-size:11px;color:#8a6414}
+.soli-pin b{font-family:var(--mono);font-size:16px;letter-spacing:3px;color:var(--oxido)}
+
 /* Diccionario de búsqueda */
 .sin-lista{display:grid;gap:8px;margin-bottom:10px}
 .sin-fila{display:flex;align-items:flex-end;gap:9px;background:#fff;border:1px solid var(--line);

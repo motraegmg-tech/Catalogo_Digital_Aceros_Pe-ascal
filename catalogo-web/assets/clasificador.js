@@ -533,6 +533,88 @@ async function sbLogout(){
   aviso('Sesión cerrada. Tus cambios se siguen guardando localmente (pendientes de subir).');
 }
 
+/* ---------- alta de cuenta con PIN del responsable ----------
+   Toda la seguridad vive en la Edge Function `acceso`: aquí sólo se piden los
+   datos y se muestra lo que responde. El PIN nunca pasa por este código — se lo
+   manda por correo al responsable, que decide si se lo da al solicitante. */
+const URL_ACCESO = (window.SUPA_CFG ? window.SUPA_CFG.URL : '') + '/functions/v1/acceso';
+
+async function llamarAcceso(cuerpo){
+  const r = await fetch(URL_ACCESO, {
+    method:'POST',
+    headers:{ apikey:window.SUPA_CFG.KEY, Authorization:'Bearer '+window.SUPA_CFG.KEY,
+              'Content-Type':'application/json' },
+    body: JSON.stringify(cuerpo),
+  });
+  let datos = {};
+  try{ datos = await r.json(); }catch{}
+  return { ok:r.ok, datos };
+}
+
+function altaEstado(txt, tipo){
+  const n = $('#altaEstado'); if (!n) return;
+  n.className = 'alta-estado' + (tipo ? ' '+tipo : '');
+  n.innerHTML = txt || '';
+}
+function altaPaso(n){
+  $('#altaPaso1').hidden = n !== 1;
+  $('#altaPaso2').hidden = n !== 2;
+  document.querySelectorAll('.alta-paso').forEach(p=>p.classList.toggle('on', +p.dataset.paso === n));
+}
+function abrirAltaCuenta(abrir){
+  const caja = $('#altaCuenta'); if (!caja) return;
+  caja.hidden = !abrir;
+  $('#sbCrear').textContent = abrir ? '✕ Cancelar registro' : '＋ Crear mi cuenta';
+  if (abrir){ altaPaso(1); altaEstado(''); $('#altaNombre').focus(); }
+}
+
+async function altaPedirPin(){
+  const nombre = ($('#altaNombre').value||'').trim();
+  const correo = ($('#altaCorreo').value||'').trim();
+  if (!correo){ altaEstado('Escribe tu correo.', 'mal'); return; }
+  const btn = $('#altaPedir'); btn.disabled = true; btn.textContent = 'Pidiendo…';
+  altaEstado('Avisando al responsable…');
+  const { ok, datos } = await llamarAcceso({ accion:'solicitar', correo, nombre });
+  btn.disabled = false; btn.textContent = 'Pedir PIN al responsable';
+  if (!ok){ altaEstado(esc(datos.error || 'No se pudo pedir el PIN.'), 'mal'); return; }
+
+  altaPaso(2);
+  $('#altaAviso').innerHTML = datos.enviado
+    ? `Le mandamos un PIN de 6 números a <b>${esc(datos.destino)}</b>. Pídeselo y escríbelo aquí
+       junto con la contraseña que quieras usar. Caduca en ${datos.minutos} minutos.`
+    : `Tu solicitud quedó registrada, pero <b>el correo no se pudo enviar</b>. Pídele el PIN
+       directamente al responsable: puede verlo en el clasificador, en «Sucursales y textos».`;
+  altaEstado(datos.enviado ? '' : esc(datos.aviso||''), datos.enviado ? '' : 'ojo');
+  $('#altaPin').focus();
+}
+
+async function altaCrearCuenta(){
+  const correo = ($('#altaCorreo').value||'').trim();
+  const nombre = ($('#altaNombre').value||'').trim();
+  const pin = ($('#altaPin').value||'').trim();
+  const p1 = $('#altaPass').value||'', p2 = $('#altaPass2').value||'';
+  if (!/^\d{6}$/.test(pin)){ altaEstado('El PIN son 6 números.', 'mal'); return; }
+  if (p1.length < 8){ altaEstado('La contraseña necesita al menos 8 caracteres.', 'mal'); return; }
+  if (p1 !== p2){ altaEstado('Las dos contraseñas no coinciden.', 'mal'); return; }
+
+  const btn = $('#altaCrear'); btn.disabled = true; btn.textContent = 'Creando…';
+  altaEstado('Comprobando el PIN…');
+  const { ok, datos } = await llamarAcceso({ accion:'registrar', correo, pin, password:p1, nombre });
+  btn.disabled = false; btn.textContent = 'Crear mi cuenta';
+  if (!ok){ altaEstado(esc(datos.error || 'No se pudo crear la cuenta.'), 'mal'); return; }
+
+  altaEstado('✓ Cuenta creada. Entrando…', 'bien');
+  // Entrar solo: quien acaba de registrarse no debería tener que escribirlo todo otra vez.
+  const { error } = await SBC.auth.signInWithPassword({ email:correo, password:p1 });
+  $('#altaPin').value=''; $('#altaPass').value=''; $('#altaPass2').value='';
+  if (error){
+    altaEstado('✓ Cuenta creada. Ahora inicia sesión con tu correo y contraseña.', 'bien');
+    return;
+  }
+  abrirAltaCuenta(false);
+  aviso('✓ Bienvenido: tu cuenta quedó lista y ya puedes trabajar.');
+}
+
 function renderSbEstado(){
   const head = $('#sbTxt'), full = $('#sbEstadoTxt');
   const loginRow = $('#sbLoginRow'), sessRow = $('#sbSessionRow');
@@ -2902,6 +2984,17 @@ function init(){
   $('#sbLogout').onclick = sbLogout;
   $('#sbSync').onclick = ()=>sincronizarSupabase('manual');
   $('#sbPass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') sbLogin(); });
+
+  // Alta de cuenta con PIN del responsable
+  $('#sbCrear').onclick = ()=>abrirAltaCuenta($('#altaCuenta').hidden);
+  $('#altaPedir').onclick = altaPedirPin;
+  $('#altaCrear').onclick = altaCrearCuenta;
+  $('#altaVolver').onclick = ()=>{ altaPaso(1); altaEstado(''); };
+  $('#altaCorreo')?.addEventListener('keydown', e=>{ if(e.key==='Enter') altaPedirPin(); });
+  $('#altaPass2')?.addEventListener('keydown', e=>{ if(e.key==='Enter') altaCrearCuenta(); });
+  // Sólo números en el PIN: evita que un espacio pegado desde WhatsApp lo rompa.
+  $('#altaPin')?.addEventListener('input', e=>{ e.target.value = e.target.value.replace(/\D/g,'').slice(0,6); });
+
   initSb();
 
   // Traer cambios del equipo (pull desde Supabase)

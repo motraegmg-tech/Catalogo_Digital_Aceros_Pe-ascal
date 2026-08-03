@@ -436,8 +436,18 @@ código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen
 | `ajustes` | `destacados`, `textos_catalogo`, `criterios_agrupacion`, `sinonimos_busqueda` | Clasificador → Destacados / Sucursales y textos |
 | `sucursales` | nombre, WhatsApp, dirección, orden, visibilidad | Clasificador → Sucursales y textos |
 | `eventos_catalogo` | uso real del catálogo (ver / agregar / pedir / buscar) | lo escribe el catálogo público |
+| `editores` | quién puede escribir. Estar autenticado NO basta | Supabase, o el alta con PIN |
+| `solicitudes_acceso` | quién pidió entrar, con el PIN **hasheado** | la Edge Function `acceso` |
 | `productos_populares` | vista: ranking de lo más pedido (30/90 días) | sólo lectura, con sesión |
-| `busquedas_populares` | vista: qué busca la gente | sólo lectura, con sesión |
+| `busquedas_populares` | vista: qué busca la gente y qué no encuentra | sólo lectura, con sesión |
+
+**Vistas y `security_invoker`.** Las tres vistas internas (`catalogo_interno`,
+`productos_populares`, `busquedas_populares`) corren con los permisos de quien consulta, así que
+el RLS se aplica de verdad. **`catalogo_publico` es la excepción y debe seguir siendo
+`SECURITY DEFINER`**: es lo que permite que `anon` lea el catálogo *sin* tener acceso a la tabla
+`productos` — que es justo lo que mantiene fuera de su alcance `precio_base` y el proveedor.
+Cambiarla dejaría el catálogo en blanco para todos los clientes. El linter la marca; en este
+caso el linter se equivoca, y por eso está anotado en la migración.
 
 Migración: [`supabase/migrations/20260802_catalogo_editable_sin_codigo.sql`](../supabase/migrations/20260802_catalogo_editable_sin_codigo.sql).
 
@@ -456,24 +466,73 @@ escritura pasan por `public.es_editor()`, que comprueba el correo del token cont
 
 ## Dar de alta a un trabajador
 
-Lo que el trabajador necesita es **dos enlaces y una cuenta**. Nada que instalar.
+Lo que el trabajador necesita es **el enlace del panel**. Nada que instalar, y **ya no hace
+falta entrar a Supabase**: se registra solo, con una llave humana de por medio.
 
-1. **Autorízalo primero** (para que no exista ni un minuto una cuenta con permiso sin control):
-   Supabase → *Table Editor* → tabla **`editores`** → *Insert row* → su **correo**. Da igual si
-   su cuenta todavía no existe: la lista va por correo, no por id, precisamente para que el
-   orden de los pasos no importe.
-2. **Crea su usuario**: Supabase → *Authentication* → *Users* → *Add user*, marcando
-   **Auto Confirm** (si no, tendrá que confirmar por correo). Dale la contraseña en persona.
-3. **Pásale los dos enlaces**:
-   - Catálogo (lo que ve el cliente): `https://catalogo-digital-aceros-penascal.vercel.app/`
-   - Panel de edición: `https://catalogo-digital-aceros-penascal.vercel.app/clasificador.html`
-4. Dile que entre a **«Guardar / Exportar» → iniciar sesión**, y que compruebe que arriba diga
-   **«● En línea»**. Si dice **«⚠ Sin permiso para editar»**, le falta el paso 1.
-5. Que lea la pestaña **«❓ Cómo se usa»**. Está escrita para alguien que no programa.
+### Cómo funciona (alta con PIN del responsable)
 
-> **Cierra el registro público**: Supabase → *Authentication* → *Sign In / Providers* → Email →
-> desactivar *«Allow new users to sign up»*. La lista `editores` ya protege la escritura, pero
-> con el registro abierto cualquiera puede seguir creándose cuentas en tu proyecto.
+```
+Trabajador                    Responsable (dueño)              Base
+    │  1. «＋ Crear mi cuenta»
+    │     nombre + correo
+    ├────────────────────────────────────────────────────────────▶ genera un PIN
+    │                                 ◀─── correo con el PIN ─────┤  y lo guarda HASHEADO
+    │  2. se lo pide en persona
+    │◀────────── PIN ─────────────────┤
+    │  3. PIN + su contraseña
+    ├────────────────────────────────────────────────────────────▶ comprueba, crea el usuario
+    │◀──────────────── ya puede trabajar ────────────────────────┤  y lo mete en `editores`
+```
+
+**El PIN NUNCA le llega al que pide entrar**: le llega al responsable, que decide si se lo pasa.
+Así, aunque alguien de fuera encuentre la página, le falta un número de 6 cifras que sólo existe
+en el correo del dueño. Y como caduca en 30 minutos, sirve una sola vez y admite 5 intentos, no
+se puede adivinar a fuerza de probar.
+
+Toda la comprobación vive en la Edge Function [`acceso`](../supabase/functions/acceso/index.ts),
+no en el navegador: el cliente jamás ve el PIN ni puede saltarse el paso.
+
+### Los pasos, en la práctica
+
+1. **Define quién autoriza** (una sola vez): clasificador → *Sucursales y textos* → **«Quién
+   autoriza las cuentas nuevas»** → el correo del dueño → **☁ Publicar cambios**.
+2. **Pásale al trabajador el enlace del panel**:
+   `https://catalogo-digital-aceros-penascal.vercel.app/clasificador.html`
+   (y el del catálogo, para que vea el resultado: la raíz del mismo dominio).
+3. Él entra a **«Guardar / Exportar» → «＋ Crear mi cuenta»**, pone su nombre y correo y pulsa
+   **«Pedir PIN al responsable»**.
+4. El dueño recibe el correo, **lo reconoce** y le dicta el PIN por teléfono o en persona.
+5. El trabajador escribe el PIN y la contraseña que quiera. Al aceptar, la cuenta queda creada,
+   autorizada y con sesión iniciada: puede trabajar de inmediato.
+6. Que lea la pestaña **«❓ Cómo se usa»**. Está escrita para alguien que no programa.
+
+> **Si el correo no sale** (ver abajo), la solicitud igual se registra y el **PIN aparece en el
+> clasificador**, en *Sucursales y textos → «Pidiendo acceso ahora»*, para que el responsable lo
+> dicte y nadie se quede atascado.
+
+### Envío del correo
+
+La función usa **Resend**. Sin configurar, el alta sigue funcionando por la vía de arriba (PIN
+visible en el panel). Para que el correo salga de verdad:
+
+```
+supabase secrets set RESEND_API_KEY=re_xxxxxxxx
+supabase secrets set RESEND_DE="Catálogo Aceros Peñascal <catalogo@motrae.com>"
+```
+
+El remitente debe ser de un dominio verificado en Resend. Sin `RESEND_DE`, usa el remitente de
+pruebas de Resend, que **sólo puede escribirle a la cuenta dueña de la API key**.
+
+### Alta manual (sigue disponible)
+
+Para el primer usuario o si algo falla: Supabase → *Table Editor* → **`editores`** → *Insert row*
+con su correo, y luego *Authentication* → *Users* → *Add user* con **Auto Confirm**. La lista va
+por correo y no por id precisamente para que el orden de los pasos no importe.
+
+> **Cierra el registro público de Supabase**: *Authentication* → *Sign In / Providers* → Email →
+> desactivar *«Allow new users to sign up»*. Con el alta por PIN ya no hace falta para nada, y
+> mientras siga abierto cualquiera puede crearse cuentas sueltas en tu proyecto (no podrán
+> editar —los frena `editores`— pero ensucian la lista de usuarios).
 
 **Todos los editores pueden todo** (incluido eliminar productos). No hay roles ni permisos
 parciales: es un equipo pequeño y la trazabilidad la da la **Bitácora** más `updated_by`. Si
