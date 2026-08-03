@@ -685,10 +685,17 @@ function iniciarRealtime(){
   RT.estado = 'conectando'; renderPullEstado();
   RT.canal = SBC
     .channel('clasificador-productos')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'productos' }, (payload) => {
-      const r = payload.new;
-      if (!r || r.updated_by === SB_YO) return;      // eco de lo que acabamos de escribir
-      RT_BUF.set(r.codigo, r);
+    /* `*` y no sólo UPDATE: desde que el clasificador da de alta y de baja
+       productos, un compañero puede CREAR o BORRAR uno. Con sólo UPDATE, esos
+       dos casos esperaban al pull de reloj — que con Realtime conectado se
+       espacia a 5 minutos, así que un producto nuevo tardaba eso en aparecer. */
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, (payload) => {
+      const borrado = payload.eventType === 'DELETE';
+      const r = borrado ? payload.old : payload.new;
+      if (!r || !r.codigo) return;
+      // Eco de lo que acabamos de escribir nosotros.
+      if (!borrado && r.updated_by === SB_YO) return;
+      RT_BUF.set(r.codigo, { fila: r, borrado });
       clearTimeout(RT_T);
       RT_T = setTimeout(aplicarCambiosRealtime, 500);
     })
@@ -715,9 +722,38 @@ function aplicarCambiosRealtime(){
   if (!puedePullAuto()){ RT_T = setTimeout(aplicarCambiosRealtime, 1500); return; }
 
   const porCod = new Map(DATA.productos.map(p => [p.cod, p]));
-  let cambios = 0;
-  for (const [cod, r] of RT_BUF){
-    const p = porCod.get(cod); if (!p) continue;
+  let cambios = 0, altas = 0, bajas = 0;
+  for (const [cod, ev] of RT_BUF){
+    const r = ev.fila;
+
+    if (ev.borrado){                       // alguien lo eliminó desde su máquina
+      const p = porCod.get(cod); if (!p) continue;
+      /* En un DELETE, `updated_by` trae el del último que EDITÓ la fila, no el
+         que la borró: no sirve para reconocer el eco de nuestra propia baja. Se
+         reconoce por nuestra lista de bajas, y hay que respetarla — si además
+         quitáramos la fila de DATA.productos, el "Deshacer" de esa baja se
+         quedaría sin respaldo y el producto no volvería nunca.
+         La comprobación va AQUÍ y no al recibir el evento: entre una cosa y
+         otra pasan ~500 ms, y en ese rato la baja pudo deshacerse. */
+      if (Object.values(WORK.borrados).some(b => b && b.cod === cod)) continue;
+      DATA.productos = DATA.productos.filter(x => x.cod !== cod);
+      SB_BASE.delete(cod); SB_DIRTY.delete(cod);
+      state.sel.delete(p.id);
+      bajas++; cambios++;
+      continue;
+    }
+
+    let p = porCod.get(cod);
+    if (!p){                               // alguien lo dio de alta desde su máquina
+      const id = r.id || idDesdeCodigo(cod);
+      if (WORK.borrados[id]) continue;     // lo borraste tú: no lo revivas
+      p = { id, cod, nom:'', cat:POR, sub:POR, sub2:'', med:'', prov:'', mprov:false, foto:'', etq:[] };
+      DATA.productos.push(p);
+      porCod.set(cod, p);
+      if (WORK.nuevos[id]) delete WORK.nuevos[id];   // ya está en la base
+      altas++;
+    }
+
     const cat = r.categoria || '', sub = r.subcategoria || '', sub2 = r.sub2 || '';
     const med = r.medidas || '', nom = r.descripcion || p.nom;
     const etq = Array.isArray(r.etiquetas) ? r.etiquetas : [];
@@ -736,7 +772,9 @@ function aplicarCambiosRealtime(){
   RT.ultimo = new Date(); PULL.ultimo = RT.ultimo;
   if (!cambios){ renderPullEstado(); return; }
   construirProductos(); calcularSugerencias(); renderAll();
-  aviso('● '+fmt(cambios)+' producto(s) actualizados por el equipo');
+  const detalle = [altas && fmt(altas)+' nuevo(s)', bajas && fmt(bajas)+' eliminado(s)']
+    .filter(Boolean).join(', ');
+  aviso('● '+fmt(cambios)+' producto(s) actualizados por el equipo'+(detalle?' ('+detalle+')':''));
 }
 
 /* ¿Es buen momento para un pull automático? No mientras trabajas una selección,

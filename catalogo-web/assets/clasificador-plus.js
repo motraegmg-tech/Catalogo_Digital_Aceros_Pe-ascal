@@ -149,6 +149,79 @@ async function cargarEnLinea(silencioso){
   if (PLUS.panel!=='productos') irAPanel(PLUS.panel);
 }
 
+/* ---------- trabajo en equipo: cambios en vivo ----------
+   `productos` ya viajaba en vivo (Realtime, en clasificador.js). Las
+   agrupaciones, los ajustes y las sucursales no: se leían UNA vez al abrir la
+   página, así que dos personas a la vez no se veían entre sí y cada una
+   guardaba encima de la copia vieja que tenía en memoria.
+
+   Se tratan distinto a propósito:
+     · AGRUPACIONES — objeto colaborativo, se refrescan solas.
+     · AJUSTES y SUCURSALES — se editan como formulario y se publican a mano.
+       Recargarlos solos borraría lo que la persona está escribiendo, así que
+       sólo se avisa y ella decide cuándo traerlos. */
+const RTP = { canal:null, estado:'off', t:null, avisadoConfig:false };
+
+function iniciarRealtimePlus(){
+  if (!SBC || RTP.canal || !SB.user) return;   // RLS: sin sesión no llegan eventos
+  RTP.canal = SBC.channel('clasificador-config')
+    .on('postgres_changes', { event:'*', schema:'public', table:'familias' },
+        (p)=>alCambiarFamilia(p))
+    .on('postgres_changes', { event:'*', schema:'public', table:'ajustes' },
+        ()=>avisarConfigCambiada())
+    .on('postgres_changes', { event:'*', schema:'public', table:'sucursales' },
+        ()=>avisarConfigCambiada())
+    .subscribe((st)=>{
+      RTP.estado = st==='SUBSCRIBED' ? 'on'
+                 : (st==='CHANNEL_ERROR' || st==='TIMED_OUT') ? 'error' : 'conectando';
+    });
+}
+function pararRealtimePlus(){
+  if (!RTP.canal) return;
+  try{ SBC.removeChannel(RTP.canal); }catch{}
+  RTP.canal = null; RTP.estado = 'off';
+}
+
+function alCambiarFamilia(payload){
+  const fila = payload.eventType==='DELETE' ? payload.old : payload.new;
+  if (!fila) return;
+  if (fila.updated_by === SB_YO) return;              // eco de lo nuestro
+  // Si justo estás editando ESA agrupación, avisar en vez de moverte el piso:
+  // tu copia sigue intacta y al guardar mandará la tuya (el último que guarda gana).
+  if (FAM_EDIT && FAM_EDIT.id === fila.id){
+    aviso('⚠ Alguien más acaba de cambiar «'+(fila.nombre||fila.id)+'». Si guardas, tu versión reemplaza la suya.');
+    return;
+  }
+  clearTimeout(RTP.t);
+  RTP.t = setTimeout(refrescarFamiliasEnVivo, 600);
+}
+
+async function refrescarFamiliasEnVivo(){
+  // Nunca a media edición: se reintenta hasta que se cierre el editor.
+  if (!$('#modalFam').hidden || !$('#modalPick').hidden || !$('#dlg').hidden){
+    RTP.t = setTimeout(refrescarFamiliasEnVivo, 2000);
+    return;
+  }
+  try{
+    const { data, error } = await SBC.from('familias').select('*');
+    if (error || !Array.isArray(data)) return;
+    FAMS.clear();
+    data.forEach(f=>FAMS.set(f.id, normalizarFamilia(f)));
+    if (PLUS.panel === 'familias') renderFamilias();
+    if (PLUS.panel === 'destacados') renderDestacados();
+    aviso('● Agrupaciones actualizadas por el equipo');
+  }catch{}
+}
+
+/* Los ajustes NO se recargan solos: la persona puede tener medio formulario
+   escrito sin publicar. Se avisa una vez y el botón «⟲ Traer del equipo» los trae. */
+function avisarConfigCambiada(){
+  if (RTP.avisadoConfig) return;
+  RTP.avisadoConfig = true;
+  setTimeout(()=>{ RTP.avisadoConfig = false; }, 60000);
+  aviso('● Alguien cambió sucursales o ajustes · pulsa «⟲ Traer del equipo» para verlos');
+}
+
 /* Deja la familia con la forma que usa el editor, venga de donde venga. */
 function normalizarFamilia(f){
   const subs = Array.isArray(f.subgrupos) ? f.subgrupos : [];
@@ -1327,6 +1400,22 @@ function renderGuia(){
     <p class="guia-tip">Una traducción nunca quita resultados: <b>suma</b>. Lo que el cliente
        escribió sigue valiendo, así que equivocarte al traducir no puede esconder productos.</p>
 
+    <h3>👥 Si son dos o más trabajando</h3>
+    <p>Se puede, y se ven entre ustedes <b>al momento</b>, sin recargar la página:</p>
+    <ul>
+      <li><b>En vivo (≈1 segundo):</b> clasificar, corregir, poner fotos, <b>dar de alta</b> y
+          <b>eliminar</b> productos, y crear o editar <b>agrupaciones</b>.</li>
+      <li><b>Con aviso:</b> destacados, sucursales, textos y el diccionario de búsqueda. Cuando
+          alguien los cambia sale un aviso y tú pulsas <b>«⟲ Traer del equipo»</b> cuando
+          quieras. Se hace así a propósito: son formularios, y recargarlos solos te borraría
+          lo que estás escribiendo sin publicar.</li>
+    </ul>
+    <p class="guia-aviso"><b>Los dos tienen que iniciar sesión.</b> Sin sesión no llega nada en
+       vivo y los cambios se quedan en cada computadora.</p>
+    <p class="guia-tip"><b>Repártanse por categoría</b> (uno los discos, otro los perfiles). Si
+       dos tocan lo mismo, <b>gana el último que guarda</b>. La única excepción es el editor de
+       agrupaciones: ahí sí te avisa si alguien cambió justo la que tienes abierta.</p>
+
     <h3>¿Y si me equivoco?</h3>
     <ul>
       <li><b>↩ Deshacer</b> (o Ctrl+Z) revierte el último cambio.</li>
@@ -1518,10 +1607,26 @@ function initPlus(){
     if (!$('#modalFam').hidden){ cerrarEditorFamilia(); e.stopPropagation(); }
   }, true);
 
+  /* «⟲ Traer del equipo» tenía que traer TODO, no sólo los productos: quien lo
+     pulsa espera ponerse al día con sus compañeros, no a medias. */
+  const btnPull = $('#btnPull');
+  if (btnPull){
+    const traerProductos = btnPull.onclick;
+    btnPull.title = 'Trae del equipo lo último: productos, agrupaciones, destacados, sucursales y ajustes. '
+                  + 'Tus cambios de clasificación no se pisan; lo que tengas escrito y SIN publicar en Destacados o Ajustes, sí.';
+    btnPull.onclick = async (e)=>{
+      if (traerProductos) await traerProductos.call(btnPull, e);
+      await cargarEnLinea(false);
+    };
+  }
+
   cargarEnLinea(true);
-  // El conteo de pedidos necesita sesión: en cuanto la haya, se pide solo.
+  if (SB.user) iniciarRealtimePlus();
+  // Sesión y tiempo real van juntos: RLS no emite eventos a quien no ha entrado,
+  // y el conteo de pedidos tampoco se puede leer sin ella.
   if (SBC) SBC.auth.onAuthStateChange((_ev, session)=>{
-    if (session?.user){ cargarPopulares(false); cargarEnLinea(true); }
+    if (session?.user){ cargarPopulares(false); cargarEnLinea(true); iniciarRealtimePlus(); }
+    else pararRealtimePlus();
   });
 
   plusPintarSelfTest();

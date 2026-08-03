@@ -335,10 +335,32 @@ Está dividido en **cinco pestañas**, una por tipo de trabajo:
   se carga después de que corre la autoprueba principal.
 
 ### Trabajo en paralelo (dos o más personas a la vez)
-Sí se puede: dos personas, cada una en su máquina, pueden clasificar en paralelo
-sin pisarse **mientras trabajen productos distintos** (p. ej. uno los discos y otro
-los perfiles). La clave es entender que hay **tres capas de guardado** y que la
-**fuente de verdad compartida es Supabase**:
+
+**Qué ve el compañero, y cuándo.** No todo se comporta igual, y conviene saberlo antes
+de repartir el trabajo:
+
+| Lo que uno cambia | Cuándo lo ve el otro | Cómo |
+|---|---|---|
+| Clasificar un producto (categoría, medida, nombre, foto, marcas) | **en el momento** (~1 s) | Realtime |
+| **Dar de alta** un producto | **en el momento** | Realtime (`INSERT`) |
+| **Eliminar** un producto | **en el momento** | Realtime (`DELETE`) |
+| Crear o editar una **agrupación** | **en el momento** | Realtime sobre `familias` |
+| **Destacados**, **sucursales**, **textos**, **diccionario** | al pulsar **⟲ Traer del equipo** | aviso automático + recarga manual |
+
+Los cuatro últimos se tratan aparte **a propósito**: son formularios que se llenan y se
+publican a mano, así que recargarlos solos borraría lo que la persona está escribiendo.
+Cuando alguien los cambia, aparece un aviso —*«Alguien cambió sucursales o ajustes»*— y
+cada quien decide cuándo traerlos.
+
+> ⚠️ **El tiempo real exige sesión.** RLS sólo emite eventos a `authenticated`. Sin iniciar
+> sesión no llega nada en vivo, y el respaldo es un repaso por reloj cada 45 s.
+>
+> ⚠️ **Si dos tocan lo mismo, gana el último que guarda** — en silencio, salvo en el editor
+> de agrupaciones, que sí avisa («Alguien más acaba de cambiar…») cuando alguien modifica
+> justo la que tienes abierta. La regla práctica sigue siendo **repartirse por categoría**.
+
+La otra mitad de la historia son las **tres capas de guardado**, y que la **fuente de verdad
+compartida es Supabase**:
 
 1. **localStorage** del navegador — tu avance, por máquina.
 2. **Archivo local** `data/productos.js`/`.json` — se reescribe en tu disco con la
