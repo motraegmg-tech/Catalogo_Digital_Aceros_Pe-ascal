@@ -449,6 +449,26 @@ el RLS se aplica de verdad. **`catalogo_publico` es la excepción y debe seguir 
 Cambiarla dejaría el catálogo en blanco para todos los clientes. El linter la marca; en este
 caso el linter se equivoca, y por eso está anotado en la migración.
 
+**Funciones internas.** `es_editor()` y la limpieza de solicitudes viven en el esquema
+**`privado`**, que PostgREST no expone: dejan de ser endpoints (`/rest/v1/rpc/…`). La única
+pública es `puedo_editar()`, que el clasificador necesita para avisar «⚠ Sin permiso para
+editar», y va como `SECURITY INVOKER` y sin permiso para `anon`.
+
+**Storage.** Subir, reemplazar y borrar fotos exige ser editor, igual que las tablas — antes
+bastaba con estar autenticado, así que alguien registrado por su cuenta podía dejar el catálogo
+sin imágenes. El visitante ve las fotos por la **URL pública** del bucket, que no pasa por RLS,
+así que no necesita ningún permiso y ya no puede listar el bucket entero.
+
+### Avisos que quedan abiertos, y por qué
+
+| Aviso | Estado |
+|---|---|
+| `catalogo_publico` es SECURITY DEFINER | **A propósito.** Sin eso el catálogo público se queda en blanco (ver arriba). |
+| `eventos_catalogo`: INSERT sin restricción | **A propósito.** El catálogo registra el uso sin sesión. Lo que se puede insertar está acotado por `CHECK`: tipo de evento, cantidad y largo del término. |
+| `inventario`: RLS sin políticas | **A propósito.** Tabla vacía a la espera del sistema de tienda; sin políticas = nadie entra, que es el estado más seguro. |
+| Bucket `fotos`: permite listar | Reducido a **editores**. Se conserva la lectura porque el clasificador sube con `upsert`; quitarla rompería el cambio de fotos en silencio. |
+| Protección de contraseñas filtradas | **Requiere plan Pro.** Hoy el proyecto está en Free. Se activa en *Authentication → Password security*. |
+
 Migración: [`supabase/migrations/20260802_catalogo_editable_sin_codigo.sql`](../supabase/migrations/20260802_catalogo_editable_sin_codigo.sql).
 
 **Permisos (RLS).** Sin sesión (`anon`) se puede **leer** sucursales, ajustes y agrupaciones
