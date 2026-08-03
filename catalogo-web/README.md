@@ -445,7 +445,40 @@ Migración: [`supabase/migrations/20260802_catalogo_editable_sin_codigo.sql`](..
 activas —son datos que el catálogo público necesita para pintarse— y **escribir sólo** en
 `eventos_catalogo`. Nada más: `anon` no puede leer el historial de eventos ni el ranking de
 pedidos (serían regalarle a la competencia qué se vende), ni tocar productos, agrupaciones o
-ajustes. Crear, editar y borrar exige sesión.
+ajustes.
+
+⚠️ **Estar autenticado NO basta para escribir.** Hay que estar en la tabla `editores`. La
+razón: el registro público de Supabase está abierto y la anon key es pública (va dentro del
+JavaScript desplegado, por diseño), así que con la regla anterior —«cualquier usuario
+autenticado puede todo»— **cualquiera en internet podía registrarse y quedar con permiso para
+borrar productos o cambiar los WhatsApp de las sucursales**. Ahora todas las políticas de
+escritura pasan por `public.es_editor()`, que comprueba el correo del token contra esa lista.
+
+## Dar de alta a un trabajador
+
+Lo que el trabajador necesita es **dos enlaces y una cuenta**. Nada que instalar.
+
+1. **Autorízalo primero** (para que no exista ni un minuto una cuenta con permiso sin control):
+   Supabase → *Table Editor* → tabla **`editores`** → *Insert row* → su **correo**. Da igual si
+   su cuenta todavía no existe: la lista va por correo, no por id, precisamente para que el
+   orden de los pasos no importe.
+2. **Crea su usuario**: Supabase → *Authentication* → *Users* → *Add user*, marcando
+   **Auto Confirm** (si no, tendrá que confirmar por correo). Dale la contraseña en persona.
+3. **Pásale los dos enlaces**:
+   - Catálogo (lo que ve el cliente): `https://catalogo-digital-aceros-penascal.vercel.app/`
+   - Panel de edición: `https://catalogo-digital-aceros-penascal.vercel.app/clasificador.html`
+4. Dile que entre a **«Guardar / Exportar» → iniciar sesión**, y que compruebe que arriba diga
+   **«● En línea»**. Si dice **«⚠ Sin permiso para editar»**, le falta el paso 1.
+5. Que lea la pestaña **«❓ Cómo se usa»**. Está escrita para alguien que no programa.
+
+> **Cierra el registro público**: Supabase → *Authentication* → *Sign In / Providers* → Email →
+> desactivar *«Allow new users to sign up»*. La lista `editores` ya protege la escritura, pero
+> con el registro abierto cualquiera puede seguir creándose cuentas en tu proyecto.
+
+**Todos los editores pueden todo** (incluido eliminar productos). No hay roles ni permisos
+parciales: es un equipo pequeño y la trazabilidad la da la **Bitácora** más `updated_by`. Si
+alguna vez hace falta separar «puede clasificar» de «puede borrar», el sitio donde hacerlo es
+`es_editor()` — añadiéndole una columna de nivel a `editores`.
 
 ## Estructura
 ```

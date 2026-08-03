@@ -307,7 +307,12 @@ function pintarFsDatos(){
 const SBC = (window.supabase && window.SUPA_CFG)
   ? window.supabase.createClient(window.SUPA_CFG.URL, window.SUPA_CFG.KEY)
   : null;
-const SB = { user:null, estado: SBC ? 'anon' : 'nosoporte', ultimo:null, error:null };
+/* `puedeEditar`: estar autenticado ya NO basta para escribir — hay que estar en
+   la lista `editores` de la base (el registro de Supabase es abierto y la anon
+   key es pública, así que cualquiera podría crearse una cuenta). null = todavía
+   no se ha preguntado. Sin esto, a un trabajador no autorizado se le guardaría
+   todo "bien" en su navegador y no subiría nada, sin decirle por qué. */
+const SB = { user:null, estado: SBC ? 'anon' : 'nosoporte', ultimo:null, error:null, puedeEditar:null };
 // estado: nosoporte | anon (sin sesión) | on (sesión activa) | sync | error
 const SB_SEP = '';
 /* Identidad de esta pestaña. Viaja en `productos.updated_by` para que, cuando
@@ -401,6 +406,10 @@ async function sincronizarAltasYBajas(){
 async function sincronizarSupabase(origen){
   if (!SBC) return false;
   if (!SB.user){ if (origen!=='auto') aviso('⚠ Inicia sesión para sincronizar en línea.'); return false; }
+  if (SB.puedeEditar === false){
+    if (origen!=='auto') aviso('⚠ Tu cuenta no está autorizada para editar. Tus cambios se quedan en esta computadora.');
+    return false;
+  }
   const pendientesAltaBaja = altasPendientes().length + bajasPendientes().length;
   if (!SB_DIRTY.size && !pendientesAltaBaja){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
 
@@ -480,13 +489,29 @@ async function sincronizarSupabase(origen){
 function sbAplicarSesion(session){
   SB.user = session?.user || null;
   SB.estado = SB.user ? 'on' : 'anon';
+  SB.puedeEditar = SB.user ? null : false;
   renderSbEstado();
   if (SB.user){
+    comprobarPermisoEditar();                  // ¿está en la lista de editores?
     marcarSucios(); programarSyncSupabase();   // sube lo pendiente al entrar
     iniciarRealtime();                         // RLS solo emite eventos con sesión
   } else {
     pararRealtime();                           // sin sesión queda el pull por reloj
   }
+}
+
+/* Pregunta a la base si esta cuenta puede escribir. Ante cualquier fallo se
+   asume que SÍ: un problema de red no debe bloquear a quien sí tiene permiso
+   (si no lo tiene, la base rechazará la escritura de todos modos). */
+async function comprobarPermisoEditar(){
+  if (!SBC || !SB.user) return;
+  try{
+    const { data, error } = await SBC.rpc('puedo_editar');
+    SB.puedeEditar = error ? true : (data === true);
+  }catch{ SB.puedeEditar = true; }
+  renderSbEstado();
+  if (SB.puedeEditar === false)
+    aviso('⚠ Tu cuenta no tiene permiso para editar el catálogo. Pide que te den de alta como editor.');
 }
 
 async function sbLogin(){
@@ -527,6 +552,16 @@ function renderSbEstado(){
       h = '<b style="color:var(--zintro-2)">↻ Sincronizando…</b>';
       f = 'Subiendo cambios a Supabase…'; break;
     case 'on':
+      /* Con sesión pero sin permiso, decirlo fuerte: si no, la persona trabaja
+         horas creyendo que guarda y su trabajo se queda en su navegador. */
+      if (SB.puedeEditar === false){
+        h = '<b style="color:var(--oxido)">⚠ Sin permiso para editar</b>'
+            + (SB.user?.email?' · '+esc(SB.user.email):'');
+        f = `Entraste como <b>${esc(SB.user?.email||'')}</b>, pero esa cuenta <b>no está autorizada</b> `
+          + `para editar el catálogo, así que <b>nada de lo que hagas se guardará para los demás</b>. `
+          + `Pide que agreguen tu correo a la lista de editores.`;
+        break;
+      }
       h = '<b style="color:var(--zintro-2)">● En línea</b>' + (SB.user?.email?' · '+esc(SB.user.email):'')
           + (pend?` · ${fmt(pend)} pend.`:'');
       f = `Conectado como <b>${esc(SB.user?.email||'')}</b>. `

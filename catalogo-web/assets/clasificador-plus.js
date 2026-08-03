@@ -111,6 +111,11 @@ function familiaConCodigo(cod, exceptoId){
 function requiereSesion(accion){
   if (!SBC){ aviso('⚠ Sin conexión con la base: no se puede '+accion+'.'); return false; }
   if (!SB.user){ aviso('⚠ Inicia sesión (botón «Guardar / Exportar») para '+accion+'.'); return false; }
+  // Estar autenticado no basta: hay que estar en la lista de editores.
+  if (SB.puedeEditar === false){
+    aviso('⚠ Tu cuenta no está autorizada para editar el catálogo. Pide que agreguen tu correo a la lista de editores.');
+    return false;
+  }
   return true;
 }
 
@@ -1391,9 +1396,12 @@ function renderGuia(){
 
     <div class="guia-aviso">
       <b>Antes que nada: inicia sesión.</b> Pulsa <b>«Guardar / Exportar»</b> arriba a la derecha y
-      escribe tu correo y contraseña. Si el indicador dice <b>«● En línea»</b>, todo lo que hagas se
-      guarda para todos. Si dice <b>«○ Sin sesión»</b>, tus cambios se quedan sólo en esta
-      computadora y nadie más los ve.
+      escribe tu correo y contraseña. Mira el indicador de arriba:
+      <br>· <b>«● En línea»</b> → todo lo que hagas se guarda para todos. Perfecto.
+      <br>· <b>«○ Sin sesión»</b> → tus cambios se quedan sólo en esta computadora y nadie más los ve.
+      <br>· <b>«⚠ Sin permiso para editar»</b> → tu cuenta existe pero no está autorizada. Avisa
+      para que agreguen tu correo a la lista de editores; hasta entonces <b>nada de lo que hagas
+      se guardará para los demás</b>.
     </div>
 
     <h3>📦 Productos — dar de alta y arreglar lo que ya existe</h3>
