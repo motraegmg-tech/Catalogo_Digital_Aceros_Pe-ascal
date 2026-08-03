@@ -1,7 +1,7 @@
 import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet } from '../core/store.js';
 import { getCartItems, cantidadEnCarrito } from '../core/cartService.js';
 import { searchAndSortProducts, normalize, alfa } from '../core/searchService.js';
-import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida, familiaPorId, columnaDe } from '../core/familiaService.js';
+import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida, familiaPorId, columnaDe, catPrincipalDe } from '../core/familiaService.js';
 import { AJUSTES } from '../core/ajustesService.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
@@ -34,11 +34,14 @@ export function clasifLabel(p) {
  * que un producto suelto.
  */
 export function clasifLabelFamilia(fam, productos) {
+  // Se compara contra la categoría REAL de la ficha, no contra la declarada:
+  // si no, una `cat` desfasada haría que la etiqueta repitiera la categoría.
+  const cat = catPrincipalDe(fam.id) || fam.cat;
   const subs = [...new Set(productos.map(p => p.sub))]
-    .filter(s => s && s !== POR_CLASIF && s !== fam.cat)
+    .filter(s => s && s !== POR_CLASIF && s !== cat)
     .sort(alfa);
   if (subs.length) return { txt: subs.slice(0, 2).join(' · ') + (subs.length > 2 ? ` +${subs.length - 2}` : ''), pend: false };
-  if (fam.cat && fam.cat !== POR_CLASIF) return { txt: fam.cat, pend: false };
+  if (cat && cat !== POR_CLASIF) return { txt: cat, pend: false };
   return { txt: 'Por clasificar', pend: true };
 }
 
@@ -134,7 +137,11 @@ export function filteredEntries() {
 
   for (const p of lista) {
     const f = familiaDe(p);
-    if (!f || f.cat !== state.cat || fichas.has(f.id) || descartadas.has(f.id)) continue;
+    /* La ficha se muestra en la categoría donde de verdad están sus productos
+       (catPrincipalDe), no en la que declara el campo `cat`. Ese campo lo elige
+       una persona al crearla y se queda atrás en cuanto algo se reclasifica; si
+       se le hace caso, la ficha desaparece de las dos categorías a la vez. */
+    if (!f || catPrincipalDe(f.id) !== state.cat || fichas.has(f.id) || descartadas.has(f.id)) continue;
     // El chip de subcategoría se aplica dentro de la ficha: si el usuario pidió
     // "Soleras", la ficha muestra soleras y su conteo dice la verdad.
     const dentro = productosDeFamilia(f.id).filter(x => !state.sub || x.sub === state.sub);
@@ -398,7 +405,8 @@ export function buildFichaFamilia(entry, onAgregar) {
   // Ruta completa "Categoría › Subcategoría": dentro de la ficha ya no está el
   // contexto de la grilla, así que hay que decir de dónde salió.
   const cl = clasifLabelFamilia(fam, productos);
-  const ruta = cl.txt === fam.cat ? esc(fam.cat) : `${esc(fam.cat)} <span>›</span> ${esc(cl.txt)}`;
+  const catFicha = catPrincipalDe(fam.id) || fam.cat;
+  const ruta = cl.txt === catFicha ? esc(catFicha) : `${esc(catFicha)} <span>›</span> ${esc(cl.txt)}`;
   const txt = el('div', 'fam-head-txt', `
     <div class="modal-cat">${ruta}</div>
     <h2 class="fam-name">${esc(fam.nombre)}</h2>

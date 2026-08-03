@@ -25,6 +25,7 @@ import { columnaDeCriterio } from './ajustesService.js';
 const FAM = new Map();          // id  -> {id, nombre, cat, sub, criterio, columna, subgrupos:[{nombre, cods}]}
 const porCod = new Map();       // cod -> {id, sub}
 const resueltos = new Map();    // id  -> [producto…] presentes en el catálogo
+const principales = new Map();  // id  -> categoría donde de verdad están sus productos
 
 export const hayFamilias = () => FAM.size > 0;
 
@@ -63,6 +64,7 @@ export function columnaDe(fam) {
  */
 export function indexarFamilias() {
   resueltos.clear();
+  principales.clear();
   if (!FAM.size) return;
   const porCodigo = new Map(DATA.productos.map(p => [p.cod, p]));
   FAM.forEach(f => {
@@ -71,9 +73,37 @@ export function indexarFamilias() {
       const p = porCodigo.get(cod);
       if (p) lista.push(p);
     }));
-    if (lista.length) resueltos.set(f.id, lista);
+    if (!lista.length) return;
+    resueltos.set(f.id, lista);
+    principales.set(f.id, calcularCatPrincipal(f, lista));
   });
 }
+
+/**
+ * En qué categoría se muestra la ficha: en la que están de verdad sus productos,
+ * no en la que dice el campo `cat`.
+ *
+ * El campo `cat` lo elige una persona al crear la agrupación y **se queda atrás**
+ * en cuanto los productos se reclasifican o se agregan de otra categoría. Cuando
+ * eso pasaba, la ficha se volvía invisible: en la categoría que declaraba no
+ * había productos suyos, y en la categoría donde sí estaban se descartaba porque
+ * `f.cat` no coincidía. Nadie la veía nunca y nada avisaba.
+ *
+ * Se toma la categoría con MÁS productos (desempate alfabético, para que dos
+ * cargas seguidas no den resultados distintos). Es lo que el catálogo siempre
+ * prometió: «una familia que abarca dos categorías se muestra completa sólo en
+ * su categoría principal».
+ */
+function calcularCatPrincipal(f, productos) {
+  const cuenta = new Map();
+  productos.forEach(p => { if (p.cat) cuenta.set(p.cat, (cuenta.get(p.cat) || 0) + 1); });
+  if (!cuenta.size) return f.cat || '';
+  return [...cuenta.entries()]
+    .sort((a, b) => b[1] - a[1] || alfa(a[0], b[0]))[0][0];
+}
+
+/** La categoría donde el catálogo muestra esta ficha. Cae a `cat` si no hay productos. */
+export const catPrincipalDe = (id) => principales.get(id) || (FAM.get(id) || {}).cat || '';
 
 export function familiaDe(p) {
   const ref = p && porCod.get(p.cod);

@@ -133,10 +133,31 @@ dato guardado al aprobarla—, y la ficha abre con la ruta **Categoría › Subc
 14 familias que traen subgrupos de verdad (Discos → Corte · Desbaste · Diamante…) los
 muestran como secciones dentro de la tabla.
 
-Una familia que abarca dos categorías se muestra completa **solo en su categoría principal**
-(donde tiene más productos), para no salir duplicada ni partida. Sus pocos productos de otra
-categoría siguen apareciendo ahí como tarjetas sueltas, así que no se esconde nada: hoy son
-12 productos de 3,222.
+### En qué categoría aparece la ficha
+
+**En la que están sus productos, no en la que dice el campo `cat`.** La calcula
+`catPrincipalDe()` en cada carga: la categoría donde la familia tiene más productos
+(desempate alfabético, para que dos cargas seguidas no den resultados distintos).
+
+⚠️ Esto **no es un detalle**: `cat` lo elige una persona al crear la agrupación y se queda
+atrás en cuanto los productos se reclasifican o se agregan de otra categoría. Cuando el
+catálogo hacía caso a ese campo, la ficha **desaparecía de las dos categorías a la vez** —
+en la declarada no había productos suyos, y en la real se descartaba porque `cat` no
+coincidía. Nadie la veía nunca y nada avisaba. Pasó de verdad el 2026-08-02 con una
+agrupación creada en «Perfiles Macizos» cuyos productos estaban en «Fierro Vaciado y
+Decorativo».
+
+El clasificador ahora lo señala en tres momentos, para que el dato tampoco quede mintiendo:
+en la tarjeta de la lista (*«se ve en X, no en Y»*), dentro del editor (recuadro ámbar con
+el reparto real y un botón que lo cuadra) y **al guardar**, ofreciendo corregir la categoría.
+
+Una familia que abarca dos categorías se muestra completa **solo en su categoría principal**,
+para no salir duplicada ni partida. Sus pocos productos de otra categoría siguen apareciendo
+ahí como tarjetas sueltas, así que no se esconde nada.
+
+> Recordatorio: **en «Todas las categorías» y buscando, el catálogo nunca agrupa** (decisión
+> de Gonzalo, 2026-07-31). Una agrupación sólo se ve al entrar a una categoría. Si acabas de
+> crearla y no aparece, comprueba primero que estás **dentro** de su categoría.
 
 ### Foto de portada de la agrupación
 

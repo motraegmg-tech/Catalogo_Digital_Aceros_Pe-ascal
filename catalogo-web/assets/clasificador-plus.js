@@ -78,6 +78,26 @@ function codsDe(f){
 function nProductosDe(f){
   return codsDe(f).filter(c=>prodDe(c)).length;
 }
+/* En qué categoría están DE VERDAD los productos de una agrupación, y cuántos.
+   El catálogo muestra la ficha ahí, no en la categoría que diga el campo `cat`:
+   ese campo lo elige una persona al crearla y se queda atrás en cuanto algo se
+   reclasifica. Devuelve [{cat, n}…] de mayor a menor. */
+function categoriasRealesDe(f){
+  const cuenta = new Map();
+  codsDe(f).forEach(cod=>{
+    const p = prodDe(cod);
+    if (p && p.cat) cuenta.set(p.cat, (cuenta.get(p.cat)||0)+1);
+  });
+  return [...cuenta.entries()].map(([cat,n])=>({cat,n}))
+    .sort((a,b)=> b.n-a.n || alfa(a.cat,b.cat));
+}
+const catRealDe = (f) => (categoriasRealesDe(f)[0] || {}).cat || '';
+/** ¿La categoría declarada miente respecto a dónde están sus productos? */
+function catDescuadrada(f){
+  const real = catRealDe(f);
+  return real && real !== f.cat ? real : '';
+}
+
 /* Un producto no puede estar en dos agrupaciones: el catálogo no sabría en cuál
    mostrarlo. Devuelve la familia que ya lo tiene, si la hay. */
 function familiaConCodigo(cod, exceptoId){
@@ -361,6 +381,11 @@ function tarjetaFamilia(f){
   if (f.subgrupos.length>1) meta.appendChild(el('span','fam-chip', `${f.subgrupos.length} grupos`));
   if (perdidos) meta.appendChild(el('span','fam-chip aviso',
     `${fmt(perdidos)} código(s) ya no existen`));
+  // La categoría declarada no es donde están sus productos: el cliente la verá
+  // en la otra. Se marca aquí para que no haya que abrirla para enterarse.
+  const real = catDescuadrada(f);
+  if (real) meta.appendChild(el('span','fam-chip aviso',
+    `se ve en <b>${esc(real)}</b>, no en ${esc(f.cat)}`));
   c.appendChild(meta);
 
   // Qué encuentra el cliente al abrirla
@@ -485,6 +510,29 @@ function pintarEditorFamilia(){
   const pr = el('div','fed-bloque');
   const nTot = nProductosDe(f);
   pr.appendChild(el('h4',null,`3 · Qué productos entran <span class="fed-n">${fmt(nTot)}</span>`));
+
+  /* Dónde están DE VERDAD sus productos. Es la causa número uno de "creé la
+     agrupación y no sale en el catálogo": la categoría se elige al crearla y
+     luego se agregan productos de otra, o se reclasifican. */
+  const reales = categoriasRealesDe(f);
+  if (reales.length){
+    const real = reales[0].cat;
+    const aviso2 = el('div','fed-ubicacion'+(real!==f.cat ? ' mal' : ''));
+    if (real !== f.cat){
+      aviso2.innerHTML = `<b>⚠ Se verá en «${esc(real)}», no en «${esc(f.cat)}»</b>
+        <span>El catálogo muestra la ficha donde están sus productos.
+        ${reales.map(r=>`${esc(r.cat)}: ${fmt(r.n)}`).join(' · ')}</span>`;
+      const arreglar = el('button','fed-mini','Cambiar la categoría a «'+real+'»');
+      arreglar.type='button';
+      arreglar.onclick = ()=>{ f.cat = real; f.sub=''; pintarEditorFamilia(); };
+      aviso2.appendChild(arreglar);
+    } else {
+      aviso2.innerHTML = `<span>✓ Sus productos están en <b>${esc(real)}</b>`
+        + (reales.length>1 ? ` (y ${reales.length-1} categoría(s) más: ${reales.slice(1).map(r=>esc(r.cat)+' '+fmt(r.n)).join(', ')})` : '')
+        + `. Ahí la verá el cliente.</span>`;
+    }
+    pr.appendChild(aviso2);
+  }
 
   const simple = f.subgrupos.length === 1;
   const barra = el('div','fed-barra');
@@ -814,6 +862,20 @@ async function guardarEditorFamilia(){
       texto:`Estos productos ya pertenecen a otra agrupación: ${repes.slice(0,6).join(', ')}${repes.length>6?` y ${repes.length-6} más`:''}. Si guardas, quítalos de la otra o el catálogo mostrará sólo una de las dos.`,
       okTxt:'Guardar de todos modos' });
     if (!ok) return;
+  }
+
+  /* Última red antes de guardar: si la categoría declarada no es donde están
+     los productos, el cliente la encontrará en la otra. Se ofrece cuadrarlo. */
+  const real = catDescuadrada(f);
+  if (real){
+    const v = await dialogo({ titulo:'La categoría no cuadra',
+      texto:`Dice «${f.cat}», pero sus productos están en «${real}». El catálogo la mostrará en «${real}», que es donde el cliente los busca. ¿Cambio la categoría de la agrupación para que coincida?`,
+      campos:[{id:'q', label:'¿Qué hago?', tipo:'select', opciones:[
+        {v:'si', t:`Cambiarla a «${real}» (recomendado)`},
+        {v:'no', t:`Dejarla en «${f.cat}»`},
+      ]}], okTxt:'Guardar' });
+    if (!v) return;
+    if (v.q === 'si'){ f.cat = real; f.sub = ''; }
   }
 
   f.nombre = nombre;
@@ -1368,6 +1430,15 @@ function renderGuia(){
           (discos de corte, de desbaste, de diamante), usa <b>«⑂ Dividir en grupos»</b>.</li>
       <li>Abajo del editor tienes la <b>vista previa</b>: así queda en el catálogo.</li>
     </ol>
+    <p class="guia-aviso"><b>¿La creaste y no aparece en el catálogo?</b> Casi siempre es una
+       de estas dos:
+       <br>1. <b>Estás viendo «Todas las categorías»</b>. Las agrupaciones sólo se ven al
+       <b>entrar a una categoría</b> — en la lista general el catálogo muestra producto por
+       producto, a propósito.
+       <br>2. <b>La categoría no cuadra.</b> La ficha aparece donde están sus productos, no
+       donde dice la agrupación. Si no coinciden, el editor te lo marca en ámbar con un botón
+       para cuadrarlo, y también te pregunta al guardar.
+       <br>Y recuerda que necesita <b>al menos 2 productos</b> que sigan publicados.</p>
     <p class="guia-tip">Atajo: selecciona productos en la pestaña <b>Productos</b> y pulsa
        <b>«＋ Con lo seleccionado»</b> en Agrupaciones — llegan ya puestos.</p>
 
