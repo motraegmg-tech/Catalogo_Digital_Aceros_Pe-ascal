@@ -36,13 +36,26 @@
   </div>
 
   <div class="topbar-actions">
+    <button id="btnNuevoProd" class="btn-primary btn-alta" title="Dar de alta un producto que la empresa empezó a vender">＋ Nuevo producto</button>
     <button id="btnUndo" class="btn-ghost" title="Deshacer último cambio (Ctrl+Z)">↩ Deshacer</button>
     <button id="btnLog" class="btn-ghost" title="Historial de cambios">Bitácora</button>
     <button id="btnPull" class="btn-ghost" title="Trae la clasificación y fotos más recientes de Supabase: lo que tu equipo cambió desde otra máquina. Tus cambios locales no se pisan.">⟲ Traer del equipo</button>
-    <button id="btnDatos" class="btn-primary" title="Guardar avance, importar y exportar">Guardar / Exportar</button>
+    <button id="btnDatos" class="btn-ghost" title="Guardar avance, importar y exportar">Guardar / Exportar</button>
     <a href="index.html" target="_blank" class="btn-ghost btn-link" title="Abre el catálogo público (muestra los datos exportados, no el avance en vivo)">Ver catálogo ↗</a>
   </div>
 </header>
+
+<!-- ===== Secciones del clasificador =====
+     Cada pestaña es un trabajo distinto sobre el mismo catálogo. La primera es
+     la de siempre (clasificar productos); las demás son lo que antes había que
+     pedirle a un programador. -->
+<nav class="tabs" id="tabs" role="tablist">
+  <button class="tab on" data-panel="productos"  role="tab" aria-selected="true">📦 Productos<small>alta, foto y categoría</small></button>
+  <button class="tab"    data-panel="familias"   role="tab" aria-selected="false">🗂 Agrupaciones<small>qué productos van juntos</small></button>
+  <button class="tab"    data-panel="destacados" role="tab" aria-selected="false">⭐ Destacados<small>lo que sale primero</small></button>
+  <button class="tab"    data-panel="ajustes"    role="tab" aria-selected="false">🏬 Sucursales y textos<small>direcciones y WhatsApp</small></button>
+  <button class="tab"    data-panel="guia"       role="tab" aria-selected="false">❓ Cómo se usa<small>guía paso a paso</small></button>
+</nav>
 
 <div class="autosave-note">
   <button id="fsBtn" class="fs-btn" hidden></button>
@@ -57,8 +70,8 @@
   <span id="saveHint" class="save-hint"></span>
 </div>
 
-<!-- ===== Cuerpo ===== -->
-<div class="layout">
+<!-- ===== Cuerpo · pestaña PRODUCTOS ===== -->
+<div class="layout" id="panelProductos">
 
   <!-- Árbol de taxonomía -->
   <aside class="taxpanel" id="taxpanel">
@@ -87,6 +100,140 @@
 
     <div class="more-wrap"><button id="btnMore" class="btn-more" hidden>Cargar más</button></div>
   </main>
+</div>
+
+<!-- ===== Pestaña AGRUPACIONES (fichas de familia) =====
+     Una agrupación junta en UNA sola tarjeta del catálogo los productos que sólo
+     cambian en una cosa (la medida de las soleras, el tipo de disco). El cliente
+     ve una ficha y elige adentro; cada producto conserva su código. -->
+<section id="panelFamilias" class="panel" hidden>
+  <div class="panel-head">
+    <div>
+      <h2>Agrupaciones de productos</h2>
+      <p>Junta en <b>una sola tarjeta</b> los productos que son lo mismo y sólo cambian en algo:
+         la medida de las soleras, el tipo de disco, el calibre de la lámina. El cliente abre la
+         tarjeta y elige adentro. <b>Tú decides por qué se agrupan</b> y así se rotula en el catálogo.</p>
+    </div>
+    <div class="panel-acts">
+      <button id="famNueva" class="btn-asignar">＋ Nueva agrupación</button>
+      <button id="famDesdeSel" class="btn-datos" title="Crea una agrupación con los productos que tengas seleccionados en la pestaña Productos">＋ Con lo seleccionado</button>
+      <button id="famImportar" class="btn-datos" title="Sube a la base las agrupaciones guardadas en el archivo del catálogo. Úsalo la primera vez o para recuperar.">⤒ Importar del respaldo</button>
+    </div>
+  </div>
+  <div class="panel-tools">
+    <input id="famQ" type="search" placeholder="Buscar agrupación por nombre, categoría o producto…" autocomplete="off" />
+    <select id="famCat" title="Filtrar por categoría"></select>
+    <select id="famCrit" title="Filtrar por tipo de agrupación"></select>
+    <span id="famEstado" class="panel-estado"></span>
+  </div>
+  <div id="famLista" class="fam-lista"></div>
+</section>
+
+<!-- ===== Pestaña DESTACADOS ===== -->
+<section id="panelDestacados" class="panel" hidden>
+  <div class="panel-head">
+    <div>
+      <h2>Destacados de la portada</h2>
+      <p>Lo que el cliente ve <b>al abrir el catálogo</b>, antes de buscar nada. Pon aquí lo que más
+         se vende. A la derecha aparece lo que la gente pide de verdad, contado por el propio catálogo.</p>
+    </div>
+    <div class="panel-acts">
+      <button id="desAgregar" class="btn-asignar">＋ Agregar producto</button>
+      <button id="desAgregarFam" class="btn-datos">＋ Agregar agrupación</button>
+      <button id="desGuardar" class="btn-datos" title="Publica la lista en el catálogo">☁ Publicar destacados</button>
+    </div>
+  </div>
+  <div class="dos-columnas">
+    <div class="col-caja">
+      <h3>En la portada <span id="desN" class="caja-n"></span></h3>
+      <p class="caja-nota">Se muestran en este orden. Usa ▲ ▼ para moverlos.</p>
+      <div id="desLista" class="des-lista"></div>
+    </div>
+    <div class="col-caja">
+      <h3>Lo que más piden <span id="popN" class="caja-n"></span></h3>
+      <p class="caja-nota">Contado desde los pedidos que los clientes mandan por WhatsApp.
+         <select id="popRango">
+           <option value="30">últimos 30 días</option>
+           <option value="90" selected>últimos 90 días</option>
+           <option value="0">desde siempre</option>
+         </select>
+      </p>
+      <div id="popLista" class="pop-lista"></div>
+      <div class="caja-pie">
+        <button id="popRefrescar" class="btn-datos">⟳ Actualizar cuenta</button>
+        <button id="popUsar" class="btn-datos" title="Pone los 12 más pedidos como destacados de la portada">↧ Usar los 12 más pedidos</button>
+      </div>
+      <div id="busLista" class="bus-lista"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Pestaña SUCURSALES Y TEXTOS ===== -->
+<section id="panelAjustes" class="panel" hidden>
+  <div class="panel-head">
+    <div>
+      <h2>Sucursales y textos del catálogo</h2>
+      <p>Los datos que el cliente ve al mandar su pedido. Cambiar aquí un WhatsApp o una dirección
+         se refleja en el catálogo <b>sin tocar código</b>.</p>
+    </div>
+    <div class="panel-acts">
+      <button id="sucNueva" class="btn-asignar">＋ Nueva sucursal</button>
+      <button id="ajGuardar" class="btn-datos">☁ Publicar cambios</button>
+    </div>
+  </div>
+  <div id="sucLista" class="suc-lista"></div>
+
+  <h3 class="panel-sec">Textos del catálogo</h3>
+  <div id="txtLista" class="txt-lista"></div>
+
+  <h3 class="panel-sec">Palabras que usa el cliente</h3>
+  <p class="caja-nota">Quien compra acero no escribe como está capturado el catálogo: pide
+     «media pulgada», «PTR de 2x2» o «varilla». Aquí le dices al buscador que
+     <b>además</b> busque otra cosa. Nunca quita resultados: sólo agrega.
+     <br>Las fracciones habladas (media, un cuarto, tres octavos…) y las unidades
+     (pulgada, milímetros) ya las entiende solo — aquí va el vocabulario de mostrador.</p>
+  <div id="sinLista" class="sin-lista"></div>
+  <button id="sinNuevo" class="btn-datos">＋ Nueva palabra</button>
+
+  <h3 class="panel-sec">Tipos de agrupación</h3>
+  <p class="caja-nota">Con qué criterio se pueden juntar los productos. El <b>rótulo</b> es la palabra
+     que el cliente ve encima de la columna donde elige (Medida, Calibre, Modelo…).</p>
+  <div id="critLista" class="crit-lista"></div>
+  <button id="critNuevo" class="btn-datos">＋ Nuevo tipo de agrupación</button>
+</section>
+
+<!-- ===== Pestaña GUÍA ===== -->
+<section id="panelGuia" class="panel" hidden>
+  <div id="guiaCuerpo" class="guia"></div>
+</section>
+
+<!-- ===== Editor de una agrupación ===== -->
+<div id="modalFam" class="modal" hidden>
+  <div class="modal-card modal-ancho">
+    <button class="modal-close" id="famClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title" id="famTitulo">Agrupación</h3>
+    <div id="famEditor" class="fam-editor"></div>
+    <div class="dlg-foot">
+      <span id="famAviso" class="fam-aviso"></span>
+      <button id="famCancel" class="btn-datos">Cancelar</button>
+      <button id="famOk" class="btn-asignar">Guardar agrupación</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Buscador de productos (para agrupaciones y destacados) ===== -->
+<div id="modalPick" class="modal" hidden>
+  <div class="modal-card modal-slim">
+    <button class="modal-close" id="pickClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title" id="pickTitulo">Elegir productos</h3>
+    <input id="pickQ" type="search" placeholder="Buscar por nombre, código o medida…" autocomplete="off" />
+    <div id="pickLista" class="pick-lista"></div>
+    <div class="dlg-foot">
+      <span id="pickN" class="fam-aviso"></span>
+      <button id="pickCancel" class="btn-datos">Cancelar</button>
+      <button id="pickOk" class="btn-asignar">Agregar</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== Barra de asignación (aparece con selección) ===== -->
@@ -237,6 +384,10 @@
   };
 </script>
 <script src="data/productos.js"></script>
+<!-- Respaldo local de las agrupaciones: sólo se usa para el botón "Importar del
+     respaldo" cuando la base todavía no las tiene. La fuente de verdad es Supabase. -->
+<script src="data/familias.js"></script>
 <script src="assets/clasificador.js"></script>
+<script src="assets/clasificador-plus.js"></script>
 </body>
 </html>

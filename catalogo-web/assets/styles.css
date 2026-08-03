@@ -231,14 +231,41 @@ select,input{font-family:inherit}
 .cart-foot{padding:14px 16px;border-top:1px solid var(--line)}
 .suc-block{flex-direction:column;color:var(--gris);width:100%}
 .suc-block select{margin-top:4px;width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--negro);font-size:13px}
-.suc-dir{display:flex;gap:6px;align-items:flex-start;margin-top:8px;font-size:11.5px;line-height:1.4;color:var(--gris);text-decoration:none}
-.suc-dir svg{width:14px;height:14px;flex:0 0 14px;margin-top:1px;color:var(--oxido)}
-.suc-dir:hover{color:var(--aqua-2)}
-.suc-dir:hover span{text-decoration:underline}
+/* Dirección de la sucursal — recuadro propio.
+   Es el dato con el que el cliente decide si pasa por su pedido, así que sale
+   del cuerpo de texto y se enmarca. SOLO el contorno va en rojo óxido (el rojo
+   del logo): rellenar la caja competiría con el botón de WhatsApp, que es la
+   acción que de verdad tiene que destacar. */
+.dir-caja{margin-top:12px;border:2px solid var(--oxido);border-radius:10px;
+  background:transparent;padding:10px 13px 9px}
+.dir-tit{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--oxido);margin-bottom:5px}
+.dir-link{display:flex;gap:8px;align-items:flex-start;font-size:15px;line-height:1.35;
+  font-weight:700;color:var(--negro);text-decoration:none}
+.dir-link svg{width:18px;height:18px;flex:0 0 18px;margin-top:2px;color:var(--oxido)}
+.dir-link:hover{color:var(--oxido-2)}
+.dir-link:hover span{text-decoration:underline}
+.dir-link:focus-visible{outline:2px solid var(--aqua);outline-offset:3px;border-radius:4px}
+.dir-pista{margin-top:6px;font-size:10.5px;line-height:1.35;color:var(--gris)}
 .btn-whats{width:100%;margin-top:12px;background:#1FA855;color:#fff;border:0;border-radius:10px;padding:13px;font-weight:700;font-size:14.5px}
 .btn-whats:hover{background:#178a45}
 .cart-note{font-size:11px;color:var(--gris);text-align:center;margin:10px 0 0}
 .cart-empty{color:var(--gris);text-align:center;padding:40px 10px;font-size:13px}
+
+/* ===== Destacados de la portada =====
+   Lo que el encargado pone al frente desde el clasificador. Van con la misma
+   tarjeta que el resto del catálogo —el cliente no tiene que aprender un
+   componente nuevo—, sólo enmarcadas y con un separador que deja claro dónde
+   empieza el catálogo completo. */
+.destacados{margin-bottom:26px}
+.dest-head h2{margin:0 0 2px;font-size:19px;color:var(--negro);
+  display:flex;align-items:center;gap:9px}
+.dest-head h2::before{content:'';width:5px;height:20px;border-radius:3px;background:var(--oxido)}
+.dest-head p{margin:0 0 12px 14px;font-size:12.5px;color:var(--gris)}
+.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.dest-sep{display:flex;align-items:center;gap:12px;margin:26px 0 2px;
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+.dest-sep::before,.dest-sep::after{content:'';flex:1;height:1px;background:var(--acero)}
 
 .empty{grid-column:1/-1;text-align:center;color:var(--carbon);background:rgba(255,255,255,.55);border:1px dashed var(--acero);border-radius:var(--radius);padding:38px 16px;font-size:13.5px;line-height:1.5}
 

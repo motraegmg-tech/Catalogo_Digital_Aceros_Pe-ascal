@@ -117,6 +117,9 @@
       <div id="count" class="count"></div>
     </div>
     <div id="subchips" class="subchips"></div>
+    <!-- Destacados: lo que el encargado pone al frente desde el clasificador.
+         Sólo se pinta en la portada (sin búsqueda ni categoría elegida). -->
+    <section id="destacados" class="destacados" hidden></section>
     <section id="grid" class="grid"></section>
     <div class="more-wrap">
       <button id="btnMore" class="btn-more" hidden>Cargar más</button>
@@ -144,9 +147,18 @@
       <span>Enviar a sucursal</span>
       <select id="sucursalCart"></select>
     </label>
-    <a id="sucDir" class="suc-dir" target="_blank" rel="noopener" title="Abrir ubicación en Google Maps"></a>
+
+    <!-- Dirección de la sucursal elegida. Va en su propio recuadro y a tamaño
+         legible porque es el dato con el que el cliente decide si va por su
+         pedido o pide envío; antes iba a 11.5 px, perdida bajo el select. -->
+    <div class="dir-caja">
+      <div class="dir-tit">Dirección de la Sucursal:</div>
+      <a id="sucDir" class="dir-link" target="_blank" rel="noopener" title="Abrir ubicación en Google Maps"></a>
+      <div class="dir-pista">Da click en la dirección para que lo veas en Google Maps</div>
+    </div>
+
     <button id="btnWhats" class="btn-whats">Enviar pedido por WhatsApp</button>
-    <p class="cart-note">No se muestran precios: el equipo te cotiza al recibir el pedido.</p>
+    <p class="cart-note" id="cartNota">No se muestran precios: el equipo te cotiza al recibir el pedido.</p>
   </div>
 </div>
 <div id="overlay" class="overlay" hidden></div>

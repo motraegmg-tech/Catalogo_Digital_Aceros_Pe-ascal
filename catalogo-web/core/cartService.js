@@ -1,4 +1,7 @@
-import { state, saveLS, CONFIG, LS_CART } from './store.js';
+import { state, saveLS, LS_CART } from './store.js';
+// Las sucursales las edita el encargado desde el clasificador; AJUSTES arranca
+// con las de core/config.js, así que esto funciona aunque la base no responda.
+import { AJUSTES } from './ajustesService.js';
 
 export function addToCartLogic(p) {
   addManyToCartLogic([{ p, qty: 1 }]);
@@ -42,7 +45,8 @@ export function getCartItems() {
 export function buildWhatsAppUrl(sucursalId) {
   const items = getCartItems();
   if (!items.length) return null;
-  const suc = CONFIG.sucursales.find(s => s.id === sucursalId) || CONFIG.sucursales[0];
+  const suc = AJUSTES.sucursales.find(s => s.id === sucursalId) || AJUSTES.sucursales[0];
+  if (!suc) return null;
   const lines = items.map(it => `• ${it.qty} x ${it.nom}  (Cód: ${it.cod})`).join('\n');
   const msg = `Hola, Aceros Peñascal — ${suc.nombre}.\nQuisiera cotizar este pedido:\n\n${lines}\n\nQuedo atento a precio y disponibilidad. ¡Gracias!`;
   return `https://wa.me/${suc.wa}?text=${encodeURIComponent(msg)}`;

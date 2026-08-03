@@ -79,7 +79,8 @@ function taxDesdeBase(){
 }
 function nuevoTrabajo(){
   return { version:2, creado:hoyISO(), guardado:null, baseGenerado:DATA.generado||'',
-    taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, etiquetas:{}, bitacora:[] };
+    taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, etiquetas:{},
+    nuevos:{}, borrados:{}, bitacora:[] };
 }
 function migrar(w){
   // v1 → v2: subs de strings a objetos {nombre, subs:[]}
@@ -93,6 +94,9 @@ function migrar(w){
   asegurarCatOculta(w.taxonomia);   // trabajos guardados antes de que existiera
   w.asignaciones = w.asignaciones||{}; w.ediciones = w.ediciones||{};
   w.etiquetas = w.etiquetas||{}; w.bitacora = w.bitacora||[];
+  // Altas y bajas hechas desde el clasificador (v2.1). Un avance guardado antes
+  // de que existieran simplemente no trae ninguna.
+  w.nuevos = w.nuevos||{}; w.borrados = w.borrados||{};
   return w;
 }
 let WORK = load(LS_KEY, null);
@@ -331,11 +335,16 @@ const SB_DIRTY = new Set();   // códigos cuyos datos difieren de Supabase
 
 function marcarSucios(){
   if (!SBC) return;
+  const vivos = new Set();
   for (const p of PRODUCTOS){
+    vivos.add(p.cod);
     const b = SB_BASE.get(p.cod);
     if (!b || b.g !== sbClaveGrupo(p) || b.f !== sbClaveFila(p)) SB_DIRTY.add(p.cod);
     else SB_DIRTY.delete(p.cod);
   }
+  // Un producto eliminado ya no está en PRODUCTOS: su código se quedaría marcado
+  // como pendiente para siempre. La baja la lleva sincronizarAltasYBajas().
+  for (const cod of [...SB_DIRTY]) if (!vivos.has(cod)) SB_DIRTY.delete(cod);
   renderSbEstado();
 }
 
@@ -346,10 +355,67 @@ function programarSyncSupabase(){
   SB_T = setTimeout(()=>sincronizarSupabase('auto'), 1600);
 }
 
+/* Filas pendientes de ALTA en Supabase. SB_BASE es "lo que creemos que hay en
+   línea": todo producto que no esté ahí necesita un INSERT, no un UPDATE. Sirve
+   igual para un alta recién capturada que para una baja deshecha. */
+function altasPendientes(){
+  return PRODUCTOS.filter(p => !SB_BASE.has(p.cod));
+}
+/* Filas pendientes de BAJA: eliminadas aquí y todavía presentes en Supabase. */
+function bajasPendientes(){
+  return Object.values(WORK.borrados).filter(b => b && b.cod && !b.subido && b.enBase !== false);
+}
+
+/* Sube las altas y las bajas antes que las reclasificaciones: un UPDATE sobre
+   una fila que aún no existe no falla, simplemente no escribe nada — y el
+   producto se quedaría "sincronizado" sin estar en la base. */
+async function sincronizarAltasYBajas(){
+  let altas = 0, bajas = 0;
+
+  for (const p of altasPendientes()){
+    const { error } = await SBC.from('productos').upsert({
+      id: p.id, codigo: p.cod, descripcion: p.nom || '',
+      categoria: p.cat || POR, subcategoria: p.sub || p.cat || POR, sub2: p.sub2 || null,
+      medidas: p.med || '', foto: p.foto || null,
+      proveedor: p.prov || '', mostrar_proveedor: !!p.mprov,
+      etiquetas: etqDe(p), updated_by: SB_YO,
+    }, { onConflict:'codigo' });
+    if (error) return { error, altas, bajas };
+    SB_BASE.set(p.cod, sbClave(p)); SB_DIRTY.delete(p.cod);
+    if (WORK.nuevos[p.id]) WORK.nuevos[p.id].subido = true;
+    altas++;
+  }
+
+  for (const b of bajasPendientes()){
+    const { error } = await SBC.from('productos').delete().eq('codigo', b.cod);
+    if (error) return { error, altas, bajas };
+    SB_BASE.delete(b.cod); SB_DIRTY.delete(b.cod);
+    b.subido = true;
+    bajas++;
+  }
+
+  if (altas || bajas) try{ localStorage.setItem(LS_KEY, JSON.stringify(WORK)); }catch{}
+  return { error:null, altas, bajas };
+}
+
 async function sincronizarSupabase(origen){
   if (!SBC) return false;
   if (!SB.user){ if (origen!=='auto') aviso('⚠ Inicia sesión para sincronizar en línea.'); return false; }
-  if (!SB_DIRTY.size){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
+  const pendientesAltaBaja = altasPendientes().length + bajasPendientes().length;
+  if (!SB_DIRTY.size && !pendientesAltaBaja){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
+
+  if (pendientesAltaBaja){
+    SB.estado='sync'; renderSbEstado();
+    const r = await sincronizarAltasYBajas();
+    if (r.error){
+      SB.estado='error'; SB.error = r.error.message || String(r.error); renderSbEstado();
+      aviso('⚠ Error al dar de alta/baja en línea: '+SB.error);
+      return false;
+    }
+    if ((r.altas || r.bajas) && origen!=='auto')
+      aviso(`☁ ${r.altas?fmt(r.altas)+' alta(s) ':''}${r.bajas?fmt(r.bajas)+' baja(s) ':''}en línea`);
+  }
+  if (!SB_DIRTY.size){ SB.estado='on'; SB.ultimo=new Date(); SB.error=null; renderSbEstado(); return true; }
 
   /* Dos pasadas. Los campos de destino (categoría, subcategoría, sub2, marcas,
      proveedor) se agrupan: reclasificar 200 productos a la misma rama es UN
@@ -445,7 +511,9 @@ async function sbLogout(){
 function renderSbEstado(){
   const head = $('#sbTxt'), full = $('#sbEstadoTxt');
   const loginRow = $('#sbLoginRow'), sessRow = $('#sbSessionRow');
-  const pend = SB_DIRTY.size;
+  // Las bajas no viven en SB_DIRTY (su producto ya no está en PRODUCTOS), pero
+  // siguen siendo trabajo por subir: cuentan como pendientes.
+  const pend = SB_DIRTY.size + bajasPendientes().length;
   const hora = SB.ultimo ? SB.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : null;
   let h='', f='';
   switch (SB.estado){
@@ -500,7 +568,7 @@ let PULL_T = null;
 async function descargarClasificacionSB(){
   const conSesion = !!SB.user;
   const tabla  = conSesion ? 'productos' : 'catalogo_publico';
-  const campos = 'codigo,categoria,subcategoria,sub2,medidas,descripcion,foto,etiquetas,proveedor,mostrar_proveedor';
+  const campos = 'id,codigo,categoria,subcategoria,sub2,medidas,descripcion,foto,etiquetas,proveedor,mostrar_proveedor';
   const filas = [];
   const pageSize = 1000;
   for (let page=0;;page++){
@@ -527,6 +595,35 @@ async function traerCambiosSupabase(origen){
   }
   const mapa = new Map(filas.map(r=>[r.codigo, r]));
   let cambios = 0;
+
+  /* Altas del equipo: códigos que existen en línea y no en la base local. Sin
+     ellas, un producto capturado por otra persona sería invisible aquí. */
+  const conocidos = new Set(DATA.productos.map(p=>p.cod));
+  for (const r of filas){
+    if (conocidos.has(r.codigo)) continue;
+    const id = r.id || idDesdeCodigo(r.codigo);
+    if (WORK.borrados[id]) continue;                 // lo borraste tú, no lo revivas
+    DATA.productos.push({
+      id, cod:r.codigo, nom:r.descripcion||'', cat:r.categoria||POR,
+      sub:r.subcategoria||r.categoria||POR, sub2:r.sub2||'', med:r.medidas||'',
+      prov: provConfiable ? (r.proveedor||'') : '', mprov: !!r.mostrar_proveedor,
+      foto:r.foto||'', etq: Array.isArray(r.etiquetas)?r.etiquetas:[],
+    });
+    // Si lo capturaste tú y ya volvió por el pull, deja de estar "pendiente de alta".
+    if (WORK.nuevos[id]) delete WORK.nuevos[id];
+    cambios++;
+  }
+
+  /* Bajas del equipo: sólo con sesión, porque sin ella leemos la vista pública,
+     que ya esconde los descontinuados — y confundir "oculto" con "borrado"
+     eliminaría de tu copia productos que siguen existiendo. (`provConfiable` es
+     precisamente "leímos la tabla completa con sesión".) */
+  if (provConfiable){
+    const antes = DATA.productos.length;
+    DATA.productos = DATA.productos.filter(p => mapa.has(p.cod) || WORK.nuevos[p.id]);
+    cambios += antes - DATA.productos.length;
+  }
+
   for (const p of DATA.productos){
     const r = mapa.get(p.cod); if (!r) continue;
     const cat = r.categoria || '', sub = r.subcategoria || '', sub2 = r.sub2 || '';
@@ -648,8 +745,12 @@ function puedePullAuto(){
   if (!AUTO_PULL || !SBC) return false;
   if (PULL.estado==='cargando' || SB.estado==='sync') return false;
   if (state.sel.size || PAINT.downId!==null) return false;
-  for (const id of ['#modal','#modalLog','#modalDatos','#modalFoto','#dlg'])
-    if (!$(id).hidden) return false;
+  // Incluye los modales de clasificador-plus.js: editar una agrupación es un
+  // trabajo largo y un repintado a media edición perdería lo escrito.
+  for (const id of ['#modal','#modalLog','#modalDatos','#modalFoto','#dlg','#modalFam','#modalPick']){
+    const n = $(id);
+    if (n && !n.hidden) return false;
+  }
   const ae = document.activeElement;
   if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return false;
   return true;
@@ -665,11 +766,27 @@ function programarPullAuto(){
   }, RT.estado==='on' ? 300000 : 45000);
 }
 
-/* ---------- productos efectivos (base + deltas) ---------- */
-const BMAP = new Map(DATA.productos.map(p=>[p.id,p]));
+/* ---------- productos efectivos (base + deltas) ----------
+   Tres fuentes, en este orden:
+     1. DATA.productos      — la base (archivo local, ya realineada por el pull)
+     2. WORK.nuevos         — altas capturadas aquí que aún no están en la base
+     3. ediciones/asignaciones/etiquetas — los deltas encima de cualquiera de las dos
+   Y una resta: WORK.borrados, las bajas hechas desde el clasificador. */
+let BMAP = new Map();
 let PRODUCTOS = [], IDX = new Map(), TAXMAP = new Map();
+
+const estaBorrado = (id) => !!WORK.borrados[id];
+/* Registro "base" de un producto: la fila del archivo o, si nació aquí, su alta. */
+function baseDe(id){ return BMAP.get(id) || null; }
+
 function construirProductos(){
-  PRODUCTOS = DATA.productos.map(p=>{
+  // La base incluye las altas locales: desde aquí para abajo, un producto nuevo
+  // se comporta EXACTAMENTE igual que uno del archivo (deltas, undo, export).
+  BMAP = new Map();
+  for (const p of DATA.productos) if (!estaBorrado(p.id)) BMAP.set(p.id, p);
+  for (const n of Object.values(WORK.nuevos)) if (!estaBorrado(n.id) && !BMAP.has(n.id)) BMAP.set(n.id, n);
+
+  PRODUCTOS = [...BMAP.values()].map(p=>{
     // sub2 ya viaja a Supabase, así que se respeta el de la base y los deltas
     // locales lo sobrescriben. (Antes se forzaba a '' porque solo existía aquí.)
     const q = Object.assign({}, p); q.sub2 = p.sub2 || '';
@@ -677,6 +794,7 @@ function construirProductos(){
     const a = WORK.asignaciones[p.id]; if (a){ q.cat=a.cat; q.sub=a.sub; q.sub2=a.sub2||''; }
     q.etq = WORK.etiquetas[p.id] ? WORK.etiquetas[p.id].slice()
           : (Array.isArray(p.etq) ? p.etq.slice() : []);
+    q.nuevo = !!WORK.nuevos[p.id];
     return q;
   });
   IDX = new Map(PRODUCTOS.map(p=>[p.id,p]));
@@ -730,6 +848,21 @@ function undo(){
     }
   }
   else if (a.tipo==='tax'){ WORK.taxonomia = a.tax; restaurarAsig(a.asig); }
+  else if (a.tipo==='alta'){
+    const n = WORK.nuevos[a.id];
+    delete WORK.nuevos[a.id];
+    // Si ya había subido a Supabase, deshacer el alta implica borrarlo allá.
+    if (n && n.subido) WORK.borrados[a.id] = { id:a.id, cod:n.cod, nom:n.nom,
+      cuando:new Date().toISOString(), enBase:true, nuevo:n, respaldo:null };
+    delete WORK.ediciones[a.id]; delete WORK.asignaciones[a.id]; delete WORK.etiquetas[a.id];
+  }
+  else if (a.tipo==='baja'){
+    const b = WORK.borrados[a.id];
+    if (b && b.nuevo) WORK.nuevos[a.id] = b.nuevo;
+    delete WORK.borrados[a.id];
+    // Si la baja ya se había subido, el código salió de SB_BASE y volverá a
+    // entrar como alta pendiente por sí solo (ver altasPendientes).
+  }
   bitacora('Deshacer: '+(a.label||''));
   actualizarBtnUndo();
   construirProductos(); persistir(); renderAll();
@@ -1291,6 +1424,212 @@ function editarCampos(id, campos){ // campos = {nom?, med?, prov?, mprov?, foto?
   return true;
 }
 
+/* ---------- alta, duplicado y baja de productos ----------
+   Todo lo que el encargado necesita para meter al catálogo un producto que la
+   empresa acaba de empezar a vender, sin tocar una línea de código.
+
+   El `id` es el nombre con el que se busca la foto en disco (fotos/<id>.webp),
+   así que tiene que ser seguro como nombre de archivo: se deriva del código
+   quitando lo que Windows no admite. Es la misma regla con la que se generaron
+   los 3,222 ids del Excel original ("MEMM41/29510" → "MEMM41-29510"). */
+function idDesdeCodigo(cod){
+  const base = String(cod||'').trim()
+    .replace(/["'`*?<>|:\\]/g,'')      // prohibidos en nombre de archivo
+    .replace(/[\/\s]+/g,'-')           // la barra y los espacios pasan a guion
+    .replace(/-+/g,'-').replace(/^-|-$/g,'');
+  return base || 'PRODUCTO';
+}
+function idLibre(cod){
+  let id = idDesdeCodigo(cod), i = 2;
+  while (BMAP.has(id) || WORK.nuevos[id]) id = idDesdeCodigo(cod)+'-'+(i++);
+  return id;
+}
+function buscarPorCodigo(cod){
+  const c = norm(cod);
+  return PRODUCTOS.find(p => norm(p.cod)===c) || null;
+}
+
+/* Formulario compartido por "Nuevo producto" y "Duplicar": los mismos campos,
+   sólo cambian el título y los valores de arranque. */
+async function formularioProducto(cfg){
+  const modelo = cfg.modelo || {};
+  const v = await dialogo({
+    titulo: cfg.titulo,
+    texto: cfg.texto,
+    okTxt: cfg.okTxt || 'Crear producto',
+    campos:[
+      {id:'cod',  label:'Código (único, obligatorio)', tipo:'text', valor:modelo.cod||'', placeholder:'p. ej. SOL18X1'},
+      {id:'nom',  label:'Nombre / descripción',        tipo:'text', valor:modelo.nom||'', placeholder:'p. ej. SOLERA 1/8 X 1"'},
+      {id:'med',  label:'Medida',                      tipo:'text', valor:modelo.med||'', placeholder:'p. ej. 1/8 X 1"'},
+      {id:'prov', label:'Proveedor (interno, no se publica)', tipo:'text', valor:modelo.prov||''},
+      {id:'cat',  label:'Categoría',                   tipo:'select',
+        opciones:[...WORK.taxonomia].sort(alfaN).map(c=>({v:c.nombre,t:c.nombre}))
+          .concat([{v:POR, t:POR+' (decidir después)'}]),
+        valor: modelo.cat || POR},
+      {id:'subv', label:'Subcategoría',                tipo:'select', opciones:[{v:'',t:'(general)'}]},
+      {id:'foto', label:'Foto del producto (opcional)', tipo:'foto',
+        nota:'Puedes ponerla ahora o después, desde la ficha. Se recorta y se encuadra igual que siempre.'},
+    ],
+    alAbrir:(body)=>{
+      const cs = body.querySelector('[data-campo="cat"]');
+      const ss = body.querySelector('[data-campo="subv"]');
+      let primera = true;
+      const rellenar = ()=>{
+        opcionesSub(ss, cs.value, primera ? (modelo.sub||null) : null, primera ? (modelo.sub2||'') : null);
+        primera = false;
+      };
+      cs.onchange = rellenar; rellenar();
+    },
+  });
+  if (!v) return null;
+
+  const cod = (v.cod||'').trim();
+  if (!cod){ aviso('⚠ El código es obligatorio: es lo que identifica al producto.'); return null; }
+  const choque = buscarPorCodigo(cod);
+  if (choque){ aviso(`⚠ El código «${cod}» ya lo usa «${choque.nom}». Usa otro.`); return null; }
+  const nom = (v.nom||'').trim();
+  if (!nom){ aviso('⚠ Escribe el nombre del producto: es lo que ve el cliente.'); return null; }
+
+  const {sub, sub2} = parseSubVal(v.subv);
+  const cat = v.cat || POR;
+  // La foto no viaja en el formulario (es un Blob): se recoge aparte y se sube
+  // DESPUÉS de crear el producto, que es cuando ya hay a qué asociarla.
+  const foto = DLG_FOTO ? { blob:DLG_FOTO.blob, ext:DLG_FOTO.ext } : null;
+  return { cod, nom, med:(v.med||'').trim(), prov:(v.prov||'').trim(),
+           cat, sub: sub || cat, sub2: (cat===POR || !sub) ? '' : sub2, foto };
+}
+
+/* Da de alta el producto en el trabajo local. Sube solo a Supabase con la
+   sincronización (o queda pendiente si aún no hay sesión). */
+function crearProducto(datos, origen){
+  const id = idLibre(datos.cod);
+  WORK.nuevos[id] = {
+    id, cod:datos.cod, nom:datos.nom, cat:datos.cat, sub:datos.sub, sub2:datos.sub2||'',
+    med:datos.med||'', prov:datos.prov||'', mprov:false, foto:'', etq:[],
+    creado:new Date().toISOString(), subido:false,
+  };
+  const label = `Producto nuevo: ${datos.cod} — ${datos.nom}`;
+  pushUndo({tipo:'alta', label, id});
+  bitacora(label + (origen?` (${origen})`:''));
+  construirProductos();
+  const p = IDX.get(id);
+  if (p){ const s = calcularSugerencia(p); if (s) SUG.set(id, s); }
+  persistir(); renderAll();
+  aviso('✓ '+label);
+  return id;
+}
+
+async function nuevoProducto(){
+  const datos = await formularioProducto({
+    titulo:'Nuevo producto',
+    texto:'Se agrega al catálogo con este código. Si aún no sabes en qué categoría va, déjalo en POR CLASIFICAR: se puede mover cuando quieras.',
+  });
+  if (!datos) return;
+  const id = crearProducto(datos, 'alta manual');
+  if (datos.foto) await subirFoto(id, datos.foto.blob, datos.foto.ext);
+  limpiarFotoDlg();
+  abrirFicha(id);     // queda abierta para revisar o corregir lo capturado
+}
+
+/* Capturar una serie (una solera en 12 medidas) producto por producto sería
+   inhumano: duplicar deja todo puesto y sólo hay que cambiar código y medida. */
+async function duplicarProducto(id){
+  const p = IDX.get(id); if (!p) return;
+  const datos = await formularioProducto({
+    titulo:'Duplicar producto',
+    texto:`Se crea un producto nuevo copiando «${p.nom}». Cambia el código y la medida; lo demás ya viene puesto.`,
+    okTxt:'Crear copia',
+    modelo:{ cod:'', nom:p.nom, med:p.med, prov:p.prov, cat:p.cat, sub:p.sub, sub2:p.sub2 },
+  });
+  if (!datos) return;
+  const nuevo = crearProducto(datos, 'duplicado de '+p.cod);
+  if (datos.foto) await subirFoto(nuevo, datos.foto.blob, datos.foto.ext);
+  limpiarFotoDlg();
+  abrirFicha(nuevo);
+}
+
+/* Corregir un código mal capturado. Sólo para productos creados aquí: el código
+   de los 3,222 originales es el que la empresa usa en el sistema de tienda y en
+   los nombres de las fotos, así que cambiarlo desde el catálogo rompería el
+   vínculo con todo lo demás. Por dentro es una baja + un alta, porque el código
+   ES la identidad de la fila en Supabase. */
+async function cambiarCodigo(id){
+  const p = IDX.get(id); if (!p || !WORK.nuevos[id]) return;
+  const v = await dialogo({ titulo:'Cambiar el código',
+    texto:`El producto se vuelve a dar de alta con el código nuevo. Se conservan nombre, medida, categoría y proveedor; la foto habrá que volver a subirla.`,
+    campos:[{id:'cod', label:'Código nuevo', tipo:'text', valor:p.cod}], okTxt:'Cambiar código' });
+  if (!v) return;
+  const cod = (v.cod||'').trim();
+  if (!cod || cod===p.cod) return;
+  const choque = buscarPorCodigo(cod);
+  if (choque){ aviso(`⚠ El código «${cod}» ya lo usa «${choque.nom}». Usa otro.`); return; }
+
+  const anterior = WORK.nuevos[id];
+  // La fila vieja se va (si llegó a subir, hay que borrarla en línea también).
+  WORK.borrados[id] = { id, cod:p.cod, nom:p.nom, cuando:new Date().toISOString(),
+    enBase: !!anterior.subido, nuevo:anterior, respaldo:null };
+  delete WORK.nuevos[id];
+  const nid = idLibre(cod);
+  WORK.nuevos[nid] = Object.assign({}, anterior, { id:nid, cod, foto:'', subido:false,
+    creado:new Date().toISOString() });
+  // Los deltas que ya tuviera (medida, nombre) viajan con él.
+  if (WORK.ediciones[id]){ WORK.ediciones[nid] = WORK.ediciones[id]; delete WORK.ediciones[id]; }
+  if (WORK.asignaciones[id]){ WORK.asignaciones[nid] = WORK.asignaciones[id]; delete WORK.asignaciones[id]; }
+  if (WORK.etiquetas[id]){ WORK.etiquetas[nid] = WORK.etiquetas[id]; delete WORK.etiquetas[id]; }
+
+  const label = `Código ${p.cod} → ${cod}`;
+  pushUndo({tipo:'alta', label, id:nid});   // deshacer quita el nuevo; el viejo queda en borrados
+  bitacora(label);
+  construirProductos(); persistir(); renderAll();
+  aviso('✓ '+label);
+  if (IDX.has(nid)) abrirFicha(nid); else cerrarFicha();
+}
+
+/* Retirar ≠ eliminar. Lo normal es retirar: el producto sale del catálogo del
+   cliente pero sigue aquí, con su historia y su foto, y se puede devolver. */
+async function retirarProducto(id){
+  const p = IDX.get(id); if (!p) return;
+  if (p.cat===CAT_OCULTA){
+    aviso('Este producto ya está retirado del catálogo.');
+    return;
+  }
+  const ok = await dialogo({ titulo:'Retirar del catálogo',
+    texto:`«${p.nom}» dejará de verse en el catálogo de los clientes, pero seguirá aquí por si hay que devolverlo (queda en "${CAT_OCULTA}").`,
+    okTxt:'Retirar del catálogo' });
+  if (!ok) return;
+  asignar([id], CAT_OCULTA, CAT_OCULTA, '', 'retiro');
+  cerrarFicha();
+}
+
+/* Borrado de verdad. Sólo para deshacer una captura equivocada: un producto
+   real que ya no se vende se RETIRA, no se borra (así el histórico no miente). */
+async function eliminarProducto(id){
+  const p = IDX.get(id); if (!p) return;
+  const esNuevo = !!WORK.nuevos[id];
+  const ok = await dialogo({ titulo:'Eliminar producto',
+    texto: esNuevo
+      ? `Se borra «${p.nom}» (${p.cod}), que capturaste tú. Desaparece del catálogo y de la base. Reversible con Deshacer mientras no cierres.`
+      : `«${p.nom}» (${p.cod}) viene del catálogo original. Borrarlo lo quita de la base para siempre. Si sólo dejó de venderse, usa "Retirar del catálogo": se esconde del cliente pero no se pierde.`,
+    okTxt:'Eliminar definitivamente' });
+  if (!ok) return;
+  const base = baseDe(id);
+  WORK.borrados[id] = {
+    id, cod:p.cod, nom:p.nom, cuando:new Date().toISOString(),
+    // Un alta que nunca se subió no existe en Supabase: no hay nada que borrar allá.
+    enBase: !(esNuevo && !WORK.nuevos[id].subido),
+    nuevo: esNuevo ? Object.assign({}, WORK.nuevos[id]) : null,
+    respaldo: base ? Object.assign({}, base) : null,
+  };
+  if (esNuevo) delete WORK.nuevos[id];
+  const label = `Producto eliminado: ${p.cod} — ${p.nom}`;
+  pushUndo({tipo:'baja', label, id});
+  bitacora(label);
+  state.sel.delete(id);
+  construirProductos(); persistir(); renderAll();
+  cerrarFicha();
+  aviso('✓ '+label);
+}
+
 /* ---------- proveedor: acciones en bloque ----------
    El proveedor viene del Excel maestro (columna A) y lo comparten muchos
    productos, así que corregir un nombre producto por producto sería inviable.
@@ -1626,8 +1965,9 @@ function pintarSeleccion(){
 function fila(p, idx){
   const seleccionado = state.sel.has(p.id);
   const mod = WORK.asignaciones[p.id] || WORK.ediciones[p.id];
-  const row = el('div','row'+(seleccionado?' sel':'')+(p.cat===POR?' espend':(mod?' mod':'')));
+  const row = el('div','row'+(seleccionado?' sel':'')+(p.cat===POR?' espend':(mod?' mod':''))+(p.nuevo?' nuevoprod':''));
   row.dataset.id = p.id;
+  if (p.nuevo) row.title = 'Producto capturado desde el clasificador';
   // Solo las filas seleccionadas se arrastran al árbol; en las no seleccionadas
   // el arrastre con clic izquierdo funciona como selección por barrido.
   row.draggable = seleccionado;
@@ -1753,7 +2093,10 @@ async function subirFoto(id, blob, ext){
    Lienzo WYSIWYG: lo que se ve en el marco es exactamente lo que se sube. El
    mismo dibujo se repite en un lienzo de salida multiplicando por el factor k,
    así que la vista previa y el archivo final no pueden desalinearse. */
-const FED = { id:null, img:null, escala:1, dx:0, dy:0, rot:0, ratio:1, arrastre:null };
+/* `alGuardar` permite reutilizar este editor para algo que no sea un producto
+   (hoy: la foto de portada de una agrupación). Si viene, recibe el Blob ya
+   recortado y decide qué hacer con él; si no, se sube al producto FED.id. */
+const FED = { id:null, img:null, escala:1, dx:0, dy:0, rot:0, ratio:1, arrastre:null, alGuardar:null };
 const FED_RATIOS = [{t:'1:1',v:1},{t:'4:3',v:4/3},{t:'3:4',v:3/4},{t:'16:9',v:16/9},{t:'Original',v:0}];
 const FED_LADO = 300;   // lado mayor del lienzo en pantalla
 
@@ -1813,20 +2156,20 @@ function fedChips(){
     cont.appendChild(b);
   }
 }
-function abrirEditorFoto(id, file){
+function abrirEditorFoto(id, file, alGuardar){
   if (!/^image\//.test(file.type||'')){ aviso('⚠ El archivo no es una imagen.'); return; }
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = ()=>{
     URL.revokeObjectURL(url);
-    Object.assign(FED, {id, img, rot:0, ratio:1, dx:0, dy:0, arrastre:null});
+    Object.assign(FED, {id, img, rot:0, ratio:1, dx:0, dy:0, arrastre:null, alGuardar:alGuardar||null});
     $('#modalFoto').hidden = false;
     fedChips(); fedAjustar('cubrir');
   };
   img.onerror = ()=>{ URL.revokeObjectURL(url); aviso('⚠ No se pudo leer la imagen.'); };
   img.src = url;
 }
-function cerrarEditorFoto(){ $('#modalFoto').hidden = true; FED.img=null; FED.id=null; }
+function cerrarEditorFoto(){ $('#modalFoto').hidden = true; FED.img=null; FED.id=null; FED.alGuardar=null; }
 
 async function fedGuardar(){
   if (!FED.img) return;
@@ -1838,7 +2181,9 @@ async function fedGuardar(){
   const mime = fmt==='jpeg' ? 'image/jpeg' : (fmt==='png' ? 'image/png' : 'image/webp');
   const btn = $('#fedSave'); btn.disabled = true; btn.textContent = 'Subiendo…';
   const blob = await new Promise(res=>out.toBlob(res, mime, 0.9));
-  const ok = blob ? await subirFoto(FED.id, blob, fmt==='jpeg'?'jpg':fmt) : false;
+  const ext = fmt==='jpeg' ? 'jpg' : fmt;
+  const ok = !blob ? false
+    : (FED.alGuardar ? await FED.alGuardar(blob, ext) : await subirFoto(FED.id, blob, ext));
   btn.disabled = false; btn.textContent = 'Guardar foto';
   if (ok) cerrarEditorFoto();
 }
@@ -2020,10 +2365,10 @@ function abrirFicha(id){
   const info = el('div','modal-info');
   const s = sugVisible(p);
   info.innerHTML = `
-    <div class="modal-cat">${esc(rutaTxt(p.cat, p.sub, p.sub2))}</div>
+    <div class="modal-cat">${esc(rutaTxt(p.cat, p.sub, p.sub2))}${p.nuevo?'<span class="f-nuevo">NUEVO · capturado aquí</span>':''}</div>
     <div class="f-field"><label>Nombre / descripción</label><input id="fNom" value="${esc(p.nom)}" /></div>
     <div class="f-2col">
-      <div class="f-field"><label>Código</label><input value="${esc(p.cod)}" readonly /></div>
+      <div class="f-field"><label>Código${p.nuevo?' <button type="button" class="f-mini" id="fCodEdit" title="Corregir el código de este producto">✎ cambiar</button>':''}</label><input value="${esc(p.cod)}" readonly title="${p.nuevo?'Usa «cambiar» para corregirlo.':'El código identifica al producto en toda la empresa: no se edita desde aquí.'}" /></div>
       <div class="f-field"><label>Medidas</label><input id="fMed" value="${esc(p.med)}" /></div>
     </div>
     <div class="f-field"><label>Proveedor <span class="f-prov-n">· ${fmt(productosDeProveedor(p.prov).length)} producto(s) con este proveedor</span></label>
@@ -2051,6 +2396,11 @@ function abrirFicha(id){
         <button id="fNext" title="Siguiente (→)">→</button>
       </span>
     </div>
+    <div class="f-acciones">
+      <button type="button" class="btn-datos" id="fDuplicar" title="Crea otro producto copiando éste. Ideal para capturar la misma pieza en varias medidas.">⧉ Duplicar producto</button>
+      <button type="button" class="btn-datos" id="fRetirar" title="${p.cat===CAT_OCULTA?'Ya está retirado: muévelo a una categoría normal para devolverlo al catálogo.':'Deja de mostrarse al cliente, pero se conserva aquí y se puede devolver.'}"${p.cat===CAT_OCULTA?' disabled':''}>🚫 Retirar del catálogo</button>
+      <button type="button" class="btn-datos btn-danger" id="fEliminar" title="Borra el producto de la base. Úsalo sólo para deshacer una captura equivocada.">🗑 Eliminar</button>
+    </div>
     <div class="fname" style="font-size:11px;color:var(--gris);font-family:var(--mono);margin-top:12px">${
       esUrlFoto(p.foto) ? 'Foto en línea (Supabase Storage)' : `Foto local: fotos/${esc(p.id)}.webp (o .jpg/.png)`
     }</div>`;
@@ -2062,6 +2412,11 @@ function abrirFicha(id){
 
   $('#fFotoBtn').onclick = ()=>$('#fFotoFile').click();
   $('#fFotoFile').onchange = (e)=>{ const f=e.target.files[0]; e.target.value=''; if (f) abrirEditorFoto(p.id, f); };
+
+  $('#fDuplicar').onclick = ()=>duplicarProducto(p.id);
+  $('#fRetirar').onclick  = ()=>retirarProducto(p.id);
+  $('#fEliminar').onclick = ()=>eliminarProducto(p.id);
+  const codEdit = $('#fCodEdit'); if (codEdit) codEdit.onclick = ()=>cambiarCodigo(p.id);
 
   // Acciones en bloque sobre el proveedor. Ambas parten del valor GUARDADO
   // (p.prov), no del texto sin guardar del input, para no mover a un grupo que
@@ -2119,13 +2474,68 @@ function cerrarFicha(){ $('#modal').hidden=true; FICHA_ID=null; }
 
 /* ---------- diálogo genérico (promesa) ---------- */
 let DLG_RESOLVE = null;
+/* Foto elegida dentro de un diálogo (campo `tipo:'foto'`). No puede viajar en el
+   value de un input, así que vive aquí hasta que quien abrió el diálogo la use. */
+let DLG_FOTO = null;   // {blob, ext, url}
+
+function limpiarFotoDlg(){
+  if (DLG_FOTO && DLG_FOTO.url) URL.revokeObjectURL(DLG_FOTO.url);
+  DLG_FOTO = null;
+}
+
+/* Campo de foto: miniatura + botón que abre el MISMO editor de recorte de las
+   fichas. El recorte se guarda aquí y lo sube quien haya abierto el diálogo
+   (al dar de alta un producto, después de crearlo: antes no hay a qué asociarlo). */
+function campoFotoDlg(c){
+  const w = el('div','dlg-foto');
+  w.appendChild(el('label',null,esc(c.label||'Foto')));
+  const fila = el('div','dlg-foto-fila');
+  const marco = el('div','dlg-foto-marco');
+  const pintar = ()=>{
+    marco.innerHTML = '';
+    if (DLG_FOTO && DLG_FOTO.url){
+      const img = new Image(); img.src = DLG_FOTO.url;
+      marco.appendChild(img);
+    } else {
+      marco.innerHTML = '<span>Sin foto</span>';
+    }
+    btn.textContent = DLG_FOTO ? '🖼 Cambiar' : '🖼 Elegir imagen';
+    quitar.hidden = !DLG_FOTO;
+  };
+  const acts = el('div','dlg-foto-acts');
+  const btn = el('button','btn-datos',''); btn.type='button';
+  btn.onclick = ()=>file.click();
+  const quitar = el('button','fed-mini danger','Quitar'); quitar.type='button';
+  quitar.onclick = ()=>{ limpiarFotoDlg(); pintar(); };
+  const file = el('input'); file.type='file'; file.accept='image/*'; file.hidden=true;
+  file.onchange = (e)=>{
+    const f = e.target.files[0]; e.target.value='';
+    if (!f) return;
+    abrirEditorFoto('nuevo', f, (blob, ext)=>{
+      limpiarFotoDlg();
+      DLG_FOTO = { blob, ext, url: URL.createObjectURL(blob) };
+      pintar();
+      aviso('✓ Foto lista. Se subirá al crear el producto.');
+      return true;
+    });
+  };
+  acts.append(btn, quitar, file);
+  acts.appendChild(el('small','dlg-foto-nota', esc(c.nota||'')));
+  fila.append(marco, acts);
+  w.appendChild(fila);
+  pintar();
+  return w;
+}
+
 function dialogo(cfg){
   return new Promise(resolve=>{
     DLG_RESOLVE = resolve;
+    limpiarFotoDlg();
     $('#dlgTitle').textContent = cfg.titulo||'';
     const body = $('#dlgBody'); body.innerHTML='';
     if (cfg.texto) body.appendChild(el('p',null,esc(cfg.texto)));
     for (const c of (cfg.campos||[])){
+      if (c.tipo==='foto'){ body.appendChild(campoFotoDlg(c)); continue; }
       const w = el('div');
       w.appendChild(el('label',null,esc(c.label||'')));
       let inp;
@@ -2149,6 +2559,9 @@ function dialogo(cfg){
 }
 function cerrarDlg(valores){
   $('#dlg').hidden=true;
+  // Al cancelar, la foto elegida se descarta con el resto; al aceptar, la
+  // recoge formularioProducto() antes de que nadie más abra un diálogo.
+  if (!valores) limpiarFotoDlg();
   if (DLG_RESOLVE){ const r=DLG_RESOLVE; DLG_RESOLVE=null; r(valores); }
 }
 
@@ -2262,8 +2675,12 @@ function abrirDatos(){
   const kb = Math.round((localStorage.getItem(LS_KEY)||'').length/1024);
   const baseCambio = WORK.baseGenerado!==DATA.generado
     ? `<br><b style="color:var(--oxido)">⚠ Los datos base cambiaron</b> (avance iniciado con "${esc(WORK.baseGenerado)}", base actual "${esc(DATA.generado)}"). Tus cambios se aplican por código de producto.` : '';
+  const nAlta = Object.keys(WORK.nuevos).length, nBaja = Object.keys(WORK.borrados).length;
   $('#datosStats').innerHTML =
-    `<b>${fmt(nA)}</b> asignaciones de categoría · <b>${fmt(nE)}</b> fichas editadas · bitácora con <b>${fmt(WORK.bitacora.length)}</b> entradas` +
+    `<b>${fmt(nA)}</b> asignaciones de categoría · <b>${fmt(nE)}</b> fichas editadas` +
+    (nAlta?` · <b>${fmt(nAlta)}</b> producto(s) dados de alta aquí`:'') +
+    (nBaja?` · <b>${fmt(nBaja)}</b> eliminado(s)`:'') +
+    ` · bitácora con <b>${fmt(WORK.bitacora.length)}</b> entradas` +
     `<br>Último autoguardado: ${WORK.guardado?new Date(WORK.guardado).toLocaleString('es-MX'):'—'} · tamaño del avance: ~${kb} KB` + baseCambio;
   pintarFsDatos();
   renderSbEstado();
@@ -2284,6 +2701,10 @@ function renderAll(){
   renderChips();
   renderLista();
   renderSelbar();
+  /* Enganche para clasificador-plus.js (agrupaciones, destacados, ajustes). Se
+     carga DESPUÉS que este archivo, así que la primera vez todavía no existe:
+     por eso se comprueba en cada render en vez de guardarse una referencia. */
+  if (typeof plusAlRenderizar === 'function') plusAlRenderizar();
 }
 
 /* ---------- init ---------- */
@@ -2367,6 +2788,7 @@ function init(){
   $('#btnSelClear').onclick = ()=>{ state.sel.clear(); renderLista(); renderSelbar(); };
 
   // Topbar
+  $('#btnNuevoProd').onclick = nuevoProducto;
   $('#btnUndo').onclick = undo;
   $('#btnLog').onclick = abrirLog;
   $('#btnDatos').onclick = abrirDatos;
@@ -2428,8 +2850,10 @@ function init(){
   document.addEventListener('keydown', e=>{
     const enInput = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'');
     if (e.key==='Escape'){
-      if (!$('#dlg').hidden){ cerrarDlg(null); return; }
+      // El editor de foto puede abrirse ENCIMA de un diálogo (al dar de alta un
+      // producto con foto), así que se cierra él primero.
       if (!$('#modalFoto').hidden){ cerrarEditorFoto(); return; }
+      if (!$('#dlg').hidden){ cerrarDlg(null); return; }
       if (!$('#modal').hidden){ cerrarFicha(); return; }
       if (!$('#modalLog').hidden){ $('#modalLog').hidden=true; return; }
       if (!$('#modalDatos').hidden){ $('#modalDatos').hidden=true; return; }
@@ -2468,19 +2892,25 @@ function selfTest(){
     t('regla sin match', s4===null);
     t('csv escape', csvCampo('A "B", C')==='"A ""B"", C"');
     t('parse subval', (()=>{ const v=parseSubVal(subVal('Herraje','Cerraduras')); return v.sub==='Herraje'&&v.sub2==='Cerraduras'; })());
+    /* Las categorías se toman de la taxonomía viva, no escritas a mano: los
+       nombres cambian con el trabajo de clasificación (antes aquí decía
+       "Herrajes" e "Izaje y maniobra", que ya no existen, y la prueba del 3er
+       nivel llevaba tiempo en rojo por eso, tapando fallos de verdad). */
+    const catsPrueba = WORK.taxonomia.map(c=>c.nombre).filter(n=>n!==CAT_OCULTA);
+    const catA = catsPrueba[0], catB = catsPrueba[1] || catsPrueba[0];
     const p = PRODUCTOS[0];
     const antes = {cat:p.cat, sub:p.sub, sub2:p.sub2||''};
     const prevAsig = WORK.asignaciones[p.id] ? JSON.stringify(WORK.asignaciones[p.id]) : null;
-    asignar([p.id], 'Izaje y maniobra', 'Izaje y maniobra', '', 'selftest');
-    t('asignar aplica', IDX.get(p.id).cat==='Izaje y maniobra');
+    asignar([p.id], catB, catB, '', 'selftest');
+    t('asignar aplica', IDX.get(p.id).cat===catB);
     undo();
     let q = IDX.get(p.id);
     let asigRest = WORK.asignaciones[p.id] ? JSON.stringify(WORK.asignaciones[p.id]) : null;
     t('undo restaura', q.cat===antes.cat && q.sub===antes.sub && asigRest===prevAsig);
     // 3er nivel: asignación con sub2 + autoregistro en taxonomía + undo
-    asignar([p.id], 'Herrajes', 'Herraje de puerta', 'PRUEBA-SUB2', 'selftest');
+    asignar([p.id], catA, 'PRUEBA-SUB', 'PRUEBA-SUB2', 'selftest');
     q = IDX.get(p.id);
-    const hj = buscarCat('Herrajes'), hp = hj && buscarSub(hj,'Herraje de puerta');
+    const hj = buscarCat(catA), hp = hj && buscarSub(hj,'PRUEBA-SUB');
     t('sub2 aplica', q.sub2==='PRUEBA-SUB2' && !!hp && hp.subs.includes('PRUEBA-SUB2'));
     undo();
     q = IDX.get(p.id);
@@ -2554,6 +2984,49 @@ function selfTest(){
     t('csv filas', csvLineas.length===PRODUCTOS.length+1);
     t('csv encabezado', csvLineas[0].replace('﻿','')==='proveedor,codigo,descripcion,categoria,tipo,subtipo,medidas');
     t('csv bom', csv.charCodeAt(0)===0xFEFF);
+
+    /* --- altas y bajas de producto (editor del encargado) --- */
+    // El id es el nombre del archivo de la foto: tiene que sobrevivir a Windows.
+    t('id desde código: barra', idDesdeCodigo('MEMM41/29510')==='MEMM41-29510');
+    t('id desde código: comillas', idDesdeCodigo('MESMBYD4"')==='MESMBYD4');
+    t('id desde código: nunca vacío', idDesdeCodigo('///')==='PRODUCTO');
+
+    const totalAntes = PRODUCTOS.length;
+    const codPrueba = '__SELFTEST__'+Date.now();
+    const idNuevo = crearProducto({ cod:codPrueba, nom:'PRODUCTO DE PRUEBA', med:'1"',
+      prov:'', cat:catA, sub:catA, sub2:'' }, 'selftest');
+    const creado = IDX.get(idNuevo);
+    t('alta aparece en el catálogo', !!creado && creado.cod===codPrueba && PRODUCTOS.length===totalAntes+1);
+    t('alta se marca como nueva', !!creado && creado.nuevo===true);
+    t('alta entra al export', construirExport().productos.some(x=>x.cod===codPrueba));
+    // Sin fila en Supabase, un UPDATE no escribiría nada: tiene que ser INSERT.
+    t('alta pendiente de subir', altasPendientes().some(x=>x.cod===codPrueba));
+    // Y se puede editar y clasificar como cualquier otro producto.
+    editarCampos(idNuevo, { med:'2"' });
+    construirProductos();
+    t('alta editable', (IDX.get(idNuevo)||{}).med==='2"');
+
+    // Baja: se saca de la lista pero queda el respaldo para poder deshacerla.
+    WORK.borrados[idNuevo] = { id:idNuevo, cod:codPrueba, nom:'PRODUCTO DE PRUEBA',
+      cuando:new Date().toISOString(), enBase:false, nuevo:WORK.nuevos[idNuevo], respaldo:null };
+    delete WORK.nuevos[idNuevo];
+    construirProductos();
+    t('baja saca el producto', !IDX.has(idNuevo) && PRODUCTOS.length===totalAntes);
+    t('baja lo saca del export', !construirExport().productos.some(x=>x.cod===codPrueba));
+    // Un código dado de baja no puede quedarse marcado como "pendiente de subir".
+    t('baja no deja pendientes fantasma', !SB_DIRTY.has(codPrueba));
+
+    // Deshacer la baja lo devuelve tal cual estaba.
+    WORK.nuevos[idNuevo] = WORK.borrados[idNuevo].nuevo;
+    delete WORK.borrados[idNuevo];
+    construirProductos();
+    t('baja reversible', (IDX.get(idNuevo)||{}).med==='2"');
+
+    // Limpieza: la prueba no puede dejar basura en el trabajo real.
+    delete WORK.nuevos[idNuevo]; delete WORK.borrados[idNuevo];
+    delete WORK.ediciones[idNuevo]; delete WORK.asignaciones[idNuevo]; delete WORK.etiquetas[idNuevo];
+    construirProductos();
+    t('la prueba no deja rastro', PRODUCTOS.length===totalAntes && !IDX.has(idNuevo));
   }catch(e){
     res.push('FAIL excepción: '+e.message);
   }

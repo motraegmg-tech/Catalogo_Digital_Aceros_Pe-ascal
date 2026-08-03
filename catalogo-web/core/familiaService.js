@@ -6,32 +6,53 @@
  * medida sigue siendo su propio producto con su propio código, y así entra al
  * carrito y al mensaje de WhatsApp.
  *
- * Aquí no se decide nada. Las familias las propone pipeline/proponer_familias.mjs,
- * las aprueba Gonzalo a mano (datos/familias_aprobadas.json) y las publica
- * pipeline/generar_familias_catalogo.mjs en data/familias.json. Este módulo solo
- * resuelve esos códigos contra el catálogo que está cargado.
+ * Aquí no se decide nada. Las agrupaciones las edita el encargado desde
+ * clasificador.html y viven en la tabla `familias` de Supabase; este módulo sólo
+ * resuelve esos códigos contra el catálogo que está cargado. El archivo
+ * data/familias.json queda como respaldo para el modo sin conexión.
  *
- * Si data/familias.json no carga, hayFamilias() da false y el catálogo se
- * comporta exactamente como antes: producto por producto.
+ * Cada familia trae un `criterio` (por qué se agrupan: medida, calibre, función,
+ * modelo…) que decide el ROTULO de la columna donde el cliente elige. Agrupar
+ * láminas por calibre y encabezar la columna con "Medida" sería mentirle.
+ *
+ * Si no carga ninguna fuente, hayFamilias() da false y el catálogo se comporta
+ * exactamente como antes: producto por producto.
  */
 import { DATA } from './store.js';
 import { alfa } from './searchService.js';
+import { columnaDeCriterio } from './ajustesService.js';
 
-const FAM = new Map();          // id  -> {id, nombre, cat, sub, n, subgrupos:[{nombre, cods}]}
+const FAM = new Map();          // id  -> {id, nombre, cat, sub, criterio, columna, subgrupos:[{nombre, cods}]}
 const porCod = new Map();       // cod -> {id, sub}
 const resueltos = new Map();    // id  -> [producto…] presentes en el catálogo
 
 export const hayFamilias = () => FAM.size > 0;
 
-export function cargarFamilias(doc) {
+/**
+ * Acepta las dos formas: el documento del archivo ({familias:[…]}) y el arreglo
+ * de filas que devuelve Supabase. Una fila inactiva no entra: desactivar una
+ * agrupación en el clasificador tiene que devolver sus productos a la lista
+ * suelta, no dejarla a medias.
+ */
+export function cargarFamilias(entrada) {
   FAM.clear(); porCod.clear(); resueltos.clear();
-  const lista = (doc && Array.isArray(doc.familias)) ? doc.familias : [];
+  const lista = Array.isArray(entrada) ? entrada
+              : (entrada && Array.isArray(entrada.familias) ? entrada.familias : []);
   lista.forEach(f => {
+    if (f.activa === false || !f.id) return;
     FAM.set(f.id, f);
     (f.subgrupos || []).forEach(g =>
       (g.cods || []).forEach(cod => porCod.set(cod, { id: f.id, sub: g.nombre })));
   });
   return FAM.size;
+}
+
+/**
+ * El rótulo de la columna que el cliente ve dentro de la ficha. Manda el que la
+ * familia tenga escrito a mano; si no, el de su criterio de agrupación.
+ */
+export function columnaDe(fam) {
+  return (fam && fam.columna) || columnaDeCriterio(fam && fam.criterio);
 }
 
 /**
@@ -61,6 +82,8 @@ export function familiaDe(p) {
 
 export const subgrupoDe = (cod) => (porCod.get(cod) || {}).sub || '';
 export const productosDeFamilia = (id) => resueltos.get(id) || [];
+/** Una familia por su id, para resolver los destacados de la portada. */
+export const familiaPorId = (id) => FAM.get(id) || null;
 
 /** Orden de los subgrupos tal como quedaron aprobados (Corte, Desbaste, …). */
 export function ordenSubgrupos(id) {

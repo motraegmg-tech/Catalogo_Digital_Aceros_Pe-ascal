@@ -1,7 +1,8 @@
 import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet } from '../core/store.js';
 import { getCartItems, cantidadEnCarrito } from '../core/cartService.js';
 import { searchAndSortProducts, normalize, alfa } from '../core/searchService.js';
-import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida } from '../core/familiaService.js';
+import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida, familiaPorId, columnaDe } from '../core/familiaService.js';
+import { AJUSTES } from '../core/ajustesService.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
@@ -152,8 +153,18 @@ export function filteredEntries() {
   return [...fichas.values(), ...sueltos].sort((a, b) => alfa(rotulo(a), rotulo(b)));
 }
 
-/** Portada de la ficha: la primera medida que sí tiene foto; si ninguna, la de en medio. */
-function portadaDe(productos) {
+/**
+ * Portada de una ficha de familia. Manda la foto que el encargado le puso a la
+ * agrupación desde el clasificador; si no tiene, se toma prestada la del primer
+ * producto que sí tenga (y si ninguna, la de en medio, para que al menos la
+ * tarjeta no quede siempre con el mismo hueco).
+ *
+ * La prestada es una emergencia razonable, pero una ficha «Solera» se vende
+ * mejor con la foto del producto genérico que con la de la medida que
+ * casualmente quedó primera — por eso la propia gana siempre.
+ */
+function portadaDe(fam, productos) {
+  if (fam && fam.foto) return { id: 'fam-' + fam.id, foto: fam.foto, nom: fam.nombre };
   return productos.find(tienefoto) || productos[Math.floor(productos.length / 2)];
 }
 
@@ -251,7 +262,7 @@ function cardFamilia(entry, onViewFam) {
   const { fam, productos } = entry;
   const abrir = () => onViewFam(entry);
   const c = el('div', 'card card-fam');
-  c.appendChild(thumb(portadaDe(productos), abrir));
+  c.appendChild(thumb(portadaDe(fam, productos), abrir));
   c.appendChild(el('span', 'fam-badge', `${productos.length} productos`));
 
   const body = el('div', 'card-body');
@@ -263,8 +274,12 @@ function cardFamilia(entry, onViewFam) {
   // la ficha. La categoría ya la sabe el cliente, que está parado en ella.
   const cl = clasifLabelFamilia(fam, productos);
   meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
-  const medidas = new Set(productos.map(p => (p.med || '').trim()).filter(Boolean)).size;
-  if (medidas > 1) meta.appendChild(el('span', 'med-box', `<i>Medidas</i><b>${medidas} para elegir</b>`));
+  /* El rótulo lo pone el criterio con el que se agrupó (Medida, Calibre,
+     Modelo…): si estas láminas se juntaron por calibre, prometer "medidas"
+     mandaría al cliente a buscar lo que no va a encontrar. */
+  const rot = columnaDe(fam);
+  const variantes = new Set(productos.map(p => (p.med || '').trim()).filter(Boolean)).size;
+  if (variantes > 1) meta.appendChild(el('span', 'med-box', `<i>${esc(rot)}</i><b>${variantes} para elegir</b>`));
   body.appendChild(meta);
 
   // Los subgrupos son la promesa de la ficha: qué vas a encontrar al abrirla.
@@ -274,9 +289,56 @@ function cardFamilia(entry, onViewFam) {
     : `${productos.length} códigos`));
 
   const foot = el('div', 'card-foot');
-  const btn = el('button', 'btn-add', 'Elegir medidas'); btn.onclick = abrir;
+  const btn = el('button', 'btn-add', 'Elegir ' + rot.toLowerCase()); btn.onclick = abrir;
   foot.appendChild(btn); body.appendChild(foot); c.appendChild(body);
   return c;
+}
+
+/* ===== Destacados de la portada =====
+   Lo primero que ve quien abre el catálogo sin buscar ni elegir categoría. La
+   lista la arma el encargado desde el clasificador (pestaña Destacados) y puede
+   mezclar productos sueltos y agrupaciones. Sólo aparece en la portada: en
+   cuanto el cliente busca o entra a una categoría, estorba. */
+export const enPortada = () => !state.cat && !state.q.trim();
+
+/** Resuelve la lista publicada contra el catálogo cargado. Lo que ya no exista
+    (un producto retirado, una agrupación borrada) simplemente no sale. */
+export function entradasDestacadas() {
+  if (!enPortada() || !AJUSTES.destacados.length) return [];
+  const porCodigo = new Map(DATA.productos.map(p => [p.cod, p]));
+  const salida = [];
+  for (const d of AJUSTES.destacados) {
+    if (d.t === 'f') {
+      const fam = familiaPorId(d.c);
+      if (!fam) continue;
+      const productos = productosDeFamilia(fam.id);
+      if (productos.length < MIN_EN_FICHA) continue;
+      salida.push({ tipo: 'familia', fam, productos: ordenarPorMedida(productos) });
+    } else {
+      const p = porCodigo.get(d.c);
+      if (p) salida.push({ tipo: 'producto', p });
+    }
+  }
+  return salida;
+}
+
+function renderDestacados(onAdd, onView, onViewFam) {
+  const zona = $('#destacados');
+  if (!zona) return;
+  const lista = entradasDestacadas();
+  zona.innerHTML = '';
+  zona.hidden = !lista.length;
+  if (!lista.length) return;
+
+  const t = AJUSTES.textos;
+  zona.appendChild(el('div', 'dest-head', `
+    <h2>${esc(t.titulo_destacados || 'Lo más pedido')}</h2>
+    ${t.subtitulo_destacados ? `<p>${esc(t.subtitulo_destacados)}</p>` : ''}`));
+  const fila = el('div', 'dest-grid');
+  lista.forEach(e => fila.appendChild(
+    e.tipo === 'familia' ? cardFamilia(e, onViewFam) : cardProducto(e.p, onAdd, onView)));
+  zona.appendChild(fila);
+  zona.appendChild(el('div', 'dest-sep', '<span>Todo el catálogo</span>'));
 }
 
 export function renderGrid(onAdd, onView, onViewFam) {
@@ -284,6 +346,7 @@ export function renderGrid(onAdd, onView, onViewFam) {
   const grid = $('#grid');
   const limit = state.page * CONFIG.pageSize;
   grid.innerHTML = '';
+  renderDestacados(onAdd, onView, onViewFam);
 
   if (!list.length) {
     grid.appendChild(el('div', 'empty', DATA.total ? 'Sin resultados en todo el catálogo. Prueba con otro término, el código o la medida.' : 'No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.'));
@@ -328,9 +391,10 @@ export function buildFichaFamilia(entry, onAgregar) {
   // --- Encabezado: foto de portada y de qué familia se trata
   const head = el('header', 'fam-head');
   const foto = el('div', 'fam-foto');
-  const ph = thumb(portadaDe(productos)); ph.style.cursor = 'default';
+  const ph = thumb(portadaDe(fam, productos)); ph.style.cursor = 'default';
   foto.appendChild(ph);
   const grupos = ordenSubgrupos(fam.id).filter(g => g && g !== '—');
+  const rot = columnaDe(fam);
   // Ruta completa "Categoría › Subcategoría": dentro de la ficha ya no está el
   // contexto de la grilla, así que hay que decir de dónde salió.
   const cl = clasifLabelFamilia(fam, productos);
@@ -338,7 +402,8 @@ export function buildFichaFamilia(entry, onAgregar) {
   const txt = el('div', 'fam-head-txt', `
     <div class="modal-cat">${ruta}</div>
     <h2 class="fam-name">${esc(fam.nombre)}</h2>
-    <p class="fam-meta">${productos.length} productos${grupos.length > 1 ? ` · ${grupos.length} grupos` : ''} · elige medida y cantidad</p>`);
+    ${fam.descripcion ? `<p class="fam-desc">${esc(fam.descripcion)}</p>` : ''}
+    <p class="fam-meta">${productos.length} productos${grupos.length > 1 ? ` · ${grupos.length} grupos` : ''} · elige ${esc(rot.toLowerCase())} y cantidad</p>`);
   head.append(foto, txt);
   root.appendChild(head);
 
@@ -347,7 +412,7 @@ export function buildFichaFamilia(entry, onAgregar) {
     const tools = el('div', 'fam-tools');
     const inp = el('input', 'fam-filtro');
     inp.type = 'search';
-    inp.placeholder = 'Filtrar por medida, código o nombre…';
+    inp.placeholder = `Filtrar por ${rot.toLowerCase()}, código o nombre…`;
     let t;
     inp.addEventListener('input', () => {
       clearTimeout(t);
@@ -378,8 +443,8 @@ export function buildFichaFamilia(entry, onAgregar) {
     const medidas = Object.keys(pend).length;
     const piezas = Object.values(pend).reduce((a, b) => a + b, 0);
     resumen.textContent = medidas
-      ? `${medidas} ${medidas === 1 ? 'medida elegida' : 'medidas elegidas'}`
-      : 'Elige la cantidad de cada medida';
+      ? `${medidas} ${medidas === 1 ? 'opción elegida' : 'opciones elegidas'}`
+      : `Elige la cantidad de cada ${rot.toLowerCase()}`;
     btn.disabled = !piezas;
     btn.textContent = piezas
       ? `Agregar ${piezas} producto${piezas === 1 ? '' : 's'} al pedido`
@@ -428,7 +493,7 @@ export function buildFichaFamilia(entry, onAgregar) {
     });
 
     if (!porGrupo.size) {
-      cuerpo.appendChild(el('div', 'fam-vacio', `Ninguna medida coincide con «${esc(filtro)}».`));
+      cuerpo.appendChild(el('div', 'fam-vacio', `Ninguna opción coincide con «${esc(filtro)}».`));
       return;
     }
 
@@ -439,10 +504,10 @@ export function buildFichaFamilia(entry, onAgregar) {
     nombres.forEach(g => {
       const filas = porGrupo.get(g);
       const sec = el('section', 'fam-grupo');
-      if (nombres.length > 1) sec.appendChild(el('h3', 'fam-grupo-tit', `${esc(g === '—' ? 'Medidas' : g)}<span>${filas.length}</span>`));
+      if (nombres.length > 1) sec.appendChild(el('h3', 'fam-grupo-tit', `${esc(g === '—' ? rot : g)}<span>${filas.length}</span>`));
 
       const tabla = el('div', 'fam-tabla');
-      tabla.appendChild(el('div', 'fam-row fam-row-head', '<span>Medida</span><span>Producto</span><span>Cantidad</span>'));
+      tabla.appendChild(el('div', 'fam-row fam-row-head', `<span>${esc(rot)}</span><span>Producto</span><span>Cantidad</span>`));
       // Con filtro activo se muestra todo: el usuario ya acotó lo que quería ver.
       const tope = (terms.length || abiertos.has(g)) ? filas.length : FILAS_VISIBLES;
       filas.slice(0, tope).forEach(p => tabla.appendChild(fila(p)));

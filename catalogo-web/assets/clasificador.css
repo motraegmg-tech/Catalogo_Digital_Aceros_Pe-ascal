@@ -10,7 +10,10 @@
   --verde:#2F3D2C; --arena:#D9C9A8;
   --line:#D6DBDE; --shadow:0 1px 2px rgba(19,23,26,.06),0 6px 18px rgba(19,23,26,.08);
   --radius:12px;
-  --h-topbar:64px;   /* alto del encabezado: bajo él se fijan el árbol y la barra de filtros */
+  --h-topbar:64px;   /* alto del encabezado */
+  --h-tabs:46px;     /* alto de la barra de pestañas, fija justo bajo el encabezado */
+  /* Bajo estos dos se fijan el árbol de categorías y la barra de filtros. */
+  --h-fijo:110px;    /* = --h-topbar + --h-tabs */
   --font:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --mono:'Consolas','Courier New',monospace;
 }
@@ -64,7 +67,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 
 /* ===== Panel de taxonomía ===== */
 .taxpanel{
-  position:sticky;top:64px;width:296px;flex:0 0 296px;max-height:calc(100vh - 64px);
+  position:sticky;top:var(--h-fijo);width:296px;flex:0 0 296px;max-height:calc(100vh - var(--h-fijo));
   overflow:auto;padding:14px 10px 40px;border-right:1px solid var(--line);
 }
 .tax-title{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gris);padding:10px 10px 6px}
@@ -157,15 +160,15 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
    bajar entre los productos y vuelve en cuanto empiezas a subir (clase .oculta,
    que pone y quita clasificador.js). */
 .toolbar{
-  position:sticky;top:var(--h-topbar);z-index:30;
+  position:sticky;top:var(--h-fijo);z-index:30;
   display:flex;align-items:center;gap:9px;flex-wrap:wrap;
   margin:0 -18px 10px;padding:10px 18px;
   background:var(--fondo-prod);
   box-shadow:0 10px 14px -12px rgba(19,23,26,.55);
   transition:transform .22s ease,opacity .22s ease;
 }
-/* sube su propio alto más el del encabezado: sale de pantalla, no se asoma */
-.toolbar.oculta{transform:translateY(calc(-100% - var(--h-topbar)));opacity:0;pointer-events:none}
+/* sube su propio alto más el de lo que tiene encima: sale de pantalla, no se asoma */
+.toolbar.oculta{transform:translateY(calc(-100% - var(--h-fijo)));opacity:0;pointer-events:none}
 @media(prefers-reduced-motion:reduce){.toolbar{transition:none}}
 .toolbar input[type=search]{
   flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid var(--acero);
@@ -333,4 +336,307 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
   .progress-block{display:none}
   .row{grid-template-columns:30px minmax(140px,1fr) 170px 34px}
   .row .cod{display:none}
+}
+
+/* ============================================================================
+   Pestañas y paneles nuevos (clasificador-plus.js)
+   Agrupaciones · Destacados · Sucursales y textos · Guía
+   ============================================================================ */
+
+/* Barra de pestañas: cada una es un trabajo distinto sobre el mismo catálogo,
+   así que llevan subtítulo — quien nunca ha entrado tiene que poder elegir. */
+.tabs{position:sticky;top:var(--h-topbar);z-index:35;display:flex;gap:2px;
+  background:var(--grafito);padding:0 12px;border-bottom:1px solid #000;overflow-x:auto}
+.tab{background:transparent;border:0;border-bottom:3px solid transparent;color:var(--plata);
+  padding:9px 16px 8px;font-size:13px;font-weight:600;display:flex;flex-direction:column;
+  align-items:flex-start;gap:1px;white-space:nowrap;line-height:1.15}
+.tab small{font-size:9.5px;font-weight:400;color:var(--gris-claro);letter-spacing:.02em}
+.tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+.tab.on{color:#fff;border-bottom-color:var(--aqua-3);background:rgba(21,159,176,.14)}
+.tab.on small{color:#a9dde5}
+
+.btn-alta{background:var(--zintro)}
+.btn-alta:hover{background:var(--zintro-aqua)}
+
+/* Marco común de los paneles */
+.panel{max-width:1280px;margin:0 auto;padding:20px 22px 80px}
+.panel-head{display:flex;gap:20px;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{margin:0 0 5px;font-size:20px;color:var(--grafito)}
+.panel-head p{margin:0;max-width:70ch;font-size:13px;line-height:1.5;color:var(--carbon)}
+.panel-acts{display:flex;gap:8px;flex-wrap:wrap}
+.panel-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.panel-tools input[type=search]{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--acero);
+  border-radius:9px;font-size:13px}
+.panel-tools select{padding:9px 10px;border:1px solid var(--acero);border-radius:9px;font-size:12.5px;background:#fff}
+.panel-tools input:focus,.panel-tools select:focus{outline:none;border-color:var(--aqua);
+  box-shadow:0 0 0 2px rgba(14,126,140,.18)}
+.panel-estado{font-size:12px;color:var(--gris);margin-left:auto}
+.panel-sec{margin:28px 0 6px;font-size:16px;color:var(--grafito);
+  border-top:1px solid var(--acero);padding-top:16px}
+
+/* ---- Agrupaciones: tarjeta por agrupación ---- */
+.fam-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.fam-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--aqua-3);
+  border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.fam-card.inactiva{border-left-color:var(--acero);opacity:.7;background:var(--gris-50)}
+.fam-card-head{min-width:0;display:flex;gap:10px;align-items:flex-start}
+.fam-card-txt{min-width:0;flex:1}
+/* Miniatura de la tarjeta: de un vistazo se ve cuáles ya tienen foto PROPIA
+   (borde aqua) y cuáles siguen tomándola prestada de un producto. */
+.fam-mini{flex:0 0 52px;width:52px;height:52px;border-radius:9px;overflow:hidden;
+  background:var(--gris-50);border:1px solid var(--line);display:flex;
+  align-items:center;justify-content:center}
+.fam-mini.propia{border:2px solid var(--aqua-3)}
+.fam-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.fam-mini i{font-style:normal;font-size:8.5px;color:var(--gris-claro);text-align:center;line-height:1.2}
+.fam-card-nom{font-size:15px;font-weight:700;color:var(--grafito);display:flex;align-items:center;gap:8px}
+.fam-off{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--acero);color:#fff;border-radius:4px;padding:2px 6px}
+.fam-card-ruta{font-size:11.5px;color:var(--gris);margin-top:2px}
+.fam-card-meta{display:flex;flex-wrap:wrap;gap:5px}
+.fam-chip{font-size:10.5px;background:var(--gris-50);border:1px solid var(--line);
+  border-radius:999px;padding:3px 9px;color:var(--carbon)}
+.fam-chip.crit{background:#dff0f2;border-color:#bce3e8;color:var(--aqua-2);font-weight:700}
+.fam-chip.aviso{background:#fdf3e3;border-color:#e3c98e;color:#8a6414}
+.fam-card-muestra{font-size:11.5px;color:var(--gris);line-height:1.5;
+  border-top:1px dashed var(--line);padding-top:7px}
+.fam-card-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.fam-card-acts .btn-asignar,.fam-card-acts .btn-datos{padding:7px 11px;font-size:11.5px}
+
+/* ---- Editor de una agrupación ---- */
+.modal-ancho{max-width:1000px;padding:22px 24px 18px}
+.fam-editor{max-height:66vh;overflow:auto;padding-right:4px}
+.fed-bloque{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:var(--hueso)}
+.fed-bloque h4{margin:0 0 10px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--aqua-2)}
+.fed-n{background:var(--aqua-3);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px;margin-left:6px}
+.fed-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fed-grid .ancho{grid-column:1/-1}
+.fed-grid .corto{max-width:130px}
+/* Foto de portada de la agrupación, junto a su nombre: es lo mismo que el
+   cliente ve en la tarjeta, así que se editan al lado. */
+.fed-identidad{display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:start}
+.fed-identidad .fed-grid{grid-template-columns:1fr 1fr}
+.fed-foto{display:flex;flex-direction:column;gap:7px}
+.fed-foto-marco{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#fff;
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.fed-foto-marco img{width:100%;height:100%;object-fit:cover;display:block}
+.fed-foto-ph{font-size:11px;color:var(--gris-claro)}
+.fed-foto-nota{font-size:10.5px;line-height:1.4;color:var(--gris)}
+.fed-foto-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fed-foto-acts .btn-datos{padding:7px 10px;font-size:11.5px}
+.f-field small{display:block;font-size:10.5px;color:var(--gris);margin-top:3px;text-transform:none;letter-spacing:0}
+.fed-check{display:flex!important;align-items:center;gap:7px;font-size:12.5px;color:var(--carbon);
+  text-transform:none!important;letter-spacing:0!important;padding:8px 0}
+.fed-check input{width:auto!important;accent-color:var(--aqua)}
+
+/* El criterio se elige entre tarjetas y no en un select: es LA decisión que
+   cambia lo que ve el cliente, y hay que poder leer para qué sirve cada una. */
+.fed-crits{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:7px;margin-bottom:10px}
+.fed-crit{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:8px 11px;display:flex;flex-direction:column;gap:2px}
+.fed-crit b{font-size:12.5px;color:var(--grafito)}
+.fed-crit span{font-size:10.5px;color:var(--gris);line-height:1.35}
+.fed-crit:hover{border-color:var(--aqua)}
+.fed-crit.on{border-color:var(--aqua-3);background:#eaf7f9;box-shadow:0 0 0 2px rgba(21,159,176,.18)}
+.fed-crit.on b{color:var(--aqua-2)}
+
+.fed-barra{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.fed-barra .btn-asignar,.fed-barra .btn-datos{padding:8px 12px;font-size:12px}
+.fed-grupo{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:9px;overflow:hidden}
+.fed-grupo-head{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--gris-50);
+  border-bottom:1px solid var(--line)}
+.fed-grupo-tit{font-size:12.5px;color:var(--carbon)}
+.fed-grupo-nom{flex:1;min-width:120px;padding:6px 9px;border:1px solid var(--acero);border-radius:7px;font-size:12.5px}
+.fed-grupo-n{background:var(--acero-2);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px}
+.fed-mini{background:#fff;border:1px solid var(--acero);border-radius:7px;padding:4px 8px;
+  font-size:11px;font-weight:600;color:var(--carbon);line-height:1.3}
+.fed-mini:hover{border-color:var(--aqua);color:var(--aqua-2)}
+.fed-mini.danger{border-color:#d9a3ab;color:var(--oxido)}
+.fed-mini.danger:hover{background:var(--oxido);border-color:var(--oxido);color:#fff}
+.fed-mini:disabled{opacity:.4;cursor:default}
+.fed-tabla{max-height:260px;overflow:auto}
+.fed-fila{display:grid;grid-template-columns:110px minmax(120px,1fr) auto auto;gap:8px;
+  align-items:center;padding:5px 10px;border-bottom:1px solid var(--gris-50);font-size:12px}
+.fed-fila:last-child{border-bottom:0}
+.fed-fila.huerfano{background:#fdf3e3}
+.fed-med{font-family:var(--mono);font-size:11.5px;color:var(--aqua-2);font-weight:700}
+.fed-nom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fed-nom i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-left:7px}
+.fed-mover{padding:3px 6px;border:1px solid var(--acero);border-radius:6px;font-size:11px;max-width:120px}
+.fed-vacio{padding:14px;text-align:center;font-size:12px;color:var(--gris)}
+.fam-aviso{margin-right:auto;font-size:12px;color:#8a6414}
+
+/* Vista previa: una maqueta de la tarjeta y la tabla tal como salen publicadas. */
+.fed-previa{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:start}
+.prev-tarjeta{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;
+  display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.prev-tarjeta > div{display:flex;flex-direction:column;gap:6px}
+.prev-foto{width:100%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:var(--gris-50);
+  display:flex;align-items:center;justify-content:center}
+.prev-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.prev-foto span{font-size:11px;color:var(--gris-claro)}
+.prev-tag{font-size:10px;background:#e4f2e4;color:var(--zintro-2);border:1px solid #c2e2c2;
+  border-radius:5px;padding:2px 7px;align-self:flex-start}
+.prev-nom{font-size:14px;font-weight:700;color:var(--grafito)}
+.prev-medbox{display:inline-flex;align-items:baseline;gap:6px;background:#dff0f2;border:1px solid #bce3e8;
+  border-radius:7px;padding:4px 9px;align-self:flex-start}
+.prev-medbox i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gris)}
+.prev-medbox b{font-size:12.5px;color:var(--aqua-2)}
+.prev-cod{font-size:11px;color:var(--gris)}
+.prev-btn{background:var(--aqua-3);color:#fff;border-radius:8px;padding:7px;text-align:center;
+  font-size:12px;font-weight:700}
+.prev-tabla{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.prev-fila{display:grid;grid-template-columns:110px 1fr 80px;gap:8px;padding:6px 11px;
+  font-size:12px;border-bottom:1px solid var(--gris-50)}
+.prev-fila.cab{background:var(--gris-50);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gris);font-weight:700}
+.prev-mas{padding:6px 11px;font-size:11px;color:var(--gris)}
+
+/* ---- Selector de productos ---- */
+#pickQ{width:100%;padding:10px 12px;border:1px solid var(--acero);border-radius:9px;font-size:13.5px;margin-bottom:10px}
+#pickQ:focus{outline:none;border-color:var(--aqua);box-shadow:0 0 0 2px rgba(14,126,140,.18)}
+.pick-lista{max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.pick-fila{display:grid;grid-template-columns:22px minmax(140px,1fr) 100px 130px;gap:9px;
+  align-items:center;padding:7px 10px;border-bottom:1px solid var(--gris-50);font-size:12.5px;cursor:pointer}
+.pick-fila:last-child{border-bottom:0}
+.pick-fila:hover{background:var(--hueso)}
+.pick-fila.on{background:#eaf7f9}
+.pick-fila input{accent-color:var(--aqua);pointer-events:none}
+.pick-nom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick-nom i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-left:7px}
+.pick-med{font-family:var(--mono);font-size:11.5px;color:var(--aqua-2)}
+.pick-cat{font-size:10.5px;color:var(--gris);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- Destacados ---- */
+.dos-columnas{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.col-caja{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;box-shadow:var(--shadow)}
+.col-caja h3{margin:0 0 3px;font-size:15px;color:var(--grafito);display:flex;align-items:center;gap:8px}
+.caja-n{background:var(--aqua-3);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px}
+.caja-nota{margin:0 0 10px;font-size:11.5px;color:var(--gris);line-height:1.45}
+.caja-nota select{padding:3px 6px;border:1px solid var(--acero);border-radius:6px;font-size:11px}
+.caja-pie{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;border-top:1px solid var(--gris-50);padding-top:10px}
+.caja-pie .btn-datos{padding:7px 11px;font-size:11.5px}
+.des-lista,.pop-lista{max-height:56vh;overflow:auto}
+.des-fila{display:grid;grid-template-columns:26px 78px minmax(120px,1fr) auto;gap:8px;align-items:center;
+  padding:7px 4px;border-bottom:1px solid var(--gris-50);font-size:12.5px}
+.des-fila.huerfano{background:#fdf3e3}
+.des-pos{font-family:var(--mono);font-size:12px;color:var(--gris);text-align:center}
+.des-tipo{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;text-align:center;
+  background:var(--gris-50);border:1px solid var(--line);border-radius:5px;padding:2px 5px;color:var(--gris)}
+.des-tipo.fam{background:#dff0f2;border-color:#bce3e8;color:var(--aqua-2);font-weight:700}
+.des-nom{min-width:0;overflow:hidden}
+.des-nom i{display:block;font-style:normal;font-size:10.5px;color:var(--gris);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.des-acts{display:flex;gap:3px}
+.pop-fila{display:grid;grid-template-columns:26px minmax(110px,1fr) 60px 60px auto;gap:7px;align-items:center;
+  padding:7px 4px;border-bottom:1px solid var(--gris-50);font-size:12.5px}
+.pop-nom{min-width:0;overflow:hidden}
+.pop-nom i{display:block;font-style:normal;font-size:10.5px;color:var(--gris);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-pos{font-family:var(--mono);font-size:12px;color:var(--gris);text-align:center}
+.pop-n{text-align:center;line-height:1.15}
+.pop-n b{display:block;font-size:14px;color:var(--aqua-2)}
+.pop-n i{font-style:normal;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--gris)}
+.bus-lista{margin-top:14px;border-top:1px solid var(--gris-50);padding-top:12px}
+.bus-lista h4{margin:14px 0 3px;font-size:13px;color:var(--grafito)}
+.bus-lista h4:first-child{margin-top:0}
+.bus-chips{display:flex;flex-wrap:wrap;gap:6px}
+.bus-chip{background:var(--gris-50);border:1px solid var(--line);border-radius:999px;
+  padding:4px 10px;font-size:11.5px;color:var(--carbon)}
+.bus-chip i{font-style:normal;font-weight:700;color:var(--aqua-2);margin-left:6px}
+/* Lo que se buscó sin encontrar nada: es lo accionable, así que se ve distinto. */
+.bus-alerta{color:var(--oxido)!important}
+.bus-fallidas{display:grid;gap:5px;margin:7px 0 4px}
+.bus-fila{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:#fdf3e3;border:1px solid #e3c98e;border-radius:9px;padding:6px 10px}
+.bus-term{font-weight:700;font-size:12.5px;color:var(--carbon);flex:1;min-width:90px}
+.bus-n{font-size:10.5px;color:#8a6414}
+
+/* Campo de foto dentro de un diálogo (alta y duplicado de producto).
+   El editor de recorte se abre ENCIMA del diálogo, así que necesita más z-index
+   que él (`.modal` va en 60) o quedaría tapado por lo que lo invocó. */
+#modalFoto{z-index:70}
+.dlg-foto{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.dlg-foto > label{display:block;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--gris);margin-bottom:6px}
+.dlg-foto-fila{display:flex;gap:12px;align-items:flex-start}
+.dlg-foto-marco{flex:0 0 88px;width:88px;height:88px;border-radius:10px;overflow:hidden;
+  background:var(--gris-50);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center}
+.dlg-foto-marco img{width:100%;height:100%;object-fit:cover;display:block}
+.dlg-foto-marco span{font-size:10.5px;color:var(--gris-claro)}
+.dlg-foto-acts{display:flex;flex-wrap:wrap;gap:7px;align-items:center;flex:1}
+.dlg-foto-acts .btn-datos{padding:8px 12px;font-size:12px}
+.dlg-foto-nota{flex-basis:100%;font-size:10.5px;line-height:1.4;color:var(--gris)}
+
+/* Diccionario de búsqueda */
+.sin-lista{display:grid;gap:8px;margin-bottom:10px}
+.sin-fila{display:flex;align-items:flex-end;gap:9px;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:9px 12px}
+.sin-fila .f-field{flex:1;margin:0;min-width:0}
+.sin-flecha{font-size:17px;color:var(--aqua-2);padding-bottom:7px}
+.sin-fila .fed-mini{margin-bottom:1px}
+
+/* ---- Sucursales, textos y criterios ---- */
+.suc-lista{display:grid;gap:11px}
+.suc-caja{background:#fff;border:1px solid var(--line);border-left:4px solid var(--oxido);
+  border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.suc-caja.inactiva{border-left-color:var(--acero);opacity:.65}
+.suc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.suc-grid .ancho{grid-column:1/-1}
+.suc-grid .corto{max-width:110px}
+.suc-pie{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;
+  border-top:1px dashed var(--line);padding-top:8px}
+.suc-prueba{font-size:11.5px;color:var(--aqua-2);text-decoration:none;font-weight:600}
+.suc-prueba:hover{text-decoration:underline}
+.suc-pie .fed-mini{margin-left:auto}
+.txt-lista{display:grid;gap:4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.crit-lista{display:grid;gap:9px;margin-bottom:10px}
+.crit-caja{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.crit-grid{display:grid;grid-template-columns:1fr auto;gap:10px}
+.crit-grid .ancho{grid-column:1/-1}
+.crit-pie{display:flex;align-items:center;gap:10px;margin-top:6px}
+.crit-uso{font-size:11px;color:var(--gris)}
+.crit-pie .fed-mini{margin-left:auto}
+
+/* ---- Guía ---- */
+.guia{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 32px;
+  max-width:80ch;margin:0 auto;box-shadow:var(--shadow);font-size:14px;line-height:1.62;color:var(--carbon)}
+.guia h2{margin:0 0 10px;font-size:23px;color:var(--grafito)}
+.guia h3{margin:26px 0 8px;font-size:16.5px;color:var(--aqua-2);border-top:1px solid var(--gris-50);padding-top:16px}
+.guia-intro{font-size:14.5px;color:var(--grafito)}
+.guia ol,.guia ul{padding-left:22px;margin:8px 0}
+.guia li{margin:6px 0}
+.guia-aviso{background:#eaf7f9;border:1px solid #bce3e8;border-left:4px solid var(--aqua-3);
+  border-radius:10px;padding:12px 15px;margin:16px 0;font-size:13.5px}
+.guia-tip{background:var(--hueso);border-left:3px solid var(--zintro);border-radius:0 8px 8px 0;
+  padding:9px 13px;font-size:13px;color:var(--carbon)}
+
+/* ---- Ficha de producto: altas y bajas ---- */
+.f-nuevo{background:var(--zintro);color:#fff;border-radius:5px;padding:2px 8px;font-size:9.5px;
+  font-weight:700;letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+.f-mini{background:transparent;border:0;color:var(--aqua-2);font-size:10px;font-weight:700;
+  text-transform:none;letter-spacing:0;padding:0 0 0 6px;text-decoration:underline}
+.f-acciones{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.f-acciones .btn-datos{padding:7px 11px;font-size:11.5px}
+/* Un producto capturado aquí se distingue de un vistazo entre los 3,222. */
+.row.nuevoprod{box-shadow:inset 3px 0 0 var(--zintro)}
+
+@media(max-width:1080px){
+  .fed-previa{grid-template-columns:1fr}
+  .dos-columnas{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .fed-grid,.suc-grid{grid-template-columns:1fr}
+  .fed-identidad{grid-template-columns:1fr}
+  .fed-foto-marco{max-width:170px}
+  /* Sin los subtítulos la barra de pestañas baja de alto: hay que recalcular
+     dónde se fijan el árbol y la barra de filtros, o quedarían separados. */
+  .tab small{display:none}
+  :root{--h-tabs:34px; --h-fijo:98px}
+  .pick-fila{grid-template-columns:22px 1fr 80px}
+  .pick-cat{display:none}
 }

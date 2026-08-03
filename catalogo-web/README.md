@@ -11,7 +11,9 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
 
 ## Qué incluye (estado actual)
 - **3,222 productos** reales en **14 categorías** con subcategorías.
-- Navegación por categoría/subcategoría + **búsqueda** tolerante a acentos (nombre, código, medida).
+- Navegación por categoría/subcategoría + **búsqueda que entiende cómo habla el cliente de acero**
+  (ver abajo): tolerante a acentos, y además a fracciones, decimales, unidades habladas y al
+  vocabulario de mostrador que el encargado le enseñe.
 - **Ficha** de producto con foto (o marcador "Sin foto").
 - **Orden alfabético A→Z de corrido** (decisión de Gonzalo, 2026-07-31). Navegando, *todo*
   va A→Z en **una sola pasada**: los productos, la lista de categorías, los chips de
@@ -25,10 +27,23 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
   presentan como **una sola tarjeta**. Al abrirla trae la **tabla de medidas** con su
   código y un contador por fila, y un botón que manda **todas las medidas elegidas de una
   vez** al pedido. Detalle abajo.
-- **Carrito → WhatsApp**: arma el pedido y lo envía al WhatsApp de la **sucursal elegida**
-  (5 sucursales con su número). No muestra precios: el equipo cotiza al recibirlo.
-- **Modo Admin** (botón "Admin"): edición inline de campos (demo guardada en el navegador).
-  Es el esqueleto del editor que, al conectar Supabase, persistirá en la base con control por rol.
+- **Destacados en la portada**: al abrir el catálogo (sin buscar ni elegir categoría) sale
+  primero lo que el encargado puso al frente desde el clasificador — productos sueltos y/o
+  fichas de familia mezclados, en el orden que él decidió. Si la lista está vacía, la portada
+  se comporta como siempre. Sale de `ajustes.destacados` en Supabase.
+- **Carrito → WhatsApp**: arma el pedido y lo envía al WhatsApp de la **sucursal elegida**.
+  Las sucursales (nombre, WhatsApp y dirección) salen de la tabla `sucursales` y se editan
+  desde el clasificador; `core/config.js` queda como respaldo si la base no responde.
+  No muestra precios: el equipo cotiza al recibirlo.
+- **Dirección de la sucursal en el pedido**: recuadro propio, rotulado *«Dirección de la
+  Sucursal:»*, con la dirección a 15 px y el contorno en rojo óxido (`--oxido`, el del logo).
+  Sólo el contorno va en color: rellenarlo competiría con el botón de WhatsApp, que es la
+  acción que debe destacar. Al tocarla abre Google Maps, y debajo lo dice en letra chica.
+- **Registro de uso** (`core/metricsService.js`): cada vista de ficha, cada producto que entra
+  al pedido y cada pedido enviado dejan un renglón en `eventos_catalogo`. Es lo que alimenta
+  «lo que más piden» en el clasificador. **No se guarda nada del visitante** — ni IP, ni
+  cookie, ni identificador: sólo el código del producto, la cantidad y la sucursal. Nunca
+  bloquea: si falla, el pedido sigue su curso.
 - **Paleta industrial**: grises/plata/negro/platino/blanco + acentos rojo óxido, verde zintro,
   verde oscuro, aqua oscuro y beige arena.
 - **Teléfono y tableta (≤880 px)**: la barra superior se reacomoda en dos filas y concentra
@@ -45,12 +60,56 @@ Prototipo funcional del catálogo comercial. Autocontenido: corre **sin servidor
   Facebook y WhatsApp la cachean por URL, y añadir `?v=N` a la página no sirve porque el
   `og:url` canónico devuelve al rastreador a la ficha ya guardada.
 
-## Fichas de familia (agrupación por medida)
+## Búsqueda: entender cómo habla el cliente
+
+Quien compra acero no escribe como está capturado el catálogo. Pide *«media pulgada»*,
+*«PTR de 2x2»*, *«un octavo»*; el catálogo dice `1/2"`, `PTR50X50`, `SOLERA`. Antes eran
+cuatro búsquedas distintas y tres devolvían cero — y **cero resultados es una venta que se
+pierde sin que nadie se entere**.
+
+`core/searchService.js` lo resuelve en tres capas que se suman:
+
+| Capa | Qué traduce | Dónde vive |
+|---|---|---|
+| **Fracciones y decimales** | `1/2` ↔ `0.5`, `1.5` ↔ `1 1/2`, `3/16` ↔ `0.1875` | código (regla general) |
+| **Unidades habladas** | «pulgada» → `"` · «milímetros» → `mm` · «calibre» → `c` | código (regla general) |
+| **Vocabulario de mostrador** | «PTR» → tubular cuadrado · «varilla» → redondo corrugado | `ajustes.sinonimos_busqueda`, **editable** |
+
+**Regla de oro: un sinónimo SUMA, nunca sustituye.** Lo que el cliente escribió sigue siendo
+una forma válida de encontrar el producto, así que una traducción mal puesta no puede hacer
+desaparecer resultados que antes salían. Y lo que coincide **literalmente** se ordena antes que
+lo que llegó por traducción: el diccionario ayuda, no manda.
+
+Por dentro, la consulta se parte en **grupos** con varias **alternativas**, y un producto entra
+si *cada* grupo tiene *alguna* alternativa satisfecha — un Y de oes:
+
+```
+«ptr 1/2 pulgada»  →  [ptr | tubular+cuadrado]  Y  [1/2 | 0.5]  Y  ["]
+```
+
+⚠️ El diccionario se consulta **antes** de tirar las palabras vacías (`de`, `un`, `x`…) y
+siempre por la frase más larga. Si no, «un octavo» perdería el «un» al limpiar y su entrada no
+volvería a casar nunca, y «media» se comería el par antes de que «media pulgada» tuviera turno.
+
+**El círculo se cierra solo:** el catálogo registra cada búsqueda con cuántos resultados dio
+(`eventos_catalogo`), y el clasificador muestra en **Destacados** un recuadro
+*«⚠ Buscaron esto y no encontraron nada»* con dos botones por término — **enseñar palabra**
+(el producto existe pero se llama de otro modo) o **dar de alta** (falta el producto).
+
+## Fichas de familia (agrupaciones)
 
 Una categoría con veinte soleras seguidas obliga al cliente a buscar su medida a fuerza de
 paciencia. La ficha de familia junta esas veinte en **una tarjeta** y mueve la elección de
 medida adentro. Es agrupación de **presentación**: cada medida sigue siendo su propio
 producto con su propio código, y así entra al carrito y al mensaje de WhatsApp.
+
+**Por qué se agrupan (criterio).** No todo se agrupa por medida: las láminas se distinguen
+por **calibre**, los discos por **función** (corte, desbaste, diamante), la herramienta por
+**modelo**. Cada agrupación lleva su criterio, y el criterio **decide el rótulo de la columna
+donde el cliente elige** — encabezar «Medida» una tabla de calibres manda al cliente a buscar
+lo que no va a encontrar. El rótulo también se puede escribir a mano por agrupación
+(`columna`), y los criterios disponibles se editan desde el clasificador
+(`ajustes.criterios_agrupacion`), así que se pueden inventar nuevos sin tocar código.
 
 **Dónde agrupa y dónde no** (decisión de Gonzalo, 2026-07-31):
 
@@ -79,7 +138,41 @@ Una familia que abarca dos categorías se muestra completa **solo en su categor�
 categoría siguen apareciendo ahí como tarjetas sueltas, así que no se esconde nada: hoy son
 12 productos de 3,222.
 
-### Cómo se regeneran
+### Foto de portada de la agrupación
+
+Sin foto propia, la tarjeta **toma prestada** la del primer producto que tenga una. Sirve de
+emergencia, pero una ficha «Solera» se vende mejor con la foto del producto genérico que con
+la de la medida que casualmente quedó primera.
+
+Por eso `familias.foto` guarda una foto propia, que **siempre gana**. Se pone desde el editor
+(paso 1, junto al nombre) con el **mismo editor de recorte** que ya usan los productos —
+encuadre, zoom, rotación, tamaño y formato— y se sube al bucket `fotos` como
+`familia-<id>-<timestamp>.webp`. Quitarla devuelve el comportamiento automático.
+
+En la lista de agrupaciones, las que ya tienen foto propia llevan la miniatura con **borde
+aqua**; las que la toman prestada, borde gris. Así se ve de un vistazo qué falta por curar.
+
+> La foto se sube a Storage al recortarla, pero la fila **sólo cambia al pulsar «Guardar
+> agrupación»** — como todo lo demás del editor, para que *Cancelar* siga significando cancelar.
+
+### Dónde viven y cómo se editan
+
+**La fuente de verdad es la tabla `familias` de Supabase**, y se edita desde
+`clasificador.html` → pestaña **Agrupaciones**: crear, renombrar, cambiar el criterio, poner
+foto, agregar y quitar productos, partir en subgrupos, ocultar y eliminar. Con vista previa de
+cómo queda en el catálogo. **Ya no hace falta correr nada ni tocar archivos.**
+
+Las **173 agrupaciones aprobadas ya están cargadas** en la base (sembradas el 2026-08-02 desde
+`data/familias.json`, verificadas código por código: 1,576 códigos, huella MD5 idéntica).
+
+`data/familias.json` / `.js` quedan como **respaldo**: es lo que usa el catálogo cuando no
+hay conexión (doble clic en `index.html`), y lo que el botón *«⤒ Importar del respaldo»*
+sube a la base si alguna vez hay que reconstruirla (sólo agrega lo que falta; **no pisa** lo
+editado a mano). No se regeneran solos: si quieres refrescarlos con lo que hoy está en línea,
+corre el pipeline de abajo.
+
+El pipeline original **sigue existiendo** para proponer agrupaciones nuevas a partir de los
+nombres de producto (es análisis en lote, no algo que el encargado deba hacer a mano):
 
 ```
 node pipeline/proponer_familias.mjs          # propone (no decide nada)
@@ -87,20 +180,94 @@ node pipeline/proponer_familias.mjs          # propone (no decide nada)
 node pipeline/generar_revision_familias.mjs  # pantalla para aprobar/descartar
    → datos/revision_familias.html
    ↳ las decisiones se guardan en datos/familias_aprobadas.json
-node pipeline/generar_familias_catalogo.mjs  # publica solo lo aprobado
+node pipeline/generar_familias_catalogo.mjs  # escribe el respaldo local
    → catalogo-web/data/familias.json (+ .js para el modo sin servidor)
 ```
 
-**Hay que volver a correr el último paso cada vez que cambie `data/productos.json`**: solo
-entra a una ficha lo que siga publicado y clasificado, así que un producto retirado, oculto o
-devuelto a "POR CLASIFICAR" sale de la familia. Si `familias.json` no carga, el catálogo
-funciona exactamente como antes, producto por producto.
+⚠️ Ese último paso escribe **el respaldo**, no la base. Para que lo aprobado llegue al
+catálogo hay que importarlo desde el clasificador (*Agrupaciones → ⤒ Importar del respaldo*),
+que sólo agrega las que faltan y **no pisa** lo que ya se editó a mano.
+
+Una agrupación sólo muestra lo que hoy sigue publicado y clasificado: un producto retirado,
+oculto o devuelto a "POR CLASIFICAR" sale de la ficha, que se encoge sola. Si no carga
+ninguna de las dos fuentes, el catálogo funciona exactamente como antes, producto por producto.
 
 ## Clasificador de catálogo (herramienta interna)
-`clasificador.html` es la herramienta de curación manual: permite revisar y mover
-cada uno de los 3,222 productos entre categorías/subcategorías viendo los conteos
-y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
+`clasificador.html` es **el panel de administración del catálogo**, pensado para que el
+encargado de Aceros Peñascal —que no programa— pueda mantenerlo entero sin ayuda. Corre
+igual que el catálogo: **doble clic**, sin servidor.
 
+Está dividido en **cinco pestañas**, una por tipo de trabajo:
+
+| Pestaña | Para qué |
+|---|---|
+| 📦 **Productos** | Dar de alta, corregir, poner foto, clasificar y retirar productos |
+| 🗂 **Agrupaciones** | Qué productos se muestran juntos en una tarjeta y **con qué criterio** |
+| ⭐ **Destacados** | Qué sale primero en la portada, con la cuenta real de lo que piden los clientes |
+| 🏬 **Sucursales y textos** | Direcciones, WhatsApp, rótulos del catálogo y tipos de agrupación |
+| ❓ **Cómo se usa** | La guía paso a paso, dentro de la propia herramienta |
+
+> ⚠️ **Para que los cambios lleguen al catálogo hay que iniciar sesión** en *Guardar /
+> Exportar* (indicador **«● En línea»**). Sin sesión todo se guarda **sólo en esa
+> computadora** y nadie más lo ve. Es la misma sesión de siempre, ahora también para altas,
+> bajas y agrupaciones. El encargado necesita su propio usuario en Supabase → Authentication.
+
+### 📦 Productos — alta, baja y edición
+- **＋ Nuevo producto** (barra superior): código, nombre, medida, categoría y proveedor. El
+  código es obligatorio y único; se avisa si ya existe y se dice qué producto lo usa. Al
+  crearlo se abre su ficha para ponerle foto.
+- **⧉ Duplicar producto** (en la ficha): capturar la misma pieza en doce medidas dejaría de
+  ser trabajo humano — duplicar deja todo puesto y sólo hay que cambiar código y medida.
+- **✎ cambiar** (junto al código, sólo en productos capturados aquí): corrige un código mal
+  escrito. Por dentro es una baja y un alta, porque el código *es* la identidad de la fila en
+  Supabase; se conservan nombre, medida, categoría y proveedor, y hay que volver a subir la foto.
+- **🚫 Retirar del catálogo**: deja de verse para el cliente pero **no se pierde** (queda en
+  «Productos Descontinuados / Ocultos» y se devuelve moviéndolo a su categoría). Es la baja normal.
+- **🗑 Eliminar**: borrado de verdad en la base. Sólo para deshacer una captura equivocada;
+  el diálogo lo dice con todas sus letras cuando el producto viene del catálogo original.
+- Los productos capturados aquí se distinguen en la lista por una **franja verde** a la izquierda.
+- Las altas y bajas viajan a Supabase como `INSERT`/`DELETE` **antes** que las
+  reclasificaciones: un `UPDATE` sobre una fila que todavía no existe no fallaría, sólo no
+  escribiría nada, y el producto se quedaría "sincronizado" sin estar en la base.
+
+### 🗂 Agrupaciones — el editor de fichas de familia
+- Tarjeta por agrupación con su categoría, criterio, rótulo de columna, nº de productos y
+  los subgrupos que tiene. Buscador por nombre, categoría **o por producto** («¿en qué
+  agrupación quedó este código?»).
+- **＋ Nueva agrupación**, o **＋ Con lo seleccionado**: selecciona productos en la pestaña
+  Productos y llegan ya puestos.
+- El editor va en cuatro pasos: **qué es** (foto de portada, nombre, categoría, descripción) →
+  **por qué se agrupan** (el criterio, elegido entre tarjetas que explican cuándo usar cada una)
+  → **qué productos entran** (agregar, quitar, dividir en subgrupos, mover entre ellos, ordenar
+  por medida) → **vista previa** de cómo queda en el catálogo.
+- Avisa si un producto ya pertenece a otra agrupación: el catálogo no sabría en cuál mostrarlo.
+- **🚫 Ocultar** desactiva la agrupación sin borrarla (sus productos vuelven a verse sueltos);
+  **🗑** la elimina — en ningún caso se borran productos.
+
+### ⭐ Destacados — y qué piden de verdad los clientes
+- Lista ordenada que mezcla productos y agrupaciones (▲▼ para moverlas). Se publica con
+  **☁ Publicar destacados** y sale en la portada del catálogo.
+- Al lado, **lo que más piden**, contado desde los pedidos reales enviados por WhatsApp
+  (30 / 90 días / desde siempre), con pedidos y piezas por producto y un **＋** para subirlo
+  a la portada. **↧ Usar los 12 más pedidos** arma la portada de un golpe.
+- Debajo, **⚠ «Buscaron esto y no encontraron nada»**: los términos que dieron cero resultados,
+  cada uno con dos botones — **＋ enseñar palabra** (el producto existe pero se llama de otro
+  modo → crea la traducción) y **＋ dar de alta** (falta el producto → abre el alta). Es el
+  dato más accionable de todo el catálogo. Y después, lo que más se busca en general.
+- Requiere sesión (los datos de pedidos no son públicos). Al principio estará vacío: se
+  llena solo conforme el catálogo se usa.
+
+### 🏬 Sucursales y textos
+- Nombre, WhatsApp, dirección, orden y visibilidad de cada sucursal, con enlaces para
+  **probar el WhatsApp** y **ver la dirección en Google Maps** antes de publicar.
+- Rótulos del catálogo (título de destacados, aviso de "sin precios").
+- **Palabras que usa el cliente**: el diccionario de búsqueda (ver arriba). «si escribe esto →
+  búscalo también como aquello».
+- **Tipos de agrupación**: el catálogo de criterios (nombre, rótulo de columna, cuándo
+  usarlo). Se pueden crear nuevos; no se deja borrar uno que alguna agrupación esté usando.
+- Todo se publica junto con **☁ Publicar cambios**.
+
+### Lo de siempre (clasificación)
 - **Árbol de taxonomía editable de 3 niveles** (categoría → subcategoría →
   **sub-subcategoría**): crear (＋), renombrar/fusionar (✎) y eliminar (✕) en
   cualquier nivel; los productos afectados se reubican de forma segura (nunca se
@@ -161,7 +328,11 @@ y el avance en vivo. Corre igual que el catálogo: **doble clic**, sin servidor.
   la altura a la lista y **vuelve en cuanto empiezas a subir**. Nunca se esconde
   mientras escribes en ella (el atajo `/` la trae de vuelta sola).
 - Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
-- Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie).
+- Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie). Son **59
+  comprobaciones**: reglas de sugerencia, exportadores, proveedores, claves de
+  sincronización, altas y bajas de producto, y criterios, fotos y estructura de las
+  agrupaciones. Las últimas 17 las añade `clasificador-plus.js` al final de la franja, porque
+  se carga después de que corre la autoprueba principal.
 
 ### Trabajo en paralelo (dos o más personas a la vez)
 Sí se puede: dos personas, cada una en su máquina, pueden clasificar en paralelo
@@ -213,13 +384,36 @@ los perfiles). La clave es entender que hay **tres capas de guardado** y que la
 Ver `fotos\LEEME.txt`. Resumen: guardar cada imagen en `fotos\` con el nombre por
 código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen solas.
 
+## Qué vive en Supabase (y ya no en el código)
+
+| Tabla / vista | Qué guarda | Quién la edita |
+|---|---|---|
+| `productos` | los 3,222 + los que dé de alta el encargado | Clasificador → Productos |
+| `familias` | qué códigos van juntos, con qué criterio y en qué subgrupos | Clasificador → Agrupaciones |
+| `ajustes` | `destacados`, `textos_catalogo`, `criterios_agrupacion`, `sinonimos_busqueda` | Clasificador → Destacados / Sucursales y textos |
+| `sucursales` | nombre, WhatsApp, dirección, orden, visibilidad | Clasificador → Sucursales y textos |
+| `eventos_catalogo` | uso real del catálogo (ver / agregar / pedir / buscar) | lo escribe el catálogo público |
+| `productos_populares` | vista: ranking de lo más pedido (30/90 días) | sólo lectura, con sesión |
+| `busquedas_populares` | vista: qué busca la gente | sólo lectura, con sesión |
+
+Migración: [`supabase/migrations/20260802_catalogo_editable_sin_codigo.sql`](../supabase/migrations/20260802_catalogo_editable_sin_codigo.sql).
+
+**Permisos (RLS).** Sin sesión (`anon`) se puede **leer** sucursales, ajustes y agrupaciones
+activas —son datos que el catálogo público necesita para pintarse— y **escribir sólo** en
+`eventos_catalogo`. Nada más: `anon` no puede leer el historial de eventos ni el ranking de
+pedidos (serían regalarle a la competencia qué se vende), ni tocar productos, agrupaciones o
+ajustes. Crear, editar y borrar exige sesión.
+
 ## Estructura
 ```
 catalogo-web/
   index.html          catálogo público (prototipo)
-  clasificador.html   herramienta interna de clasificación
+  clasificador.html   panel de administración del catálogo (5 pestañas)
   manifest.webmanifest
   assets/   styles.css · app.js · clasificador.css · clasificador.js
+            clasificador-plus.js  agrupaciones, destacados, sucursales y guía.
+                                  Se carga DESPUÉS de clasificador.js y comparte
+                                  su ámbito global (mismas utilidades y datos).
             logo-ap-oficial.jpg  logo oficial completo (azul marino + cuadro rojo óxido)
             logo-ap-marca.png    solo el monograma — encabezado e iconos
             og-cover-v2.jpg      vista previa al compartir el enlace (1200×630)
@@ -229,16 +423,22 @@ catalogo-web/
             logo-ap.jpg/.png     versión metalizada, ya NO se usa en el catálogo
                                  (sigue en clasificador.html)
   core/     store.js · catalogService.js · searchService.js · cartService.js
-            familiaService.js   qué productos van juntos en una ficha de familia
+            familiaService.js   qué productos van juntos en una ficha y bajo qué criterio
+            ajustesService.js   sucursales, textos y destacados (Supabase → respaldo config.js)
+            metricsService.js   registro de uso real, sin datos personales
   data/     productos.js (app) · productos.json (import futuro)
-            familias.json/.js   fichas de familia aprobadas (generado, ver arriba)
+            familias.json/.js   RESPALDO de las agrupaciones (la base manda; ver arriba)
             fotos-manifest.json qué fotos existen realmente en disco
   fotos/    imágenes por código (LEEME.txt)
 ```
 
 ## Pendiente / roadmap
-- **Datos:** pase de IA fino para los 501 "POR CLASIFICAR" + atributos/funcionamiento.
-- **Backend Supabase:** tablas + RLS (solo dueños editan), 5 sucursales con stock por punto,
-  precios y existencias (al conectar el software de tienda), proveedores internos, bitácora.
-- **Editor avanzado:** subir fotos desde el panel, validación, asistencia IA.
-- Las 5 sucursales y sus WhatsApp están en `assets/app.js` (CONFIG.sucursales) — editable.
+- **Datos:** pase de IA fino para los "POR CLASIFICAR" + atributos/funcionamiento.
+- **Backend Supabase:** stock por sucursal, precios y existencias (al conectar el software de
+  tienda) — la tabla `inventario` ya está creada y vacía, esperando esa conexión.
+- **Limpieza:** `index.html` ya no trae el botón "Admin" del prototipo (el clasificador hace
+  ese trabajo de verdad), pero `state.edit` y `toggleAdminUI()` siguen en `app.js`/`ui.js`
+  como código muerto: se pueden quitar.
+- **Categorías duplicadas por acentos**: hay pares que son el mismo concepto escrito distinto
+  ("Tornilleria y fijacion" / "Tornillería y fijación"). Se fusionan desde el árbol del
+  clasificador (✎ Renombrar con el nombre del otro).
