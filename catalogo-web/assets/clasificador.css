@@ -635,6 +635,13 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .autoriza-caja{background:#fff;border:1px solid var(--line);border-left:4px solid var(--oxido);
   border-radius:12px;padding:12px 14px;margin-bottom:11px}
 .autoriza-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* El correo del autorizador se enseña pero no se edita: se pinta como dato,
+   no como campo, para que no invite a escribir en él. */
+.autoriza-fijo{padding:8px 10px;border:1px dashed var(--platino);border-radius:8px;
+  background:var(--gris-50);color:var(--carbon);font-size:13px;min-height:36px;
+  display:flex;align-items:center;word-break:break-all}
+.autoriza-vacio{color:var(--gris-claro);font-style:italic}
+.autoriza-candado{margin-top:8px;font-size:11.5px;color:var(--gris);line-height:1.45}
 .autoriza-ojo{margin-top:8px;font-size:11.5px;color:#8a6414;background:#fdf3e3;
   border:1px solid #e3c98e;border-radius:8px;padding:7px 10px}
 .solicitudes-caja{display:grid;gap:7px}
@@ -696,6 +703,9 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 /* ---- Ficha de producto: altas y bajas ---- */
 .f-nuevo{background:var(--zintro);color:#fff;border-radius:5px;padding:2px 8px;font-size:9.5px;
   font-weight:700;letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+/* Aviso bajo el campo Código cuando hay un renombrado sin subir. */
+.f-cod-antes{margin-top:4px;font-size:11px;color:var(--oxido)}
+.f-cod-antes code{background:#f7e8ea;color:var(--oxido)}
 .f-mini{background:transparent;border:0;color:var(--aqua-2);font-size:10px;font-weight:700;
   text-transform:none;letter-spacing:0;padding:0 0 0 6px;text-decoration:underline}
 .f-acciones{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}

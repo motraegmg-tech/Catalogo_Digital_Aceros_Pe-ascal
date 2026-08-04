@@ -1,0 +1,2852 @@
+{
+ "generado": "2026-08-04T07:41:12.244Z",
+ "motivo": "Unificación de foto por agrupación (criterio=medida), aprobada por Gonzalo el 2026-08-04",
+ "como_revertir": "update productos set foto = r.antes from (values ...) r(cod,antes) where codigo = r.cod",
+ "agrupaciones": 112,
+ "cambios": [
+  {
+   "cod": "PTR50X50C12",
+   "antes": "PTR50X50C12.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR38X38C16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PTR38X38C16-1785487059405.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR38X38",
+   "antes": "PTR38X38.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR32X32C14",
+   "antes": "PTR32X32C14.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR32X32C16",
+   "antes": "PTR32X32C16.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR38X38C11",
+   "antes": "PTR38X38C11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR25X25C14",
+   "antes": "PTR25X25C14.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR25X25C16",
+   "antes": "PTR25X25C16.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR25X50CAL.11",
+   "antes": "PTR25X50CAL-11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR25X50",
+   "antes": "PTR25X50.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR25X50C16",
+   "antes": "PTR25X50C16.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR64X64",
+   "antes": "PTR64X64.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X75C11",
+   "antes": "PTR50X75C11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X75",
+   "antes": "PTR50X75.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X100",
+   "antes": "PTR50X100.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X5014",
+   "antes": "PTR50X5014.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X50C16",
+   "antes": "PTR50X50C16.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR50X100C11",
+   "antes": "PTR50X100C11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR75X75C11",
+   "antes": "PTR75X75C11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR75X75",
+   "antes": "PTR75X75.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR19X19C14",
+   "antes": "PTR19X19C14.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR100X100C11",
+   "antes": "PTR100X100C11.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR100X100C14",
+   "antes": "PTR100X100C14.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "PTR100X100C1/4-6.10",
+   "antes": "PTR100X100C1-4-6-10.webp",
+   "despues": "PTR32X32C11.webp",
+   "familia": "perfiles-tubulares--ptr-c"
+  },
+  {
+   "cod": "MEDE1522",
+   "antes": "MEDE1522.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE1920",
+   "antes": "MEDE1920.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE2018",
+   "antes": "MEDE2018.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE42018",
+   "antes": "MEDE42018.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE42116",
+   "antes": "MEDE42116.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE43220",
+   "antes": "MEDE43220.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE3416",
+   "antes": "MEDE3416.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE43416",
+   "antes": "MEDE43416.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE3914",
+   "antes": "MEDE3914.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE43914",
+   "antes": "MEDE43914.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE4012",
+   "antes": "MEDE4012.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE44012",
+   "antes": "MEDE44012.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE4810",
+   "antes": "MEDE4810.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "MEDE44810",
+   "antes": "MEDE44810.webp",
+   "despues": "MEDE2116.webp",
+   "familia": "lamina-y-cubiertas--metal-desplegado"
+  },
+  {
+   "cod": "TUNEC3038",
+   "antes": "TUNEC3038.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC3025",
+   "antes": "TUNEC3025.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC3065",
+   "antes": "TUNEC3065.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC3050",
+   "antes": "TUNEC3050.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC3075",
+   "antes": "TUNEC3075.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC30100",
+   "antes": "TUNEC30100.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC30150",
+   "antes": "TUNEC30150.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC4038",
+   "antes": "TUNEC4038.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC4032",
+   "antes": "TUNEC4032.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC4025",
+   "antes": "TUNEC4025.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC4050",
+   "antes": "TUNEC4050.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC4075",
+   "antes": "TUNEC4075.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC40100",
+   "antes": "TUNEC40100.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "TUNEC40150",
+   "antes": "TUNEC40150.webp",
+   "despues": "TUNEC3032.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro"
+  },
+  {
+   "cod": "HS1",
+   "antes": "HS1.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-1/16",
+   "antes": "HS1-1-16.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-1/2",
+   "antes": "HS1-1-2.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-1/4",
+   "antes": "HS1-1-4.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-1/8",
+   "antes": "HS1-1-8.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-3/16",
+   "antes": "HS1-3-16.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS1-3/8",
+   "antes": "HS1-3-8.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS2-1/2",
+   "antes": "HS2-1-2.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS2-1/4",
+   "antes": "HS2-1-4.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS2-1/8",
+   "antes": "HS2-1-8.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS3",
+   "antes": "HS3.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "HS2",
+   "antes": "HS2.webp",
+   "despues": "HS7-8.webp",
+   "familia": "ferreteria--cortacirculos-bimetal-urrea"
+  },
+  {
+   "cod": "VIGA12X4(20.9KG)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA12X4-20-9KG-1785491771856.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA16X7(67.10KG)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA16X7-67-10KG-1785491782615.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA16X7(74.40KG)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA16X7-74-40KG-1785491789350.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA6X4(12.60KG)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-12-60KG-1785491794264.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA6X4(17.90KG)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-17-90KG-1785491807354.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA10X4(22K)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA10X4-22K-1785491812704.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA10X4(25.0KG)12.2",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA10X4-25-0KG-12-2-1785491822795.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA10(38.7KG/M)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA10-38-7KG-M-1785491828201.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA10(44.6KG/MTS)",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA10-44-6KG-MTS-1785491832737.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA8X4-14.90A12.20",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA8X4-14-90A12-20-1785491837352.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA-1785491845726.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "VIGA8X4(19.5KG)12.20",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA8X4-19-5KG-12-20-1785491852033.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VIGA6X4-13-40KG-1785491801025.webp",
+   "familia": "perfiles-macizos--viga-ipr"
+  },
+  {
+   "cod": "LNL3C12",
+   "antes": "LNL3C12.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL3C14",
+   "antes": "LNL3C14.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL3C16",
+   "antes": "LNL3C16.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL3C18",
+   "antes": "LNL3C18.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL3C20",
+   "antes": "LNL3C20.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL4C12",
+   "antes": "LNL4C12.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL4C14",
+   "antes": "LNL4C14.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL4C16",
+   "antes": "LNL4C16.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL4C18",
+   "antes": "LNL4C18.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "LNL4C20",
+   "antes": "LNL4C20.webp",
+   "despues": "LNL3C22.webp",
+   "familia": "lamina-y-cubiertas--mt-lamina-negra-lisa"
+  },
+  {
+   "cod": "RED25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED25-1785178655797.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED13",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED13-1785178662694.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED6-1785178677035.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED5",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED5-1785178685150.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED19-1785178695595.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED8",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED8-1785178718085.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED16-1785178814474.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED38",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED38-1785178878910.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED32",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED32-1785178886760.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "RED50",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED50-1785178894606.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RED10-1785178710151.webp",
+   "familia": "perfiles-macizos--redondo"
+  },
+  {
+   "cod": "MEDE25",
+   "antes": "MEDE25.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE38",
+   "antes": "MEDE38.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE50",
+   "antes": "MEDE50.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE32",
+   "antes": "MEDE32.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE13",
+   "antes": "MEDE13.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE64",
+   "antes": "MEDE64.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE75",
+   "antes": "MEDE75.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE19",
+   "antes": "MEDE19.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "MEDE100",
+   "antes": "MEDE100.webp",
+   "despues": "MEDE150.webp",
+   "familia": "fierro-vaciado-y-decorativo--media-esfera"
+  },
+  {
+   "cod": "TUINC1632",
+   "antes": "TUINC1632.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC1644",
+   "antes": "TUINC1644.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC1650",
+   "antes": "TUINC1650.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC1675",
+   "antes": "TUINC1675.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC1625",
+   "antes": "TUINC1625.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC2025",
+   "antes": "TUINC2025.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC2013",
+   "antes": "TUINC2013.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC2019",
+   "antes": "TUINC2019.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "TUINC2016",
+   "antes": "TUINC2016.webp",
+   "despues": "TUINC1638.webp",
+   "familia": "tuberia-y-conexiones--tubo-industrial-c"
+  },
+  {
+   "cod": "DT100-100",
+   "antes": "DT100-100.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT20-065",
+   "antes": "DT20-065.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT40-065",
+   "antes": "DT40-065.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT40-100",
+   "antes": "DT40-100.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT060-065",
+   "antes": "DT060-065.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT060-100",
+   "antes": "DT060-100.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT80-065",
+   "antes": "DT80-065.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "DT080-100",
+   "antes": "DT080-100.webp",
+   "despues": "DT100-065.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro"
+  },
+  {
+   "cod": "LGL3C14",
+   "antes": "LGL3C14.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL3C18",
+   "antes": "LGL3C18.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL3C20",
+   "antes": "LGL3C20.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL3C22",
+   "antes": "LGL3C22.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL4C16",
+   "antes": "LGL4C16.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL4C18",
+   "antes": "LGL4C18.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL4C20",
+   "antes": "LGL4C20.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "LGL4C22",
+   "antes": "LGL4C22.webp",
+   "despues": "LGL3C16.webp",
+   "familia": "lamina-y-cubiertas--mt-lam-galv-lisa"
+  },
+  {
+   "cod": "2888",
+   "antes": "2888.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "2843",
+   "antes": "2843.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CARCOTRE3-123237",
+   "antes": "CARCOTRE3-123237.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CARCOTRE3",
+   "antes": "CARCOTRE3.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CARCOTRE4",
+   "antes": "CARCOTRE4.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CARCOTRE4-(123238)",
+   "antes": "CARCOTRE4-123238.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CARCOTRE5-14MM",
+   "antes": "CARCOTRE5-14MM.webp",
+   "despues": "2898.webp",
+   "familia": "abrasivos--carda-copa-trenzada"
+  },
+  {
+   "cod": "CODS75",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS75-1785302158693.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS25-1785450035720.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS38",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS38-1785450044039.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS32",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS32-1785450023589.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS50",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS50-1785449999448.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS19-1785449964698.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "CODS100",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS100-1785449980611.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODS64-1785450010901.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable"
+  },
+  {
+   "cod": "DUEL1X.915",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL1X-915-1785827106653.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUEL2X1.05",
+   "antes": "DUEL2X1-05.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUELZ3X1.83",
+   "antes": "DUELZ3X1-83.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUELZ4X1.98",
+   "antes": "DUELZ4X1-98.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUEL4X2.44",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL4X2-44-1785827117618.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUEL5X2.44",
+   "antes": "DUEL5X2-44.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "DUELZ6X3.05",
+   "antes": "DUELZ6X3-05.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUEL2X1-22-1785827145875.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa"
+  },
+  {
+   "cod": "023A",
+   "antes": "0-958333333333333.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "030A",
+   "antes": "030A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "025A",
+   "antes": "025A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "031A",
+   "antes": "031A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "024A",
+   "antes": "024A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "026A",
+   "antes": "026A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "029A",
+   "antes": "029A.webp",
+   "despues": "032A.webp",
+   "familia": "tuberia-y-conexiones--reg-barril-hule"
+  },
+  {
+   "cod": "ROLGAL25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ROLGAL25-1785377671027.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "RONGALV6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV6-1785377703989.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "RONGALV5",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV5-1785377731911.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "RONGALV19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV19-1785377738319.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "ROLGALV10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ROLGALV10-1785377744949.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "RONGALV.8",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV-8-1785377752053.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "RONGALV16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV16-1785377759828.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONGALV13-1785377695687.webp",
+   "familia": "ferreteria--rondana-plana-galv"
+  },
+  {
+   "cod": "SOLD410-2X3/16-6M",
+   "antes": "SOLD410-2X3-16-6M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD407",
+   "antes": "SOLD407.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD4083M",
+   "antes": "SOLD4083M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD4066M",
+   "antes": "SOLD4066M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD4076M",
+   "antes": "SOLD4076M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD4086M",
+   "antes": "SOLD4086M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "SOLD4106M",
+   "antes": "SOLD4106M.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/SOLD4056M-1785827259391.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--solera-decor"
+  },
+  {
+   "cod": "VARO13",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO13-1785378667260.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS6-1785378677351.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS5",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS5-1785378686407.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS19-1785378697170.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS10-1785378707800.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS8X1",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS8X1-1785378724355.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "VAROS16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VAROS16-1785378733933.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/VARO25-1785378651181.webp",
+   "familia": "ferreteria--varilla-roscada"
+  },
+  {
+   "cod": "ESME10\"",
+   "antes": "ESME10.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "ESME12\"",
+   "antes": "ESME12.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "ESME24-122281",
+   "antes": "ESME24-122281.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "ESME24",
+   "antes": "ESME24.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "ESME8\"",
+   "antes": "ESME8.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "ESME8X12",
+   "antes": "ESME8X12.webp",
+   "despues": "ESME6.webp",
+   "familia": "ferreteria--escuadra-metalica"
+  },
+  {
+   "cod": "PLACA25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA25-1785786012842.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "PLACA6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA6-1785786129928.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "PLACA5",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA5-1785786150028.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "PLACA19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA19-1785786169712.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "PLACA10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA10-1785786189451.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "PLACA16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLACA16-1785786224799.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/PLA13-1785786033272.webp",
+   "familia": "perfiles-macizos--placa"
+  },
+  {
+   "cod": "RONPREGAL25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL25-1785377473222.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "RONPREGAL6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL6-1785377481288.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "RONPREGAL19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL19-1785377566130.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "RONPREGAL10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL10-1785377574423.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "RONPREGAL8",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL8-1785377579737.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "RONPREGAL16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL16-1785377587727.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/RONPREGAL13-1785377455439.webp",
+   "familia": "ferreteria--rondana-presion-galv"
+  },
+  {
+   "cod": "ZP150",
+   "antes": "ZP150.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "ZP300C18",
+   "antes": "ZP300C18.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "ZP400C18",
+   "antes": "ZP400C18.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "ZP200",
+   "antes": "ZP200.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "ZP250",
+   "antes": "ZP250.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "ZP300",
+   "antes": "ZP300.webp",
+   "despues": "ZP400.webp",
+   "familia": "ferreteria--zoclo-ceja"
+  },
+  {
+   "cod": "114203",
+   "antes": "114203.webp",
+   "despues": "114213.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-ngo-surtek"
+  },
+  {
+   "cod": "114215",
+   "antes": "114215.webp",
+   "despues": "114213.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-ngo-surtek"
+  },
+  {
+   "cod": "114205",
+   "antes": "114205.webp",
+   "despues": "114213.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-ngo-surtek"
+  },
+  {
+   "cod": "114209",
+   "antes": "114209.webp",
+   "despues": "114213.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-ngo-surtek"
+  },
+  {
+   "cod": "114211",
+   "antes": "114211.webp",
+   "despues": "114213.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-ngo-surtek"
+  },
+  {
+   "cod": "CHALA1M51MM",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M51MM-1785493598736.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M89MM-1785493588263.webp",
+   "familia": "seguridad-epp--chapeton-laton-mold"
+  },
+  {
+   "cod": "CHALA2M39MM",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA2M39MM-1785493679641.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M89MM-1785493588263.webp",
+   "familia": "seguridad-epp--chapeton-laton-mold"
+  },
+  {
+   "cod": "CHALA2M46MM",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA2M46MM-1785493689002.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M89MM-1785493588263.webp",
+   "familia": "seguridad-epp--chapeton-laton-mold"
+  },
+  {
+   "cod": "CHALA2M51MM",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA2M51MM-1785493694584.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M89MM-1785493588263.webp",
+   "familia": "seguridad-epp--chapeton-laton-mold"
+  },
+  {
+   "cod": "CHALA2M71MM",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA2M71MM-1785493700762.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CHALA1M89MM-1785493588263.webp",
+   "familia": "seguridad-epp--chapeton-laton-mold"
+  },
+  {
+   "cod": "DUELZ3X1.05CB",
+   "antes": "DUELZ3X1-05CB.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83CB-1785827434870.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-cb-cuad-rect"
+  },
+  {
+   "cod": "DUELZ 3X91.5CB",
+   "antes": "DUELZ-3X91-5CB.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83CB-1785827434870.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-cb-cuad-rect"
+  },
+  {
+   "cod": "DUELZ5X1.98CB",
+   "antes": "DUELZ5X1-98CB.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83CB-1785827434870.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-cb-cuad-rect"
+  },
+  {
+   "cod": "DUELZ7X2.44CB",
+   "antes": "DUELZ7X2-44CB.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83CB-1785827434870.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-cb-cuad-rect"
+  },
+  {
+   "cod": "DUELZ9X3.05CB",
+   "antes": "DUELZ9X3-05CB.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83CB-1785827434870.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-cb-cuad-rect"
+  },
+  {
+   "cod": "DUELZ3X1.05RC",
+   "antes": "DUELZ3X1-05RC.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83-1785827470958.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-red-combinada"
+  },
+  {
+   "cod": "DUELZ3X91.5RC",
+   "antes": "DUELZ3X91-5RC.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83-1785827470958.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-red-combinada"
+  },
+  {
+   "cod": "DUELZ5X1.98RC",
+   "antes": "DUELZ5X1-98RC.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83-1785827470958.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-red-combinada"
+  },
+  {
+   "cod": "DUELZ7X2.44RC",
+   "antes": "DUELZ7X2-44RC.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83-1785827470958.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-red-combinada"
+  },
+  {
+   "cod": "DUELZ9X10RC",
+   "antes": "DUELZ9X10RC.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X1-83-1785827470958.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-red-combinada"
+  },
+  {
+   "cod": "33610",
+   "antes": "33610.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15379-1785479945756.webp",
+   "familia": "ferreteria--jgo-riel-cajon-telesc"
+  },
+  {
+   "cod": "33611",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/33611-1785479915693.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15379-1785479945756.webp",
+   "familia": "ferreteria--jgo-riel-cajon-telesc"
+  },
+  {
+   "cod": "15377",
+   "antes": "15377.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15379-1785479945756.webp",
+   "familia": "ferreteria--jgo-riel-cajon-telesc"
+  },
+  {
+   "cod": "14512",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/14512-1785479927271.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15379-1785479945756.webp",
+   "familia": "ferreteria--jgo-riel-cajon-telesc"
+  },
+  {
+   "cod": "15378",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15378-1785479937414.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/15379-1785479945756.webp",
+   "familia": "ferreteria--jgo-riel-cajon-telesc"
+  },
+  {
+   "cod": "LGLR3C24",
+   "antes": "LGLR3C24.webp",
+   "despues": "LGLR3C28.webp",
+   "familia": "lamina-y-cubiertas--kg-lam-galv-roll"
+  },
+  {
+   "cod": "LGLR4C24",
+   "antes": "LGLR4C24.webp",
+   "despues": "LGLR3C28.webp",
+   "familia": "lamina-y-cubiertas--kg-lam-galv-roll"
+  },
+  {
+   "cod": "LGLR3C26",
+   "antes": "LGLR3C26.webp",
+   "despues": "LGLR3C28.webp",
+   "familia": "lamina-y-cubiertas--kg-lam-galv-roll"
+  },
+  {
+   "cod": "LGLR4C26",
+   "antes": "LGLR4C26.webp",
+   "despues": "LGLR3C28.webp",
+   "familia": "lamina-y-cubiertas--kg-lam-galv-roll"
+  },
+  {
+   "cod": "LGLR3C30",
+   "antes": "LGLR3C30.webp",
+   "despues": "LGLR3C28.webp",
+   "familia": "lamina-y-cubiertas--kg-lam-galv-roll"
+  },
+  {
+   "cod": "PM36KG",
+   "antes": "PM36KG.webp",
+   "despues": "PM22-70KGS.webp",
+   "familia": "herramienta-manual--posicionador-magnetico"
+  },
+  {
+   "cod": "ESQ25",
+   "antes": "ESQ25.webp",
+   "despues": "PM22-70KGS.webp",
+   "familia": "herramienta-manual--posicionador-magnetico"
+  },
+  {
+   "cod": "ESQ75",
+   "antes": "ESQ75.webp",
+   "despues": "PM22-70KGS.webp",
+   "familia": "herramienta-manual--posicionador-magnetico"
+  },
+  {
+   "cod": "PM34KG123282",
+   "antes": "PM34KG123282.webp",
+   "despues": "PM22-70KGS.webp",
+   "familia": "herramienta-manual--posicionador-magnetico"
+  },
+  {
+   "cod": "ESQ100",
+   "antes": "ESQ100.webp",
+   "despues": "PM22-70KGS.webp",
+   "familia": "herramienta-manual--posicionador-magnetico"
+  },
+  {
+   "cod": "ZR125",
+   "antes": "ZR125.webp",
+   "despues": "ZR249.webp",
+   "familia": "perfiles-tubulares--rectangular"
+  },
+  {
+   "cod": "ZR175",
+   "antes": "ZR175.webp",
+   "despues": "ZR249.webp",
+   "familia": "perfiles-tubulares--rectangular"
+  },
+  {
+   "cod": "ZR225",
+   "antes": "ZR225.webp",
+   "despues": "ZR249.webp",
+   "familia": "perfiles-tubulares--rectangular"
+  },
+  {
+   "cod": "ZR100",
+   "antes": "ZR100.webp",
+   "despues": "ZR249.webp",
+   "familia": "perfiles-tubulares--rectangular"
+  },
+  {
+   "cod": "ZR400",
+   "antes": "ZR400.webp",
+   "despues": "ZR249.webp",
+   "familia": "perfiles-tubulares--rectangular"
+  },
+  {
+   "cod": "SICOCI32",
+   "antes": "SICOCI32.webp",
+   "despues": "SICOCI38.webp",
+   "familia": "herramienta-electrica--sierra-corta-circulos-surtek"
+  },
+  {
+   "cod": "SICOCI56",
+   "antes": "SICOCI56.webp",
+   "despues": "SICOCI38.webp",
+   "familia": "herramienta-electrica--sierra-corta-circulos-surtek"
+  },
+  {
+   "cod": "SICOSI54",
+   "antes": "SICOSI54.webp",
+   "despues": "SICOCI38.webp",
+   "familia": "herramienta-electrica--sierra-corta-circulos-surtek"
+  },
+  {
+   "cod": "SICOCI60",
+   "antes": "SICOCI60.webp",
+   "despues": "SICOCI38.webp",
+   "familia": "herramienta-electrica--sierra-corta-circulos-surtek"
+  },
+  {
+   "cod": "SICOCI50",
+   "antes": "SICOCI50.webp",
+   "despues": "SICOCI38.webp",
+   "familia": "herramienta-electrica--sierra-corta-circulos-surtek"
+  },
+  {
+   "cod": "TASBOL25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL25-1785485632528.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL50-1785361872320.webp",
+   "familia": "fierro-vaciado-y-decorativo--tapon-sin-bola"
+  },
+  {
+   "cod": "TASBOL38",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL38-1785485637647.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL50-1785361872320.webp",
+   "familia": "fierro-vaciado-y-decorativo--tapon-sin-bola"
+  },
+  {
+   "cod": "TASBOL32",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL32-1785361860733.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL50-1785361872320.webp",
+   "familia": "fierro-vaciado-y-decorativo--tapon-sin-bola"
+  },
+  {
+   "cod": "TASBOL75",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL75-1785361879100.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL50-1785361872320.webp",
+   "familia": "fierro-vaciado-y-decorativo--tapon-sin-bola"
+  },
+  {
+   "cod": "TASBOL100",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL100-1785361884492.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TASBOL50-1785361872320.webp",
+   "familia": "fierro-vaciado-y-decorativo--tapon-sin-bola"
+  },
+  {
+   "cod": "TEJU38",
+   "antes": "TEJU38.webp",
+   "despues": "TEJU75.webp",
+   "familia": "fierro-vaciado-y-decorativo--tejuelo-pulido"
+  },
+  {
+   "cod": "TEJU32",
+   "antes": "TEJU32.webp",
+   "despues": "TEJU75.webp",
+   "familia": "fierro-vaciado-y-decorativo--tejuelo-pulido"
+  },
+  {
+   "cod": "TEJU25",
+   "antes": "TEJU25.webp",
+   "despues": "TEJU75.webp",
+   "familia": "fierro-vaciado-y-decorativo--tejuelo-pulido"
+  },
+  {
+   "cod": "TEJU64",
+   "antes": "TEJU64.webp",
+   "despues": "TEJU75.webp",
+   "familia": "fierro-vaciado-y-decorativo--tejuelo-pulido"
+  },
+  {
+   "cod": "TEJU50",
+   "antes": "TEJU50.webp",
+   "despues": "TEJU75.webp",
+   "familia": "fierro-vaciado-y-decorativo--tejuelo-pulido"
+  },
+  {
+   "cod": "TIGCORLAM10\"",
+   "antes": "TIGCORLAM10.webp",
+   "despues": "TIGCORLAM14.webp",
+   "familia": "ferreteria--tijera-hojalatero"
+  },
+  {
+   "cod": "TIGCORLAM12\"",
+   "antes": "TIGCORLAM12.webp",
+   "despues": "TIGCORLAM14.webp",
+   "familia": "ferreteria--tijera-hojalatero"
+  },
+  {
+   "cod": "TIGCORLAM16\"",
+   "antes": "TIGCORLAM16.webp",
+   "despues": "TIGCORLAM14.webp",
+   "familia": "ferreteria--tijera-hojalatero"
+  },
+  {
+   "cod": "TJH7",
+   "antes": "TJH7.webp",
+   "despues": "TIGCORLAM14.webp",
+   "familia": "ferreteria--tijera-hojalatero"
+  },
+  {
+   "cod": "TIGCORLAM8\"",
+   "antes": "TIGCORLAM8.webp",
+   "despues": "TIGCORLAM14.webp",
+   "familia": "ferreteria--tijera-hojalatero"
+  },
+  {
+   "cod": "TUTRE38",
+   "antes": "TUTRE38.webp",
+   "despues": "TUTRE50.webp",
+   "familia": "tuberia-y-conexiones--tubo-trenzado"
+  },
+  {
+   "cod": "TUTRE32",
+   "antes": "TUTRE32.webp",
+   "despues": "TUTRE50.webp",
+   "familia": "tuberia-y-conexiones--tubo-trenzado"
+  },
+  {
+   "cod": "TUTRE25",
+   "antes": "TUTRE25.webp",
+   "despues": "TUTRE50.webp",
+   "familia": "tuberia-y-conexiones--tubo-trenzado"
+  },
+  {
+   "cod": "TUTRE13",
+   "antes": "TUTRE13.webp",
+   "despues": "TUTRE50.webp",
+   "familia": "tuberia-y-conexiones--tubo-trenzado"
+  },
+  {
+   "cod": "TUTRE19",
+   "antes": "TUTRE19.webp",
+   "despues": "TUTRE50.webp",
+   "familia": "tuberia-y-conexiones--tubo-trenzado"
+  },
+  {
+   "cod": "BIST25",
+   "antes": "BIST25.webp",
+   "despues": "BIST16.webp",
+   "familia": "perfiles-tubulares--bisagra-tubular"
+  },
+  {
+   "cod": "BIST13",
+   "antes": "BIST13.webp",
+   "despues": "BIST16.webp",
+   "familia": "perfiles-tubulares--bisagra-tubular"
+  },
+  {
+   "cod": "BIST19",
+   "antes": "BIST19.webp",
+   "despues": "BIST16.webp",
+   "familia": "perfiles-tubulares--bisagra-tubular"
+  },
+  {
+   "cod": "BIST10",
+   "antes": "BIST10.webp",
+   "despues": "BIST16.webp",
+   "familia": "perfiles-tubulares--bisagra-tubular"
+  },
+  {
+   "cod": "C572",
+   "antes": "C572.webp",
+   "despues": "C500.webp",
+   "familia": "abrasivos--carda-copa-ondulada"
+  },
+  {
+   "cod": "C578",
+   "antes": "C578.webp",
+   "despues": "C500.webp",
+   "familia": "abrasivos--carda-copa-ondulada"
+  },
+  {
+   "cod": "C580",
+   "antes": "C580.webp",
+   "despues": "C500.webp",
+   "familia": "abrasivos--carda-copa-ondulada"
+  },
+  {
+   "cod": "C502",
+   "antes": "C502.webp",
+   "despues": "C500.webp",
+   "familia": "abrasivos--carda-copa-ondulada"
+  },
+  {
+   "cod": "CL6",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL6-1785178507949.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL13-1785178496977.webp",
+   "familia": "perfiles-macizos--cuadrado"
+  },
+  {
+   "cod": "CL19",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL19-1785178521772.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL13-1785178496977.webp",
+   "familia": "perfiles-macizos--cuadrado"
+  },
+  {
+   "cod": "CL10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL10-1785178534076.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL13-1785178496977.webp",
+   "familia": "perfiles-macizos--cuadrado"
+  },
+  {
+   "cod": "CL16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL16-1785178544242.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL13-1785178496977.webp",
+   "familia": "perfiles-macizos--cuadrado"
+  },
+  {
+   "cod": "ZC125",
+   "antes": "ZC125.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZC150-1785827578547.webp",
+   "familia": "perfiles-tubulares--cuadrado-tubular"
+  },
+  {
+   "cod": "ZC100",
+   "antes": "ZC100.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZC150-1785827578547.webp",
+   "familia": "perfiles-tubulares--cuadrado-tubular"
+  },
+  {
+   "cod": "ZC200",
+   "antes": "ZC200.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZC150-1785827578547.webp",
+   "familia": "perfiles-tubulares--cuadrado-tubular"
+  },
+  {
+   "cod": "ZC075",
+   "antes": "ZC075.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZC150-1785827578547.webp",
+   "familia": "perfiles-tubulares--cuadrado-tubular"
+  },
+  {
+   "cod": "DUE8X1.83SQ",
+   "antes": "DUE8X1-83SQ.webp",
+   "despues": "DUE5X1-05SQ.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-sq"
+  },
+  {
+   "cod": "DUE11X2.44SQ",
+   "antes": "DUE11X2-44SQ.webp",
+   "despues": "DUE5X1-05SQ.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-sq"
+  },
+  {
+   "cod": "DUE14X10SQ",
+   "antes": "DUE14X10SQ.webp",
+   "despues": "DUE5X1-05SQ.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-sq"
+  },
+  {
+   "cod": "DUE4X91SQ",
+   "antes": "DUE4X91SQ.webp",
+   "despues": "DUE5X1-05SQ.webp",
+   "familia": "lamina-y-cubiertas--duela-zintro-sq"
+  },
+  {
+   "cod": "HSS6X63/16-12.20M",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS6X63-16-12-20M-1785522692964.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS8X81-4-1785522679732.webp",
+   "familia": "perfiles-macizos--hss-en"
+  },
+  {
+   "cod": "HSS6X63/16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS6X63-16-1785522633965.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS8X81-4-1785522679732.webp",
+   "familia": "perfiles-macizos--hss-en"
+  },
+  {
+   "cod": "HSS10X101/4",
+   "antes": "HSS10X101-4.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS8X81-4-1785522679732.webp",
+   "familia": "perfiles-macizos--hss-en"
+  },
+  {
+   "cod": "HSS8X8-3/8",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS8X8-3-8-1785522671588.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/HSS8X81-4-1785522679732.webp",
+   "familia": "perfiles-macizos--hss-en"
+  },
+  {
+   "cod": "JAL-COLTB",
+   "antes": "JAL-COLTB.webp",
+   "despues": "JAL-COLTD.webp",
+   "familia": "ferreteria--jaladera-trenzada-color"
+  },
+  {
+   "cod": "JAL-COLTA",
+   "antes": "JAL-COLTA.webp",
+   "despues": "JAL-COLTD.webp",
+   "familia": "ferreteria--jaladera-trenzada-color"
+  },
+  {
+   "cod": "JAL-COLTN",
+   "antes": "JAL-COLTN.webp",
+   "despues": "JAL-COLTD.webp",
+   "familia": "ferreteria--jaladera-trenzada-color"
+  },
+  {
+   "cod": "JAL-COLTV",
+   "antes": "JAL-COLTV.webp",
+   "despues": "JAL-COLTD.webp",
+   "familia": "ferreteria--jaladera-trenzada-color"
+  },
+  {
+   "cod": "PRE1\"107051",
+   "antes": "PRE1-107051.webp",
+   "despues": "PRE5-107053.webp",
+   "familia": "ferreteria--prensa-tipo-c"
+  },
+  {
+   "cod": "PRE3\"107053",
+   "antes": "PRE3-107053.webp",
+   "despues": "PRE5-107053.webp",
+   "familia": "ferreteria--prensa-tipo-c"
+  },
+  {
+   "cod": "PRE6\"107056",
+   "antes": "PRE6-107056.webp",
+   "despues": "PRE5-107053.webp",
+   "familia": "ferreteria--prensa-tipo-c"
+  },
+  {
+   "cod": "PRE8\"107058",
+   "antes": "PRE8-107058.webp",
+   "despues": "PRE5-107053.webp",
+   "familia": "ferreteria--prensa-tipo-c"
+  },
+  {
+   "cod": "PTRG32X32",
+   "antes": "PTRG32X32.webp",
+   "despues": "PTRG50X50.webp",
+   "familia": "perfiles-tubulares--ptr-galvanizado-c"
+  },
+  {
+   "cod": "PTRG38X38C14",
+   "antes": "PTRG38X38C14.webp",
+   "despues": "PTRG50X50.webp",
+   "familia": "perfiles-tubulares--ptr-galvanizado-c"
+  },
+  {
+   "cod": "PTRG25X25",
+   "antes": "PTRG25X25.webp",
+   "despues": "PTRG50X50.webp",
+   "familia": "perfiles-tubulares--ptr-galvanizado-c"
+  },
+  {
+   "cod": "PTRG25X50C14",
+   "antes": "PTRG25X50C14.webp",
+   "despues": "PTRG50X50.webp",
+   "familia": "perfiles-tubulares--ptr-galvanizado-c"
+  },
+  {
+   "cod": "ZT484X3",
+   "antes": "ZT484X3.webp",
+   "despues": "ZT484X10.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-caja-gde-c"
+  },
+  {
+   "cod": "ZT484X6",
+   "antes": "ZT484X6.webp",
+   "despues": "ZT484X10.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-caja-gde-c"
+  },
+  {
+   "cod": "ZT484X6.5",
+   "antes": "ZT484X6-5.webp",
+   "despues": "ZT484X10.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-caja-gde-c"
+  },
+  {
+   "cod": "ZT483X8",
+   "antes": "ZT483X8.webp",
+   "despues": "ZT484X10.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-caja-gde-c"
+  },
+  {
+   "cod": "TAPLAP/TUBO1\"",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1785348670459.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1-4-1785348711593.webp",
+   "familia": "ferreteria--tapon-plastico-tubo"
+  },
+  {
+   "cod": "TAPLAP/TUBO1\"1/2",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1-2-1785348698338.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1-4-1785348711593.webp",
+   "familia": "ferreteria--tapon-plastico-tubo"
+  },
+  {
+   "cod": "TAPLAP/TUBO2\"",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO2-1785348723284.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1-4-1785348711593.webp",
+   "familia": "ferreteria--tapon-plastico-tubo"
+  },
+  {
+   "cod": "TAPLAP/TUBO3/4\"",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO3-4-1785348730473.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAPLAP-TUBO1-1-4-1785348711593.webp",
+   "familia": "ferreteria--tapon-plastico-tubo"
+  },
+  {
+   "cod": "TEES32",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES32-1785362014782.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES38-1785362004568.webp",
+   "familia": "tuberia-y-conexiones--tee-soldable-tubo"
+  },
+  {
+   "cod": "TEES25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES25-1785362021814.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES38-1785362004568.webp",
+   "familia": "tuberia-y-conexiones--tee-soldable-tubo"
+  },
+  {
+   "cod": "TEES50",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES50-1785362028857.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES38-1785362004568.webp",
+   "familia": "tuberia-y-conexiones--tee-soldable-tubo"
+  },
+  {
+   "cod": "TEES75",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES75-1785362039570.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TEES38-1785362004568.webp",
+   "familia": "tuberia-y-conexiones--tee-soldable-tubo"
+  },
+  {
+   "cod": "VICS10",
+   "antes": "VICS10.webp",
+   "despues": "VICS14.webp",
+   "familia": "seguridad-epp--vidrio-careta-s"
+  },
+  {
+   "cod": "VICS11",
+   "antes": "VICS11.webp",
+   "despues": "VICS14.webp",
+   "familia": "seguridad-epp--vidrio-careta-s"
+  },
+  {
+   "cod": "VICS12",
+   "antes": "VICS12.webp",
+   "despues": "VICS14.webp",
+   "familia": "seguridad-epp--vidrio-careta-s"
+  },
+  {
+   "cod": "VICS13",
+   "antes": "VICS13.webp",
+   "despues": "VICS14.webp",
+   "familia": "seguridad-epp--vidrio-careta-s"
+  },
+  {
+   "cod": "BISLB56",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLB56-1785301570627.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLB75-1785301588013.webp",
+   "familia": "ferreteria--bisagra-libro"
+  },
+  {
+   "cod": "BISLB50",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLB50-1785301662153.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLB75-1785301588013.webp",
+   "familia": "ferreteria--bisagra-libro"
+  },
+  {
+   "cod": "BISL88",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISL88-1785301726376.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLB75-1785301588013.webp",
+   "familia": "ferreteria--bisagra-libro"
+  },
+  {
+   "cod": "BISL100",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISL100-1785301675962.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLBA125-1785301670837.webp",
+   "familia": "ferreteria--bisagra-libro-alta-r"
+  },
+  {
+   "cod": "BISLBA150",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLBA150-1785301628592.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLBA125-1785301670837.webp",
+   "familia": "ferreteria--bisagra-libro-alta-r"
+  },
+  {
+   "cod": "BISLBA75",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLBA75-1785301647635.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/BISLBA125-1785301670837.webp",
+   "familia": "ferreteria--bisagra-libro-alta-r"
+  },
+  {
+   "cod": "114200",
+   "antes": "114200.webp",
+   "despues": "114210.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-surtek"
+  },
+  {
+   "cod": "114204",
+   "antes": "114204.webp",
+   "despues": "114210.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-surtek"
+  },
+  {
+   "cod": "114208",
+   "antes": "114208.webp",
+   "despues": "114210.webp",
+   "familia": "herramienta-manual--bolsa-cincho-plastico-surtek"
+  },
+  {
+   "cod": "123312",
+   "antes": "123312.webp",
+   "despues": "123313.webp",
+   "familia": "pintura-y-quimicos--brocha-mango-plastico-surtek"
+  },
+  {
+   "cod": "123311",
+   "antes": "123311.webp",
+   "despues": "123313.webp",
+   "familia": "pintura-y-quimicos--brocha-mango-plastico-surtek"
+  },
+  {
+   "cod": "123314",
+   "antes": "123314.webp",
+   "despues": "123313.webp",
+   "familia": "pintura-y-quimicos--brocha-mango-plastico-surtek"
+  },
+  {
+   "cod": "CLA108500",
+   "antes": "CLA108500.webp",
+   "despues": "CLA108508.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--clavos-clav-neu-surtek"
+  },
+  {
+   "cod": "CLA108502",
+   "antes": "CLA108502.webp",
+   "despues": "CLA108508.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--clavos-clav-neu-surtek"
+  },
+  {
+   "cod": "CLA108506",
+   "antes": "CLA108506.webp",
+   "despues": "CLA108508.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--clavos-clav-neu-surtek"
+  },
+  {
+   "cod": "CL32",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL32-1785178484132.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL38-1785178479145.webp",
+   "familia": "perfiles-macizos--cuadrado-macizo"
+  },
+  {
+   "cod": "CL25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL25-1785178472235.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL38-1785178479145.webp",
+   "familia": "perfiles-macizos--cuadrado-macizo"
+  },
+  {
+   "cod": "CL50",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL50-1785178517108.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CL38-1785178479145.webp",
+   "familia": "perfiles-macizos--cuadrado-macizo"
+  },
+  {
+   "cod": "S7834HL",
+   "antes": "S7834HL.webp",
+   "despues": "S7828HL.webp",
+   "familia": "ferreteria--dado-impacto-pt-surtek"
+  },
+  {
+   "cod": "S7840HL",
+   "antes": "S7840HL.webp",
+   "despues": "S7828HL.webp",
+   "familia": "ferreteria--dado-impacto-pt-surtek"
+  },
+  {
+   "cod": "S7826HL",
+   "antes": "S7826HL.webp",
+   "despues": "S7828HL.webp",
+   "familia": "ferreteria--dado-impacto-pt-surtek"
+  },
+  {
+   "cod": "DUELZ5X1.83FC",
+   "antes": "DUELZ5X1-83FC.webp",
+   "despues": "DUELZ3X-915FC.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-flor-cuad"
+  },
+  {
+   "cod": "DUELZ7X2.44FC",
+   "antes": "DUELZ7X2-44FC.webp",
+   "despues": "DUELZ3X-915FC.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-flor-cuad"
+  },
+  {
+   "cod": "DUELZ9X3.05FC",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ9X3-05FC-1785827790106.webp",
+   "despues": "DUELZ3X-915FC.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-flor-cuad"
+  },
+  {
+   "cod": "DUELZ1X.915LCH",
+   "antes": "DUELZ1X-915LCH.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X2-44LCH-1785828103584.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa-chapeton"
+  },
+  {
+   "cod": "DUELZ3X1.83LCH",
+   "antes": "DUELZ3X1-83LCH.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X2-44LCH-1785828103584.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa-chapeton"
+  },
+  {
+   "cod": "DUELZ4X1.98LCH",
+   "antes": "DUELZ4X1-98LCH.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ5X2-44LCH-1785828103584.webp",
+   "familia": "lamina-y-cubiertas--duela-z-lisa-chapeton"
+  },
+  {
+   "cod": "DUELZ14X1.83RCH",
+   "antes": "DUELZ14X1-83RCH.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ11X2-00RCH-1785828216660.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-rec-chapeton"
+  },
+  {
+   "cod": "DUELZ19X2.44RCH",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ19X2-44RCH-1785827894244.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ11X2-00RCH-1785828216660.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-rec-chapeton"
+  },
+  {
+   "cod": "DUELZ9X.915RECH",
+   "antes": "DUELZ9X-915RECH.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ11X2-00RCH-1785828216660.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-rec-chapeton"
+  },
+  {
+   "cod": "DUELZ33",
+   "antes": "DUELZ33.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ56-5-1785828299003.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro-cb-lamitec"
+  },
+  {
+   "cod": "DUELZ56",
+   "antes": "DUELZ56.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ56-5-1785828299003.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro-cb-lamitec"
+  },
+  {
+   "cod": "DUELZ78",
+   "antes": "DUELZ78.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/DUELZ56-5-1785828299003.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-zintro-cb-lamitec"
+  },
+  {
+   "cod": "LGZR3.05E",
+   "antes": "LGZR3-05E.webp",
+   "despues": "LGZR4-27E.webp",
+   "familia": "lamina-y-cubiertas--galvatubing-lam-galv-z-alum-rec"
+  },
+  {
+   "cod": "LGZR3.66E",
+   "antes": "LGZR3-66E.webp",
+   "despues": "LGZR4-27E.webp",
+   "familia": "lamina-y-cubiertas--galvatubing-lam-galv-z-alum-rec"
+  },
+  {
+   "cod": "LGZR4.88E",
+   "antes": "LGZR4-88E.webp",
+   "despues": "LGZR4-27E.webp",
+   "familia": "lamina-y-cubiertas--galvatubing-lam-galv-z-alum-rec"
+  },
+  {
+   "cod": "GRA1C38",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA1C38-1785488089732.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA1C25-1785488081852.webp",
+   "familia": "fierro-vaciado-y-decorativo--grapa-costilla"
+  },
+  {
+   "cod": "GRA1C13",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA1C13-1785488096284.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA1C25-1785488081852.webp",
+   "familia": "fierro-vaciado-y-decorativo--grapa-costilla"
+  },
+  {
+   "cod": "GRA2C13",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA2C13-1785488562800.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/GRA1C25-1785488081852.webp",
+   "familia": "fierro-vaciado-y-decorativo--grapa-costilla"
+  },
+  {
+   "cod": "120362",
+   "antes": "120362.webp",
+   "despues": "LIMA120363.webp",
+   "familia": "ferreteria--lima-musa-redonda-surtek"
+  },
+  {
+   "cod": "120360",
+   "antes": "120360.webp",
+   "despues": "LIMA120363.webp",
+   "familia": "ferreteria--lima-musa-redonda-surtek"
+  },
+  {
+   "cod": "120361",
+   "antes": "120361.webp",
+   "despues": "LIMA120363.webp",
+   "familia": "ferreteria--lima-musa-redonda-surtek"
+  },
+  {
+   "cod": "MON75X38C16",
+   "antes": "MON75X38C16.webp",
+   "despues": "MON100X50C16.webp",
+   "familia": "perfiles-macizos--monten-pintado"
+  },
+  {
+   "cod": "MON100X50C14",
+   "antes": "MON100X50C14.webp",
+   "despues": "MON100X50C16.webp",
+   "familia": "perfiles-macizos--monten-pintado"
+  },
+  {
+   "cod": "MON150X50C14",
+   "antes": "MON150X50C14.webp",
+   "despues": "MON100X50C16.webp",
+   "familia": "perfiles-macizos--monten-pintado"
+  },
+  {
+   "cod": "4065",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4065-1785375571501.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4067-1785375595497.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-laton"
+  },
+  {
+   "cod": "4066",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4066-1785375589859.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4067-1785375595497.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-laton"
+  },
+  {
+   "cod": "4068",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4068-1785375602861.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4067-1785375595497.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-laton"
+  },
+  {
+   "cod": "4058",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4058-1785375624715.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4060-1785375630318.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-ns"
+  },
+  {
+   "cod": "4059",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4059-1785375617727.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4060-1785375630318.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-ns"
+  },
+  {
+   "cod": "4061",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4061-1785375636171.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/4060-1785375630318.webp",
+   "familia": "ferreteria--pasador-dexter-mauser-ns"
+  },
+  {
+   "cod": "PASR10",
+   "antes": "PASR10.webp",
+   "despues": "PASR15.webp",
+   "familia": "ferreteria--pasador-r"
+  },
+  {
+   "cod": "PASR25",
+   "antes": "PASR25.webp",
+   "despues": "PASR15.webp",
+   "familia": "ferreteria--pasador-r"
+  },
+  {
+   "cod": "PASR5",
+   "antes": "PASR5.webp",
+   "despues": "PASR15.webp",
+   "familia": "ferreteria--pasador-r"
+  },
+  {
+   "cod": "PIS108005",
+   "antes": "PIS108005.webp",
+   "despues": "PIS108002.webp",
+   "familia": "ferreteria--pistola-baja-presion-surtek"
+  },
+  {
+   "cod": "PPB1",
+   "antes": "PPB1.webp",
+   "despues": "PIS108002.webp",
+   "familia": "ferreteria--pistola-baja-presion-surtek"
+  },
+  {
+   "cod": "PPB2",
+   "antes": "PPB2.webp",
+   "despues": "PIS108002.webp",
+   "familia": "ferreteria--pistola-baja-presion-surtek"
+  },
+  {
+   "cod": "PPG1",
+   "antes": "PPG1.webp",
+   "despues": "108006.webp",
+   "familia": "ferreteria--pistola-grav-plast-surtek"
+  },
+  {
+   "cod": "PPG2",
+   "antes": "PPG2.webp",
+   "despues": "108006.webp",
+   "familia": "ferreteria--pistola-grav-plast-surtek"
+  },
+  {
+   "cod": "PPG13",
+   "antes": "PPG13.webp",
+   "despues": "108006.webp",
+   "familia": "ferreteria--pistola-grav-plast-surtek"
+  },
+  {
+   "cod": "RE3/1635",
+   "antes": "RE3-1635.webp",
+   "despues": "RE7-3240.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--resorte-cortina"
+  },
+  {
+   "cod": "RE3/1640",
+   "antes": "RE3-1640.webp",
+   "despues": "RE7-3240.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--resorte-cortina"
+  },
+  {
+   "cod": "RE7/3235",
+   "antes": "RE7-3235.webp",
+   "despues": "RE7-3240.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--resorte-cortina"
+  },
+  {
+   "cod": "ROSET002",
+   "antes": "ROSET002.webp",
+   "despues": "ROSET001.webp",
+   "familia": "fierro-vaciado-y-decorativo--roseton"
+  },
+  {
+   "cod": "ROSET003",
+   "antes": "ROSET003.webp",
+   "despues": "ROSET001.webp",
+   "familia": "fierro-vaciado-y-decorativo--roseton"
+  },
+  {
+   "cod": "ROSER006",
+   "antes": "ROSER006.webp",
+   "despues": "ROSET001.webp",
+   "familia": "fierro-vaciado-y-decorativo--roseton"
+  },
+  {
+   "cod": "TABZ3X3CB",
+   "antes": "TABZ3X3CB.webp",
+   "despues": "TABZ4X3CB1MTSX91-5CM.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-cb"
+  },
+  {
+   "cod": "TABZ3X6CB75CMX1.83MT",
+   "antes": "TABZ3X6CB75CMX1-83MT.webp",
+   "despues": "TABZ4X3CB1MTSX91-5CM.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-cb"
+  },
+  {
+   "cod": "TABZ4X6CB1MTSX1.83MT",
+   "antes": "TABZ4X6CB1MTSX1-83MT.webp",
+   "despues": "TABZ4X3CB1MTSX91-5CM.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-cb"
+  },
+  {
+   "cod": "TAQA13",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQA13-1785454589199.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQA3-8-1785454607816.webp",
+   "familia": "ferreteria--taquete-ancla"
+  },
+  {
+   "cod": "TAQANC1/4",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQANC1-4-1785454599114.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQA3-8-1785454607816.webp",
+   "familia": "ferreteria--taquete-ancla"
+  },
+  {
+   "cod": "TAQA5/16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQA5-16-1785454622934.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TAQA3-8-1785454607816.webp",
+   "familia": "ferreteria--taquete-ancla"
+  },
+  {
+   "cod": "TUCO32",
+   "antes": "TUCO32.webp",
+   "despues": "TUCO38.webp",
+   "familia": "tuberia-y-conexiones--tubo-combinado"
+  },
+  {
+   "cod": "TUCO25",
+   "antes": "TUCO25.webp",
+   "despues": "TUCO38.webp",
+   "familia": "tuberia-y-conexiones--tubo-combinado"
+  },
+  {
+   "cod": "TUCO19",
+   "antes": "TUCO19.webp",
+   "despues": "TUCO38.webp",
+   "familia": "tuberia-y-conexiones--tubo-combinado"
+  },
+  {
+   "cod": "TUNEC3013",
+   "antes": "TUNEC3013.webp",
+   "despues": "TUNEC4013.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro-c"
+  },
+  {
+   "cod": "TUNEC3019",
+   "antes": "TUNEC3019.webp",
+   "despues": "TUNEC4013.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro-c"
+  },
+  {
+   "cod": "TUNEC4019",
+   "antes": "TUNEC4019.webp",
+   "despues": "TUNEC4013.webp",
+   "familia": "tuberia-y-conexiones--tubo-negro-c"
+  },
+  {
+   "cod": "BOMBOA25",
+   "antes": "BOMBOA25.webp",
+   "despues": "BOMBOA38.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--bombo-aluminio"
+  },
+  {
+   "cod": "BOMBOA32",
+   "antes": "BOMBOA32.webp",
+   "despues": "BOMBOA38.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--bombo-aluminio"
+  },
+  {
+   "cod": "BCHA25",
+   "antes": "BCHA25.webp",
+   "despues": "BCHA75.webp",
+   "familia": "pintura-y-quimicos--brocha"
+  },
+  {
+   "cod": "BCHA13",
+   "antes": "BCHA13.webp",
+   "despues": "BCHA75.webp",
+   "familia": "pintura-y-quimicos--brocha"
+  },
+  {
+   "cod": "BCHA38",
+   "antes": "BCHA38.webp",
+   "despues": "BCHA50.webp",
+   "familia": "pintura-y-quimicos--brocha-s"
+  },
+  {
+   "cod": "BCHA65",
+   "antes": "BCHA65.webp",
+   "despues": "BCHA50.webp",
+   "familia": "pintura-y-quimicos--brocha-s"
+  },
+  {
+   "cod": "CT10",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CT10-1785178217808.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CT13-1785178199578.webp",
+   "familia": "perfiles-macizos--caramelo"
+  },
+  {
+   "cod": "CT16",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CT16-1785178288482.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CT13-1785178199578.webp",
+   "familia": "perfiles-macizos--caramelo"
+  },
+  {
+   "cod": "CODSOL38",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODSOL38-1785302077735.webp",
+   "despues": "CODSOL32.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable-grados"
+  },
+  {
+   "cod": "CODSOL25",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/CODSOL25-1785302128119.webp",
+   "despues": "CODSOL32.webp",
+   "familia": "tuberia-y-conexiones--codo-soldable-grados"
+  },
+  {
+   "cod": "DUELZ14X1.83FCH",
+   "antes": "DUELZ14X1-83FCH.webp",
+   "despues": "DUELZ19X2-44FCH.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-flor-chapeton"
+  },
+  {
+   "cod": "DUELZ9X.915FCH",
+   "antes": "DUELZ9X-915FCH.webp",
+   "despues": "DUELZ19X2-44FCH.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--duela-z-flor-chapeton"
+  },
+  {
+   "cod": "ZR200E",
+   "antes": "ZR200E.webp",
+   "despues": "ZR300E.webp",
+   "familia": "perfiles-tubulares--galvatubing-rectangular-c"
+  },
+  {
+   "cod": "ZR400E",
+   "antes": "ZR400E.webp",
+   "despues": "ZR300E.webp",
+   "familia": "perfiles-tubulares--galvatubing-rectangular-c"
+  },
+  {
+   "cod": "JALH2203",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/JALH2203-1785374106489.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/JALH2208-1785374167415.webp",
+   "familia": "ferreteria--jaladera-puerta-tipo-h-dexter"
+  },
+  {
+   "cod": "JALH2205",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/JALH2205-1785374179464.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/JALH2208-1785374167415.webp",
+   "familia": "ferreteria--jaladera-puerta-tipo-h-dexter"
+  },
+  {
+   "cod": "LANL38",
+   "antes": "LANL38.webp",
+   "despues": "LANL12.webp",
+   "familia": "fierro-vaciado-y-decorativo--lanza-lisa"
+  },
+  {
+   "cod": "PUFLE105",
+   "antes": "PUFLE105.webp",
+   "despues": "LANL12.webp",
+   "familia": "fierro-vaciado-y-decorativo--lanza-lisa"
+  },
+  {
+   "cod": "120331",
+   "antes": "120331.webp",
+   "despues": "120335.webp",
+   "familia": "ferreteria--lima-plana-bastarda"
+  },
+  {
+   "cod": "LI-120332",
+   "antes": "LI-120332.webp",
+   "despues": "120335.webp",
+   "familia": "ferreteria--lima-plana-bastarda"
+  },
+  {
+   "cod": "MALLACI1.50CAL.12.50",
+   "antes": "MALLACI1-50CAL-12-50.webp",
+   "despues": "MALLACI1-75CAL-12-50.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--malla-ciclon-alt-mts"
+  },
+  {
+   "cod": "MALLACI2CAL.12.50",
+   "antes": "MALLACI2CAL-12-50.webp",
+   "despues": "MALLACI1-75CAL-12-50.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--malla-ciclon-alt-mts"
+  },
+  {
+   "cod": "MAR3LB141891",
+   "antes": "MAR3LB141891.webp",
+   "despues": "MAR2LB141890.webp",
+   "familia": "ferreteria--marro-c-mango-lb-foy"
+  },
+  {
+   "cod": "MAR4LB141892",
+   "antes": "MAR4LB141892.webp",
+   "despues": "MAR2LB141890.webp",
+   "familia": "ferreteria--marro-c-mango-lb-foy"
+  },
+  {
+   "cod": "MARTB141833",
+   "antes": "MARTB141833.webp",
+   "despues": "MARTB141832.webp",
+   "familia": "ferreteria--martillo-bola-oz-foy"
+  },
+  {
+   "cod": "MARTB141834",
+   "antes": "MARTB141834.webp",
+   "despues": "MARTB141832.webp",
+   "familia": "ferreteria--martillo-bola-oz-foy"
+  },
+  {
+   "cod": "150847",
+   "antes": "150847.webp",
+   "despues": "150851.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--mt-cadena-galv-surtek"
+  },
+  {
+   "cod": "150850",
+   "antes": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/150850-1785436606428.webp",
+   "despues": "150851.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--mt-cadena-galv-surtek"
+  },
+  {
+   "cod": "122101",
+   "antes": "122101.webp",
+   "despues": "NIV122104.webp",
+   "familia": "ferreteria--nivel-alum"
+  },
+  {
+   "cod": "NIV122102",
+   "antes": "NIV122102.webp",
+   "despues": "NIV122104.webp",
+   "familia": "ferreteria--nivel-alum"
+  },
+  {
+   "cod": "PASLA5",
+   "antes": "PASLA5.webp",
+   "despues": "PASLA13.webp",
+   "familia": "ferreteria--pasador-laton"
+  },
+  {
+   "cod": "PASLA9",
+   "antes": "PASLA9.webp",
+   "despues": "PASLA13.webp",
+   "familia": "ferreteria--pasador-laton"
+  },
+  {
+   "cod": "PASMA32",
+   "antes": "PASMA32.webp",
+   "despues": "PASMA64.webp",
+   "familia": "ferreteria--pasador-mauser"
+  },
+  {
+   "cod": "PASMA51",
+   "antes": "PASMA51.webp",
+   "despues": "PASMA64.webp",
+   "familia": "ferreteria--pasador-mauser"
+  },
+  {
+   "cod": "PASP100",
+   "antes": "PASP100.webp",
+   "despues": "PASP150.webp",
+   "familia": "ferreteria--pasador-p"
+  },
+  {
+   "cod": "PASP50",
+   "antes": "PASP50.webp",
+   "despues": "PASP150.webp",
+   "familia": "ferreteria--pasador-p"
+  },
+  {
+   "cod": "PAS-CA30",
+   "antes": "PAS-CA30.webp",
+   "despues": "PAS-CA40.webp",
+   "familia": "fierro-vaciado-y-decorativo--pasador-piso-colonial"
+  },
+  {
+   "cod": "PAS-CA60",
+   "antes": "PAS-CA60.webp",
+   "despues": "PAS-CA40.webp",
+   "familia": "fierro-vaciado-y-decorativo--pasador-piso-colonial"
+  },
+  {
+   "cod": "PASA30R",
+   "antes": "PASA30R.webp",
+   "despues": "PASA40R.webp",
+   "familia": "ferreteria--pasador-reforzado"
+  },
+  {
+   "cod": "PASA60R",
+   "antes": "PASA60R.webp",
+   "despues": "PASA40R.webp",
+   "familia": "ferreteria--pasador-reforzado"
+  },
+  {
+   "cod": "PASA30S",
+   "antes": "PASA30S.webp",
+   "despues": "PASA40S.webp",
+   "familia": "ferreteria--pasador-sencillo"
+  },
+  {
+   "cod": "PASA60S",
+   "antes": "PASA60S.webp",
+   "despues": "PASA40S.webp",
+   "familia": "ferreteria--pasador-sencillo"
+  },
+  {
+   "cod": "PER1",
+   "antes": "PER1.webp",
+   "despues": "PER3.webp",
+   "familia": "herramienta-manual--perro-hierro-maleable-surtek"
+  },
+  {
+   "cod": "PER2",
+   "antes": "PER2.webp",
+   "despues": "PER3.webp",
+   "familia": "herramienta-manual--perro-hierro-maleable-surtek"
+  },
+  {
+   "cod": "PE250",
+   "antes": "PE250.webp",
+   "despues": "MAN-500.webp",
+   "familia": "abrasivos--portaelectrodo-amp-infra"
+  },
+  {
+   "cod": "PE300",
+   "antes": "PE300.webp",
+   "despues": "MAN-500.webp",
+   "familia": "abrasivos--portaelectrodo-amp-infra"
+  },
+  {
+   "cod": "PTR 38X75",
+   "antes": "PTR-38X75.webp",
+   "despues": "PTR38X100.webp",
+   "familia": "perfiles-tubulares--ptr"
+  },
+  {
+   "cod": "PTR50X150",
+   "antes": "PTR50X150.webp",
+   "despues": "PTR38X100.webp",
+   "familia": "perfiles-tubulares--ptr"
+  },
+  {
+   "cod": "ZR200",
+   "antes": "ZR200.webp",
+   "despues": "ZR300.webp",
+   "familia": "perfiles-tubulares--rectangular-c"
+  },
+  {
+   "cod": "ZR300C22",
+   "antes": "ZR300C22.webp",
+   "despues": "ZR300.webp",
+   "familia": "perfiles-tubulares--rectangular-c"
+  },
+  {
+   "cod": "038A",
+   "antes": "038A.webp",
+   "despues": "036A.webp",
+   "familia": "tuberia-y-conexiones--reg-costilla-hule"
+  },
+  {
+   "cod": "034A",
+   "antes": "034A.webp",
+   "despues": "036A.webp",
+   "familia": "tuberia-y-conexiones--reg-costilla-hule"
+  },
+  {
+   "cod": "082A",
+   "antes": "082A.webp",
+   "despues": "081A.webp",
+   "familia": "tuberia-y-conexiones--reg-hongo-plastico"
+  },
+  {
+   "cod": "084A",
+   "antes": "084A.webp",
+   "despues": "081A.webp",
+   "familia": "tuberia-y-conexiones--reg-hongo-plastico"
+  },
+  {
+   "cod": "RUEU50",
+   "antes": "RUEU50.webp",
+   "despues": "RUEU100.webp",
+   "familia": "ferreteria--rueda-piso-en-u-cap-master-rail"
+  },
+  {
+   "cod": "RUEU75",
+   "antes": "RUEU75.webp",
+   "despues": "RUEU100.webp",
+   "familia": "ferreteria--rueda-piso-en-u-cap-master-rail"
+  },
+  {
+   "cod": "RUEV50",
+   "antes": "RUEV50.webp",
+   "despues": "RUEV75.webp",
+   "familia": "ferreteria--rueda-piso-en-v-cap-master-rail"
+  },
+  {
+   "cod": "RUEV100",
+   "antes": "RUEV100.webp",
+   "despues": "RUEV75.webp",
+   "familia": "ferreteria--rueda-piso-en-v-cap-master-rail"
+  },
+  {
+   "cod": "TABZ3X3B75CMX91.5CM",
+   "antes": "TABZ3X3B75CMX91-5CM.webp",
+   "despues": "TABZ3X6B75CMX1-83MTS.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-rec"
+  },
+  {
+   "cod": "TABZ4X3B1MTSX91.5CM",
+   "antes": "TABZ4X3B1MTSX91-5CM.webp",
+   "despues": "TABZ3X6B75CMX1-83MTS.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-rec"
+  },
+  {
+   "cod": "TABZ3X3SQ75CMX91.5CM",
+   "antes": "TABZ3X3SQ75CMX91-5CM.webp",
+   "despues": "TABZ3X6SQ75CMX1-83MT.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-sq"
+  },
+  {
+   "cod": "TABZ4X3SQ1MTSX91.5CM",
+   "antes": "TABZ4X3SQ1MTSX91-5CM.webp",
+   "despues": "TABZ3X6SQ75CMX1-83MT.webp",
+   "familia": "lamina-y-cubiertas--tablero-zintro-x-sq"
+  },
+  {
+   "cod": "118008",
+   "antes": "118008.webp",
+   "despues": "118007.webp",
+   "familia": "ferreteria--tenaza-tierra-amp-surtek"
+  },
+  {
+   "cod": "118005",
+   "antes": "118005.webp",
+   "despues": "118007.webp",
+   "familia": "ferreteria--tenaza-tierra-amp-surtek"
+  },
+  {
+   "cod": "TEN36AA",
+   "antes": "TEN36AA.webp",
+   "despues": "TEN412.webp",
+   "familia": "herramienta-manual--tensor-acero-surtek"
+  },
+  {
+   "cod": "TEN39",
+   "antes": "TEN39.webp",
+   "despues": "TEN412.webp",
+   "familia": "herramienta-manual--tensor-acero-surtek"
+  },
+  {
+   "cod": "TCEC244",
+   "antes": "TCEC244.webp",
+   "despues": "TCEC245.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--tira-cort-europea"
+  },
+  {
+   "cod": "TCEC246",
+   "antes": "TCEC246.webp",
+   "despues": "TCEC245.webp",
+   "familia": "metal-desplegado-protecciones-y-cercas--tira-cort-europea"
+  },
+  {
+   "cod": "TCPC245",
+   "antes": "TCPC245.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TCPC244-1785828734456.webp",
+   "familia": "ferreteria--tira-cort-plana"
+  },
+  {
+   "cod": "TCPC246",
+   "antes": "TCPC246.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/TCPC244-1785828734456.webp",
+   "familia": "ferreteria--tira-cort-plana"
+  },
+  {
+   "cod": "151006",
+   "antes": "151006.webp",
+   "despues": "151007.webp",
+   "familia": "herramienta-manual--trol-surtek"
+  },
+  {
+   "cod": "TROL151010",
+   "antes": "TROL151010.webp",
+   "despues": "151007.webp",
+   "familia": "herramienta-manual--trol-surtek"
+  },
+  {
+   "cod": "TUMOEXCC75",
+   "antes": "TUMOEXCC75.webp",
+   "despues": "TUMOEXCC75-10401.webp",
+   "familia": "tuberia-y-conexiones--tubo-modul-ext-cua-c"
+  },
+  {
+   "cod": "TUMOEXCM75",
+   "antes": "TUMOEXCM75.webp",
+   "despues": "TUMOEXCC75-10401.webp",
+   "familia": "tuberia-y-conexiones--tubo-modul-ext-cua-c"
+  },
+  {
+   "cod": "ZP020",
+   "antes": "ZP020.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZP015-1785828783639.webp",
+   "familia": "ferreteria--zoclo-doble-ceja"
+  },
+  {
+   "cod": "ZP030",
+   "antes": "ZP030.webp",
+   "despues": "https://qdlezhfcnwsygtosieme.supabase.co/storage/v1/object/public/fotos/ZP015-1785828783639.webp",
+   "familia": "ferreteria--zoclo-doble-ceja"
+  }
+ ]
+}

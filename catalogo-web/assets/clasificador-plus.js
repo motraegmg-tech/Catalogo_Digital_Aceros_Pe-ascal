@@ -277,6 +277,17 @@ async function guardarFamilia(f, origen){
   return true;
 }
 
+/* Lo llama sincronizarRenombres() de clasificador.js cuando un producto cambia
+   de código: la copia en memoria de las agrupaciones tiene que moverse con él,
+   o la pestaña de Agrupaciones seguiría enseñando el código viejo hasta que
+   alguien recargara. */
+window.plusRenombrarCodigo = function(famId, de, a){
+  const f = FAMS.get(famId); if (!f) return;
+  f.subgrupos = (f.subgrupos||[]).map(g =>
+    Object.assign({}, g, { cods: (g.cods||[]).map(c => c === de ? a : c) }));
+  FAMS.set(famId, f);
+};
+
 async function borrarFamiliaEnLinea(id){
   if (!requiereSesion('eliminar agrupaciones')) return false;
   const { error } = await SBC.from('familias').delete().eq('id', id);
@@ -1278,25 +1289,35 @@ function autorizador(){
   return (v && typeof v === 'object') ? v : { correo:'', nombre:'' };
 }
 
+/* SÓLO LECTURA a propósito (decisión de Gonzalo, 2026-08-04).
+   Este correo es la llave del alta de cuentas: quien lo controla decide quién
+   entra al panel. Si un editor pudiera cambiarlo desde aquí, le bastaría con
+   poner el suyo para autorizarse a sí mismo y a quien quisiera — el PIN dejaría
+   de ser una barrera y pasaría a ser un trámite. Por eso se enseña, pero no se
+   toca: cambiarlo exige acceso directo a la tabla `ajustes`, que sólo tiene
+   MOTRAE.
+
+   No es teatro de seguridad: la RLS de `ajustes` sigue permitiendo escribir a
+   cualquier editor, así que esto no detiene a quien sepa usar la API. Lo que
+   evita es lo que de verdad pasa — que alguien lo cambie de buena fe, sin
+   entender que está moviendo la cerradura, y deje al dueño fuera del circuito. */
 function renderAutorizador(){
   const caja = $('#autorizadorCaja'); if (!caja) return;
   const a = autorizador();
+  const dato = (txt) => txt ? esc(txt) : '<span class="autoriza-vacio">sin definir</span>';
   caja.innerHTML = `
     <div class="autoriza-grid">
       <div class="f-field"><label>Correo que recibe los PIN</label>
-        <input data-a="correo" type="email" value="${esc(a.correo||'')}" placeholder="dueño@acerospenascal.com" /></div>
+        <div class="autoriza-fijo">${dato(a.correo)}</div></div>
       <div class="f-field"><label>Cómo llamarlo</label>
-        <input data-a="nombre" value="${esc(a.nombre||'')}" placeholder="p. ej. Don Ramón, dueño" /></div>
-    </div>`;
-  caja.querySelectorAll('[data-a]').forEach(n=>{
-    n.oninput = ()=>{
-      const v = Object.assign({}, autorizador(), {[n.dataset.a]: n.value.trim()});
-      AJUSTES.set('correo_autorizador', v);
-    };
-  });
+        <div class="autoriza-fijo">${dato(a.nombre)}</div></div>
+    </div>
+    <div class="autoriza-candado">🔒 Este dato no se edita desde aquí. Es la llave de
+       las cuentas nuevas: quien lo cambie decide quién puede entrar al panel.
+       Para modificarlo, pídeselo a MOTRAE.</div>`;
   if (!a.correo){
     caja.appendChild(el('div','autoriza-ojo',
-      '⚠ Sin este correo nadie puede darse de alta desde el panel. Ponlo y pulsa «☁ Publicar cambios».'));
+      '⚠ Sin este correo nadie puede darse de alta desde el panel. Pídele a MOTRAE que lo configure.'));
   }
 }
 
@@ -1452,16 +1473,10 @@ async function publicarAjustes(){
     if (error){ aviso('⚠ Sucursal «'+s.nombre+'»: '+error.message); return; }
     if (data && data[0]) s.id = data[0].id;
   }
-  /* El correo del responsable NO es público: si viajara en el JSON que baja el
-     catálogo, la dirección del dueño quedaría a la vista de cualquiera. */
-  const a = autorizador();
-  if (a.correo && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(a.correo)){
-    aviso('⚠ El correo que recibe los PIN no es válido.'); return;
-  }
-  const { error: errAut } = await SBC.from('ajustes')
-    .upsert({ clave:'correo_autorizador', valor:a, publico:false, updated_by:SB_YO }, { onConflict:'clave' });
-  if (errAut){ aviso('⚠ No se pudo guardar quién autoriza: '+errAut.message); return; }
-  AJUSTES.set('correo_autorizador', a);
+  /* El correo del responsable ya NO se publica desde aquí (ver renderAutorizador).
+     Se dejó de mandar a propósito, no por olvido: si se siguiera subiendo, una
+     pestaña con el valor viejo en memoria lo devolvería a la base al pulsar
+     "Publicar cambios" y desharía en silencio el que MOTRAE hubiera puesto. */
 
   const okT = await guardarAjuste('textos_catalogo', AJUSTES.get('textos_catalogo')||{});
   const okC = await guardarAjuste('criterios_agrupacion', criterios());
@@ -1623,6 +1638,29 @@ function renderGuia(){
 function plusSelfTest(){
   const res = [];
   const t = (nombre, ok)=>res.push((ok?'PASS':'FAIL')+' '+nombre);
+
+  /* El correo que recibe los PIN se enseña pero NO se edita: quien lo cambiara
+     podría autorizarse a sí mismo. Se comprueba sobre el código de las dos
+     funciones implicadas, porque el fallo sería justo volver a añadir el campo
+     o volver a subirlo al publicar sin que nadie se diera cuenta. */
+  t('el correo del autorizador no tiene campo de escritura',
+    !/<input|data-a=/.test(String(renderAutorizador)));
+  t('renderAutorizador avisa de que no se edita',
+    /no se edita/.test(String(renderAutorizador)));
+  t('publicar ajustes ya no sube correo_autorizador',
+    !/upsert\(\{\s*clave:\s*'correo_autorizador'/.test(String(publicarAjustes)));
+
+  // Renombrar un código tiene que arrastrar las agrupaciones que lo mencionan.
+  t('existe el enganche para renombrar en agrupaciones',
+    typeof window.plusRenombrarCodigo === 'function');
+  t('renombrar en una agrupación sustituye el código', (()=>{
+    const id = '__prueba-renombre__';
+    FAMS.set(id, { id, nombre:'P', cat:'X', subgrupos:[{nombre:'a', cods:['VIEJO','OTRO']}] });
+    window.plusRenombrarCodigo(id, 'VIEJO', 'NUEVO');
+    const cods = codsDe(FAMS.get(id));
+    FAMS.delete(id);
+    return cods.includes('NUEVO') && !cods.includes('VIEJO') && cods.includes('OTRO');
+  })());
 
   // El criterio decide el rótulo: es la razón de ser de la mejora.
   t('criterio → rótulo de columna', criterioDe('medida').columna==='Medida');

@@ -85,16 +85,28 @@ function rutaTxt(cat, sub, sub2){ return cat + (sub&&sub!==cat?' › '+sub:'') +
 
 /* ---------- estado persistente (WORK) ---------- */
 /* Taxonomía v2: [{nombre, subs:[{nombre, subs:[string]}]}] (3er nivel = strings) */
-/* La categoría de retiro debe existir SIEMPRE, aunque esté vacía: la taxonomía
-   se deriva de las categorías que ya tienen productos, así que sin esto no
-   habría dónde soltar el primero. */
-function asegurarCatOculta(tax){
-  if (!tax.some(c=>norm(c.nombre)===norm(CAT_OCULTA))) tax.push({ nombre:CAT_OCULTA, subs:[] });
-  return tax;
+/* La categoría de retiro quedó JUBILADA el 2026-08-04: retirar es poner la marca
+   «Productos obsoletos», que conserva la clasificación del producto. Aquí se
+   quita del árbol para que nadie la vuelva a usar sin querer.
+
+   Y sobre todo se BORRAN los deltas locales que apuntaban a ella. Esto no es
+   cosmético: un avance guardado antes de la migración conserva
+   `asignaciones[id] = {cat:"Productos Descontinuados / Ocultos"}`, y ese delta
+   se reaplica encima de la base en cada sincronización. Pasó de verdad: un
+   producto devuelto al catálogo en la base volvía a esconderse solo cada vez
+   que la pestaña abierta sincronizaba, sin que nadie tocara nada. Al soltar el
+   delta, manda la base, que es donde está la decisión buena. */
+function jubilarCatOculta(w){
+  let sueltos = 0;
+  for (const [id, a] of Object.entries(w.asignaciones||{})){
+    if (a && norm(a.cat)===norm(CAT_OCULTA)){ delete w.asignaciones[id]; sueltos++; }
+  }
+  w.taxonomia = (w.taxonomia||[]).filter(c => norm(c.nombre)!==norm(CAT_OCULTA));
+  return sueltos;
 }
 function taxDesdeBase(){
-  return asegurarCatOculta(DATA.categorias
-    .filter(c=>c.nombre!==POR)
+  return (DATA.categorias
+    .filter(c=>c.nombre!==POR && norm(c.nombre)!==norm(CAT_OCULTA))
     .map(c=>({ nombre:c.nombre,
       subs: asArray(c.subs).map(s=>s.nombre).filter(s=>s!==c.nombre)
         .sort(alfa).map(s=>({nombre:s, subs:[]})) })));
@@ -116,6 +128,7 @@ function registrarCatsDeLaBase(){
   for (const p of DATA.productos){
     const cat = p.cat;
     if (!cat || cat===POR) continue;
+    if (norm(cat)===norm(CAT_OCULTA)) continue;   // jubilada: no se vuelve a crear
     let entrada = WORK.taxonomia.find(c=>norm(c.nombre)===norm(cat));
     if (!entrada){
       entrada = { nombre:cat, subs:[], creada:new Date().toISOString() };
@@ -134,7 +147,7 @@ function registrarCatsDeLaBase(){
 function nuevoTrabajo(){
   return { version:2, creado:hoyISO(), guardado:null, baseGenerado:DATA.generado||'',
     taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, etiquetas:{},
-    nuevos:{}, borrados:{}, bitacora:[] };
+    nuevos:{}, borrados:{}, renombres:{}, bitacora:[] };
 }
 function migrar(w){
   // v1 → v2: subs de strings a objetos {nombre, subs:[]}
@@ -145,12 +158,14 @@ function migrar(w){
       : {nombre:s.nombre, subs:(s.subs||[]).map(x=>typeof x==='string'?x:x.nombre)}),
   }));
   w.version = 2;
-  asegurarCatOculta(w.taxonomia);   // trabajos guardados antes de que existiera
+  jubilarCatOculta(w);              // ver la función: retirar ahora es una marca
   w.asignaciones = w.asignaciones||{}; w.ediciones = w.ediciones||{};
   w.etiquetas = w.etiquetas||{}; w.bitacora = w.bitacora||[];
   // Altas y bajas hechas desde el clasificador (v2.1). Un avance guardado antes
   // de que existieran simplemente no trae ninguna.
   w.nuevos = w.nuevos||{}; w.borrados = w.borrados||{};
+  // Códigos corregidos (v2.2): id -> {de, a}. Ver renombrarCodigo().
+  w.renombres = w.renombres||{};
   return w;
 }
 let WORK = load(LS_KEY, null);
@@ -476,6 +491,55 @@ async function sincronizarAltasYBajas(){
   return { error:null, altas, bajas };
 }
 
+/* Sube los códigos corregidos. Dos pasos por producto, en este orden:
+     1. `update productos set codigo=nuevo where id=…` — el id es la llave
+        primaria y no cambia nunca, así que identifica la fila sin ambigüedad.
+     2. reescribir los `cods` de las agrupaciones que lo mencionaban. Si esto se
+        omitiera, el producto se caería de su ficha en silencio: la agrupación
+        seguiría apuntando a un código que ya no existe.
+   Si el paso 1 falla (p. ej. el código nuevo ya lo tiene otro), se aborta y el
+   renombrado se queda pendiente: nada a medias. */
+async function sincronizarRenombres(){
+  const pend = renombresPendientes();
+  if (!pend.length) return { error:null, hechos:0 };
+  let hechos = 0;
+  for (const r of pend){
+    const { error } = await SBC.from('productos')
+      .update({ codigo: r.a, updated_by: SB_YO }).eq('id', r.id);
+    if (error) return { error, hechos };
+
+    // Las agrupaciones guardan los códigos dentro de `subgrupos` (jsonb).
+    const { data: fams, error: e2 } = await SBC.from('familias').select('id,subgrupos');
+    if (e2) return { error:e2, hechos };
+    for (const f of (fams||[])){
+      const subs = Array.isArray(f.subgrupos) ? f.subgrupos : [];
+      if (!subs.some(g => (g.cods||[]).includes(r.de))) continue;
+      const nuevos = subs.map(g => Object.assign({}, g,
+        { cods: (g.cods||[]).map(c => c === r.de ? r.a : c) }));
+      const { error: e3 } = await SBC.from('familias')
+        .update({ subgrupos: nuevos, updated_by: SB_YO }).eq('id', f.id);
+      if (e3) return { error:e3, hechos };
+      // El clasificador tiene su propia copia en memoria: hay que moverla igual.
+      if (typeof window.plusRenombrarCodigo === 'function') window.plusRenombrarCodigo(f.id, r.de, r.a);
+    }
+
+    /* La base local pasa a tener el código nuevo, y el rastreo de "ya está en
+       línea" se muda con él. A partir de aquí el renombrado deja de estar
+       pendiente y el push normal puede localizar el producto. */
+    const b = baseDe(r.id) || DATA.productos.find(x => x.id === r.id);
+    if (b) b.cod = r.a;
+    if (WORK.nuevos[r.id]) WORK.nuevos[r.id].cod = r.a;
+    const clave = SB_BASE.get(r.de);
+    SB_BASE.delete(r.de); SB_DIRTY.delete(r.de);
+    if (clave) SB_BASE.set(r.a, clave);
+    delete WORK.renombres[r.id];
+    hechos++;
+  }
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(WORK)); }catch{}
+  construirProductos();
+  return { error:null, hechos };
+}
+
 async function sincronizarSupabase(origen){
   if (!SBC) return false;
   if (!SB.user){ if (origen!=='auto') aviso('⚠ Inicia sesión para sincronizar en línea.'); return false; }
@@ -484,7 +548,24 @@ async function sincronizarSupabase(origen){
     return false;
   }
   const pendientesAltaBaja = altasPendientes().length + bajasPendientes().length;
-  if (!SB_DIRTY.size && !pendientesAltaBaja){ if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true; }
+  const pendientesRenombre = renombresPendientes().length;
+  if (!SB_DIRTY.size && !pendientesAltaBaja && !pendientesRenombre){
+    if (origen!=='auto') aviso('Todo al día: nada por sincronizar.'); return true;
+  }
+
+  /* Los renombrados van PRIMERO: el resto del push localiza los productos por
+     `codigo`, así que si se dejaran para el final buscarían un código que en
+     línea todavía no existe y no escribirían nada. */
+  if (pendientesRenombre){
+    SB.estado='sync'; renderSbEstado();
+    const r = await sincronizarRenombres();
+    if (r.error){
+      SB.estado='error'; SB.error = r.error.message || String(r.error); renderSbEstado();
+      aviso('⚠ Error al cambiar el código en línea: '+SB.error);
+      return false;
+    }
+    if (r.hechos && origen!=='auto') aviso(`☁ ${fmt(r.hechos)} código(s) corregido(s) en línea`);
+  }
 
   if (pendientesAltaBaja){
     SB.estado='sync'; renderSbEstado();
@@ -693,7 +774,9 @@ function renderSbEstado(){
   const loginRow = $('#sbLoginRow'), sessRow = $('#sbSessionRow');
   // Las bajas no viven en SB_DIRTY (su producto ya no está en PRODUCTOS), pero
   // siguen siendo trabajo por subir: cuentan como pendientes.
-  const pend = SB_DIRTY.size + bajasPendientes().length;
+  // Los códigos corregidos también cuentan como pendientes: si no, el indicador
+  // diría "todo al día" con un renombrado sin subir.
+  const pend = SB_DIRTY.size + bajasPendientes().length + renombresPendientes().length;
   const hora = SB.ultimo ? SB.ultimo.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : null;
   let h='', f='';
   switch (SB.estado){
@@ -1039,6 +1122,11 @@ function construirProductos(){
     q.etq = WORK.etiquetas[p.id] ? WORK.etiquetas[p.id].slice()
           : (Array.isArray(p.etq) ? p.etq.slice() : []);
     q.nuevo = !!WORK.nuevos[p.id];
+    /* Código corregido. Va DESPUÉS de las demás capas y no antes: el resto de
+       los deltas se indexan por `id`, que nunca cambia — sólo cambia el código
+       que ve la empresa. Así renombrar no pierde ni la categoría ni la foto. */
+    const r = WORK.renombres[p.id];
+    if (r && r.a){ q.codAnterior = r.de; q.cod = r.a; }
     return q;
   });
   IDX = new Map(PRODUCTOS.map(p=>[p.id,p]));
@@ -1185,6 +1273,11 @@ function undo(){
     if (n && n.subido) WORK.borrados[a.id] = { id:a.id, cod:n.cod, nom:n.nom,
       cuando:new Date().toISOString(), enBase:true, nuevo:n, respaldo:null };
     delete WORK.ediciones[a.id]; delete WORK.asignaciones[a.id]; delete WORK.etiquetas[a.id];
+  }
+  else if (a.tipo==='codigo'){
+    if (a.prev) WORK.renombres[a.id] = a.prev; else delete WORK.renombres[a.id];
+    // Si era un alta que aún no subía, el código vive en el propio registro.
+    if (a.prevCodNuevo && WORK.nuevos[a.id]) WORK.nuevos[a.id].cod = a.prevCodNuevo;
   }
   else if (a.tipo==='baja'){
     const b = WORK.borrados[a.id];
@@ -1905,36 +1998,75 @@ async function duplicarProducto(id){
    los nombres de las fotos, así que cambiarlo desde el catálogo rompería el
    vínculo con todo lo demás. Por dentro es una baja + un alta, porque el código
    ES la identidad de la fila en Supabase. */
+/* ---------- corregir el código de un producto ----------
+   El código es el número con el que la empresa pide la pieza en el mostrador y
+   en el sistema de la tienda. Antes sólo se podía cambiar en productos recién
+   capturados aquí, y encima a lo bruto: se daba de baja el viejo y de alta uno
+   nuevo, con lo que se perdía la foto. Para los 3,200 del catálogo no había
+   forma — y sí hacía falta, porque una exportación de Excel dejó decenas con el
+   código corrupto (números negativos en vez de "105/1").
+
+   Ahora es un RENOMBRADO de verdad: cambia `codigo` y nada más. El `id` interno
+   —del que cuelgan la foto, la categoría y el resto de los deltas— no se toca,
+   así que el producto conserva absolutamente todo. En Supabase es un
+   `update productos set codigo=… where id=…`, y las agrupaciones que lo
+   mencionaban se reescriben solas (ver sincronizarRenombres). */
+function codigoOriginalDe(id){
+  const r = WORK.renombres[id];
+  if (r) return r.de;                       // el que tenía antes del primer cambio
+  const b = baseDe(id);
+  return b ? b.cod : (IDX.get(id)||{}).cod;
+}
 async function cambiarCodigo(id){
-  const p = IDX.get(id); if (!p || !WORK.nuevos[id]) return;
-  const v = await dialogo({ titulo:'Cambiar el código',
-    texto:`El producto se vuelve a dar de alta con el código nuevo. Se conservan nombre, medida, categoría y proveedor; la foto habrá que volver a subirla.`,
-    campos:[{id:'cod', label:'Código nuevo', tipo:'text', valor:p.cod}], okTxt:'Cambiar código' });
+  const p = IDX.get(id); if (!p) return;
+  const nuevoLocal = WORK.nuevos[id] && !WORK.nuevos[id].subido;
+  const v = await dialogo({ titulo:'Corregir el código',
+    texto: nuevoLocal
+      ? 'Este producto todavía no ha subido, así que basta con cambiarle el código.'
+      : `Cambia el código con el que se pide «${p.nom}». Conserva su foto, su categoría, su medida y su lugar en las agrupaciones: sólo cambia el número. Asegúrate de que es el mismo que usa el sistema de la tienda.`,
+    campos:[{id:'cod', label:'Código correcto', tipo:'text', valor:p.cod}], okTxt:'Cambiar código' });
   if (!v) return;
   const cod = (v.cod||'').trim();
-  if (!cod || cod===p.cod) return;
+  if (!cod){ aviso('⚠ El código no puede quedar vacío.'); return; }
+  if (cod === p.cod) return;
   const choque = buscarPorCodigo(cod);
-  if (choque){ aviso(`⚠ El código «${cod}» ya lo usa «${choque.nom}». Usa otro.`); return; }
+  if (choque && choque.id !== id){ aviso(`⚠ El código «${cod}» ya lo usa «${choque.nom}». Usa otro.`); return; }
 
-  const anterior = WORK.nuevos[id];
-  // La fila vieja se va (si llegó a subir, hay que borrarla en línea también).
-  WORK.borrados[id] = { id, cod:p.cod, nom:p.nom, cuando:new Date().toISOString(),
-    enBase: !!anterior.subido, nuevo:anterior, respaldo:null };
-  delete WORK.nuevos[id];
-  const nid = idLibre(cod);
-  WORK.nuevos[nid] = Object.assign({}, anterior, { id:nid, cod, foto:'', subido:false,
-    creado:new Date().toISOString() });
-  // Los deltas que ya tuviera (medida, nombre) viajan con él.
-  if (WORK.ediciones[id]){ WORK.ediciones[nid] = WORK.ediciones[id]; delete WORK.ediciones[id]; }
-  if (WORK.asignaciones[id]){ WORK.asignaciones[nid] = WORK.asignaciones[id]; delete WORK.asignaciones[id]; }
-  if (WORK.etiquetas[id]){ WORK.etiquetas[nid] = WORK.etiquetas[id]; delete WORK.etiquetas[id]; }
+  const prev = WORK.renombres[id] ? Object.assign({}, WORK.renombres[id]) : null;
+  const original = codigoOriginalDe(id);
 
-  const label = `Código ${p.cod} → ${cod}`;
-  pushUndo({tipo:'alta', label, id:nid});   // deshacer quita el nuevo; el viejo queda en borrados
+  if (nuevoLocal){
+    // Nunca llegó a la base: no hay nada que renombrar en línea, se corrige el alta.
+    WORK.nuevos[id].cod = cod;
+    if (original === cod) delete WORK.renombres[id];
+    else WORK.renombres[id] = { de: original, a: cod, cuando: new Date().toISOString() };
+  } else if (original === cod){
+    // Volvió a su código original: deja de haber renombrado pendiente.
+    delete WORK.renombres[id];
+  } else {
+    WORK.renombres[id] = { de: original, a: cod, cuando: new Date().toISOString() };
+  }
+
+  const label = `Código ${p.cod} → ${cod}${p.nom ? ' · '+p.nom : ''}`;
+  pushUndo({ tipo:'codigo', label, id, prev, prevCodNuevo: nuevoLocal ? p.cod : null });
   bitacora(label);
   construirProductos(); persistir(); renderAll();
-  aviso('✓ '+label);
-  if (IDX.has(nid)) abrirFicha(nid); else cerrarFicha();
+  aviso('✓ '+label + (nuevoLocal ? '' : ' · se aplicará en línea al sincronizar'));
+  if (IDX.has(id)) abrirFicha(id);
+}
+
+/* Renombrados que todavía no están en Supabase. Se comparan contra SB_BASE, que
+   es lo que damos por escrito allá: si el código nuevo ya está ahí, ya subió. */
+function renombresPendientes(){
+  const out = [];
+  for (const [id, r] of Object.entries(WORK.renombres)){
+    if (!r || !r.a || r.a === r.de) continue;
+    if (WORK.nuevos[id] && !WORK.nuevos[id].subido) continue;   // sube como alta, no como renombrado
+    if (WORK.borrados[id]) continue;
+    if (SB_BASE.has(r.a) && !SB_BASE.has(r.de)) continue;       // ya aplicado en línea
+    out.push({ id, de:r.de, a:r.a });
+  }
+  return out;
 }
 
 /* Retirar ≠ eliminar. Lo normal es retirar: el producto sale del catálogo del
@@ -2741,7 +2873,8 @@ function abrirFicha(id){
     <div class="modal-cat">${esc(rutaTxt(p.cat, p.sub, p.sub2))}${p.nuevo?'<span class="f-nuevo">NUEVO · capturado aquí</span>':''}</div>
     <div class="f-field"><label>Nombre / descripción</label><input id="fNom" value="${esc(p.nom)}" /></div>
     <div class="f-2col">
-      <div class="f-field"><label>Código${p.nuevo?' <button type="button" class="f-mini" id="fCodEdit" title="Corregir el código de este producto">✎ cambiar</button>':''}</label><input value="${esc(p.cod)}" readonly title="${p.nuevo?'Usa «cambiar» para corregirlo.':'El código identifica al producto en toda la empresa: no se edita desde aquí.'}" /></div>
+      <div class="f-field"><label>Código <button type="button" class="f-mini" id="fCodEdit" title="Corregir el código de este producto">✎ cambiar</button></label><input value="${esc(p.cod)}" readonly title="Pulsa «cambiar» para corregirlo. Conserva foto, categoría y agrupación." />${
+        p.codAnterior ? `<div class="f-cod-antes">antes: <code>${esc(p.codAnterior)}</code> · se aplicará en línea al sincronizar</div>` : ''}</div>
       <div class="f-field"><label>Medidas</label><input id="fMed" value="${esc(p.med)}" /></div>
     </div>
     <div class="f-field"><label>Proveedor <span class="f-prov-n">· ${fmt(productosDeProveedor(p.prov).length)} producto(s) con este proveedor</span></label>
@@ -3549,6 +3682,32 @@ function selfTest(){
     t('fundir no duplica la misma entrada', fus.filter(x=>x.txt==='igual').length===1);
     t('fundir conserva el autor del equipo', fus.find(x=>x.txt==='igual')?.por==='a@b.c');
     t('fundir ordena de lo nuevo a lo viejo', fus[0].txt==='sólo del equipo');
+
+    /* --- corregir el código de cualquier producto --- */
+    const pr = PRODUCTOS.find(x=>!WORK.nuevos[x.id] && !esObsoleto(x));
+    const codOrig = pr.cod, codPrueba2 = 'PRUEBA-COD-'+Date.now();
+    const fotoOrig = pr.foto, catDelRenombrado = pr.cat;
+    const prevRen = WORK.renombres[pr.id] ? Object.assign({},WORK.renombres[pr.id]) : null;
+    t('el código original se resuelve', codigoOriginalDe(pr.id)===codOrig);
+    WORK.renombres[pr.id] = { de: codOrig, a: codPrueba2, cuando:new Date().toISOString() };
+    construirProductos();
+    const pr2 = IDX.get(pr.id);
+    t('renombrar cambia el código', !!pr2 && pr2.cod===codPrueba2);
+    t('renombrar NO cambia el id', !!pr2 && pr2.id===pr.id);
+    t('renombrar conserva la foto', !!pr2 && pr2.foto===fotoOrig);
+    t('renombrar conserva la categoría', !!pr2 && pr2.cat===catDelRenombrado);
+    t('la ficha recuerda el código anterior', !!pr2 && pr2.codAnterior===codOrig);
+    t('el renombrado queda pendiente de subir',
+      renombresPendientes().some(r=>r.id===pr.id && r.de===codOrig && r.a===codPrueba2));
+    t('se encuentra por su código nuevo', (buscarPorCodigo(codPrueba2)||{}).id===pr.id);
+    // Volver al original tiene que borrar el pendiente, no dejar un renombrado a sí mismo.
+    WORK.renombres[pr.id] = { de: codOrig, a: codOrig, cuando:new Date().toISOString() };
+    t('volver al código original no deja pendiente', !renombresPendientes().some(r=>r.id===pr.id));
+    if (prevRen) WORK.renombres[pr.id] = prevRen; else delete WORK.renombres[pr.id];
+    construirProductos();
+    t('deshacer el renombrado restaura el código', (IDX.get(pr.id)||{}).cod===codOrig);
+    // (lo del correo del autorizador se comprueba en plusSelfTest: esas
+    //  funciones viven en clasificador-plus.js, que se carga después de éste)
   }catch(e){
     res.push('FAIL excepción: '+e.message);
   }
