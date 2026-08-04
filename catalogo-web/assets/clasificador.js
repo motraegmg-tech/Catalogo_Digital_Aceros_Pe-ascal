@@ -31,19 +31,30 @@ const FOTO_EXTS = ['webp','jpg','jpeg','png'];
    estas marcas para rastrear lo que todavía no está 100% configurado. Viven en
    el arreglo `etq` y se sincronizan a Supabase (columna `etiquetas`). */
 const ETIQUETAS = [
-  { id:'sin-foto',         label:'Productos sin foto o foto errónea', corto:'Sin foto' },
-  { id:'sin-conocimiento', label:'Productos sin conocimiento',        corto:'Sin conocimiento' },
-  // El Excel registra estos con un marcador genérico ("PROVEEDOR EN GENERAL") o
-  // con la propia sucursal, no con un proveedor real: quedan para que Gonzalo
-  // los corrija con "Modificar para todos" desde la ficha.
-  { id:'proveedor-por-revisar', label:'Proveedor genérico o por confirmar', corto:'Proveedor ?' },
   /* Los que la tienda dejó de vender (hoja OBSOLETOS del Excel de Aceros
-     Peñascal). A diferencia de las otras marcas, ésta ESCONDE: el producto sale
-     de todas las listas del clasificador, del conteo de arriba y del catálogo
-     público — sólo se ve entrando a esta marca. Ver ETQ_OCULTA. */
+     Peñascal). Esta marca ESCONDE: el producto sale de todas las listas del
+     clasificador, del conteo de arriba y del catálogo público — sólo se ve
+     entrando a esta marca. Ver ETQ_OCULTA. */
   { id:'obsoleto', label:'Productos obsoletos', corto:'Obsoleto',
     oculta:true, ayuda:'Ya no se venden. No aparecen en ninguna otra lista ni en el catálogo del cliente, ni cuentan en el total de arriba. Quítales la marca para devolverlos.' },
 ];
+
+/* ---------- marcas retiradas del panel (2026-08-04, decisión de Gonzalo) ----
+   `sin-foto`, `sin-conocimiento` y `proveedor-por-revisar` salieron de la lista
+   de arriba: eran andamiaje de la curación inicial y ya sólo hacían ruido en el
+   panel del encargado, que no las usa.
+
+   El DATO se conserva a propósito. `sin-foto` no es sólo una fila del árbol: es
+   lo que leen `pipeline/procesar_fotos_crudas.py`,
+   `pipeline/limpiar_fotos_incorrectas.py` y `pipeline/catalogo_fuente.py` para
+   saber a qué productos les falta imagen. Borrarla de `productos.etiquetas`
+   dejaría esos scripts encontrando cero productos y nadie se enteraría hasta la
+   siguiente tanda de fotos.
+
+   Al no estar en ETIQUETAS, la marca deja de pintarse, de contarse y de poder
+   ponerse o quitarse desde el panel; el valor sigue viajando intacto en cada
+   sincronización porque `etqDe()` devuelve el arreglo tal cual. */
+const ETIQUETAS_RETIRADAS = ['sin-foto', 'sin-conocimiento', 'proveedor-por-revisar'];
 const ETQMAP = new Map(ETIQUETAS.map(e=>[e.id,e]));
 /* Marca que esconde el producto de todo lo demás. Es una sola (`obsoleto`), pero
    se resuelve desde ETIQUETAS para que agregar otra en el futuro no obligue a
@@ -1458,6 +1469,9 @@ let CNT = null;
    de los filtros (proveedor, estado, marca de gestión) se siguen respetando,
    porque ésos el usuario los eligió a propósito y no son "dónde estaba parado". */
 function filtered(){
+  /* Si el panel se quedó filtrando por una marca que ya no existe (se abrió
+     antes de que se retiraran), la lista saldría vacía sin decir por qué. */
+  if (state.etq && !ETQMAP.has(state.etq)) state.etq = null;
   const q = norm(state.q);
   const buscando = !!q;
   return PRODUCTOS.filter(p=>{
@@ -3532,7 +3546,20 @@ function selfTest(){
       undo();
       t('mostrar proveedor undo', productosDeProveedor(provPrueba).every(x=>!x.mprov));
     }
-    t('etiqueta proveedor-por-revisar registrada', ETQMAP.has('proveedor-por-revisar'));
+    /* Marcas retiradas del panel: ya no se pintan ni se pueden poner, pero el
+       dato tiene que sobrevivir intacto — `sin-foto` alimenta el pipeline de
+       fotos. Se comprueban las dos mitades, porque el fallo silencioso sería
+       que la sincronización dejara de arrastrarlas y se perdieran solas. */
+    t('las marcas retiradas ya no están en el panel',
+      ETIQUETAS_RETIRADAS.every(x=>!ETQMAP.has(x)));
+    t('sólo queda la marca de obsoletos',
+      ETIQUETAS.length===1 && ETIQUETAS[0].id==='obsoleto');
+    t('una marca retirada sobrevive en el producto', (()=>{
+      const x = PRODUCTOS.find(y=>etqDe(y).includes('sin-foto'));
+      return !x || etqKey(x).includes('sin-foto');     // etqKey es lo que se sube
+    })());
+    t('el conteo no inventa filas para las retiradas',
+      ETIQUETAS_RETIRADAS.every(x=>!contar().etq.has(x)));
     // La clave de sync debe distinguir cada campo que se sube, o no viajaría.
     // Ojo: sbClave() devuelve un objeto {g,f}, así que hay que comparar sus
     // partes — con !== se compararían referencias y la prueba pasaría siempre.
