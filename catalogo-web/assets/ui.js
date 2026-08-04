@@ -119,7 +119,7 @@ export function filteredProducts() {
 // Con una sola medida no hay nada que elegir: ese producto va como ficha suelta.
 const MIN_EN_FICHA = 2;
 
-export const agrupando = () => !state.q.trim() && hayFamilias();
+export const agrupando = () => hayFamilias();
 
 /** El nombre con el que una tarjeta se ordena y se lee, sea de familia o de producto. */
 export const rotulo = (e) => e.tipo === 'familia' ? e.fam.nombre : e.p.nom;
@@ -136,7 +136,50 @@ export const rotulo = (e) => e.tipo === 'familia' ? e.fam.nombre : e.p.nom;
 export function filteredEntries() {
   const lista = filteredProducts();
   if (!agrupando()) return lista.map(p => ({ tipo: 'producto', p }));
+  return state.q.trim() ? entradasBuscando(lista) : entradasNavegando(lista);
+}
 
+/**
+ * Buscando también se agrupa, con una diferencia importante: la ficha muestra
+ * SÓLO los productos que coincidieron, no toda la familia.
+ *
+ * Buscar «solera» tiene que dar UNA tarjeta, no treinta y dos filas casi
+ * iguales. Pero buscar «solera 1/8» tiene que dar una tarjeta con las medidas
+ * de 1/8 — enseñarle las 32 sería deshacerle el filtro que acaba de hacer.
+ *
+ * Y cuando la búsqueda es específica no se agrupa nada: si sólo coincide un
+ * producto de la familia (porque escribió su código o su medida exacta), sale
+ * suelto, que es justo lo que pidió. Igual que un producto sin agrupación.
+ */
+function entradasBuscando(lista) {
+  const porFamilia = new Map();
+  for (const p of lista) {
+    const f = familiaDe(p);
+    if (!f) continue;
+    if (!porFamilia.has(f.id)) porFamilia.set(f.id, []);
+    porFamilia.get(f.id).push(p);
+  }
+
+  /* Se recorre en el orden que dio la búsqueda, no A→Z: buscando manda la
+     relevancia. La ficha ocupa el sitio de su producto mejor posicionado. */
+  const salida = [];
+  const puestas = new Set();
+  for (const p of lista) {
+    const f = familiaDe(p);
+    const hermanos = f ? porFamilia.get(f.id) : null;
+    if (!f || !hermanos || hermanos.length < MIN_EN_FICHA) {
+      salida.push({ tipo: 'producto', p });
+      continue;
+    }
+    if (puestas.has(f.id)) continue;
+    puestas.add(f.id);
+    salida.push({ tipo: 'familia', fam: f, productos: ordenarPorMedida(hermanos) });
+  }
+  return salida;
+}
+
+/** Navegando (portada o dentro de una categoría): la ficha sale completa. */
+function entradasNavegando(lista) {
   const fichas = new Map();
   const descartadas = new Set();
 

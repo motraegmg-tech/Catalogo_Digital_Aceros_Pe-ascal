@@ -125,13 +125,26 @@ lo que no va a encontrar. El rótulo también se puede escribir a mano por agrup
 (`columna`), y los criterios disponibles se editan desde el clasificador
 (`ajustes.criterios_agrupacion`), así que se pueden inventar nuevos sin tocar código.
 
-**Dónde agrupa y dónde no** (decisión de Gonzalo, 2026-07-31):
+**Dónde agrupa y dónde no.** Agrupar es la vista por defecto en todas partes
+(decisión de Gonzalo: por categoría el 2026-07-31, **también buscando** el 2026-08-04):
 
 | Dónde está el cliente | Qué ve |
 |---|---|
-| **Todas las categorías** | Todas las fichas, **una por producto** — sin agrupar |
-| **Dentro de una categoría** | Las familias aprobadas como ficha única, más los productos sueltos |
-| **Buscando algo** | Resultados **producto por producto** (la búsqueda no agrupa) |
+| **Todas las categorías** | Cada ficha una vez, más los productos sueltos |
+| **Dentro de una categoría** | Igual, con las fichas de esa categoría |
+| **Buscando algo** | Las fichas de lo que coincidió — con **sólo los productos que coincidieron** dentro |
+
+La diferencia al buscar es importante: la ficha **no se muestra completa, sino recortada a las
+coincidencias**. Buscar «solera» da UNA tarjeta con sus 32 medidas; buscar «solera 1/8» da la
+misma tarjeta pero **con las de 1/8**, porque enseñarle las 32 sería deshacerle el filtro que
+acaba de hacer.
+
+Y **buscar algo específico no agrupa**: si de una familia sólo coincide un producto —porque
+escribió su código o su medida exacta— sale suelto, que es justo lo que pidió. Igual que
+cualquier producto sin agrupación.
+
+Buscando manda el **orden de relevancia**, no el alfabético: la ficha ocupa el sitio de su
+producto mejor posicionado.
 
 Solo se agrupa **lo aprobado a mano**: una familia sin aprobar sigue mostrando sus productos
 sueltos. Hoy son **173 fichas** que cubren **1,576 productos**; navegando por categoría el
