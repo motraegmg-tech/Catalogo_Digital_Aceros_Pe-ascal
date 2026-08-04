@@ -14,6 +14,14 @@ const POR = 'POR CLASIFICAR';
    para poder devolverlos al catálogo cuando haga falta. */
 const CAT_OCULTA = 'Productos Descontinuados / Ocultos';
 const LS_KEY = 'ap_clasificador_v1';
+/* Cuánto historial guarda la bitácora. Se poda por fecha (dos meses) y no por
+   cantidad: reclasificar una categoría entera generaba cientos de entradas en
+   una tarde y borraba el rastro de la semana anterior. Estas constantes van
+   aquí arriba porque podarBitacora() corre al cargar el avance, mucho antes de
+   donde vive la bitácora en el archivo. */
+const BITACORA_DIAS = 60;
+const BITACORA_MS = BITACORA_DIAS*24*60*60*1000;
+const BITACORA_MAX = 5000;          // red de seguridad para el tamaño en localStorage
 const SEP = '';                 // separador interno (valores compuestos)
 const PAGE_LISTA = 100, PAGE_PREVIA = 60;
 const FOTO_EXTS = ['webp','jpg','jpeg','png'];
@@ -29,11 +37,25 @@ const ETIQUETAS = [
   // con la propia sucursal, no con un proveedor real: quedan para que Gonzalo
   // los corrija con "Modificar para todos" desde la ficha.
   { id:'proveedor-por-revisar', label:'Proveedor genérico o por confirmar', corto:'Proveedor ?' },
+  /* Los que la tienda dejó de vender (hoja OBSOLETOS del Excel de Aceros
+     Peñascal). A diferencia de las otras marcas, ésta ESCONDE: el producto sale
+     de todas las listas del clasificador, del conteo de arriba y del catálogo
+     público — sólo se ve entrando a esta marca. Ver ETQ_OCULTA. */
+  { id:'obsoleto', label:'Productos obsoletos', corto:'Obsoleto',
+    oculta:true, ayuda:'Ya no se venden. No aparecen en ninguna otra lista ni en el catálogo del cliente, ni cuentan en el total de arriba. Quítales la marca para devolverlos.' },
 ];
 const ETQMAP = new Map(ETIQUETAS.map(e=>[e.id,e]));
+/* Marca que esconde el producto de todo lo demás. Es una sola (`obsoleto`), pero
+   se resuelve desde ETIQUETAS para que agregar otra en el futuro no obligue a
+   perseguir cadenas sueltas por el archivo. */
+const ETQ_OCULTA = (ETIQUETAS.find(e=>e.oculta)||{}).id || null;
 function etqDe(p){ return Array.isArray(p.etq) ? p.etq : []; }
 function tieneEtq(p,id){ return etqDe(p).includes(id); }
 function etqKey(p){ return etqDe(p).slice().sort().join(','); }
+/* ¿Está retirado por marca de gestión? Lo usan el filtro, los conteos y el
+   selector de productos: si esto da true, el producto sólo existe dentro de su
+   propia marca. */
+function esObsoleto(p){ return !!ETQ_OCULTA && tieneEtq(p, ETQ_OCULTA); }
 
 const DATA = window.CATALOGO || { generado:'', total:0, productos:[], categorias:[] };
 
@@ -77,6 +99,38 @@ function taxDesdeBase(){
       subs: asArray(c.subs).map(s=>s.nombre).filter(s=>s!==c.nombre)
         .sort(alfa).map(s=>({nombre:s, subs:[]})) })));
 }
+
+/* ---------- categorías que llegan de la base ----------
+   El árbol de la izquierda se arma UNA vez, con las categorías del archivo local
+   (data/productos.js), y desde entonces vive en localStorage. Cuando alguien
+   crea una categoría desde otra máquina —"Placa", agosto 2026—, sus productos
+   bajan por el pull con esa categoría, pero el árbol de acá nunca se enteró: la
+   fila no existe y cada producto sale rotulado "(fuera de taxonomía)", que no le
+   dice nada a quien no programa y hace pensar que algo se rompió.
+
+   Esto registra en la taxonomía local lo que la base ya da por bueno. Se llama
+   SÓLO al traer cambios del equipo, nunca al construir la lista: si corriera
+   siempre, una categoría recién borrada aquí reaparecería sola. */
+function registrarCatsDeLaBase(){
+  let nuevas = 0;
+  for (const p of DATA.productos){
+    const cat = p.cat;
+    if (!cat || cat===POR) continue;
+    let entrada = WORK.taxonomia.find(c=>norm(c.nombre)===norm(cat));
+    if (!entrada){
+      entrada = { nombre:cat, subs:[], creada:new Date().toISOString() };
+      WORK.taxonomia.push(entrada);
+      nuevas++;
+    }
+    const sub = p.sub;
+    if (!sub || sub===cat) continue;
+    let se = entrada.subs.find(s=>norm(s.nombre)===norm(sub));
+    if (!se){ se = {nombre:sub, subs:[]}; entrada.subs.push(se); entrada.subs.sort(alfaN); }
+    const s2 = p.sub2;
+    if (s2 && !se.subs.some(x=>norm(x)===norm(s2))){ se.subs.push(s2); se.subs.sort(alfa); }
+  }
+  return nuevas;
+}
 function nuevoTrabajo(){
   return { version:2, creado:hoyISO(), guardado:null, baseGenerado:DATA.generado||'',
     taxonomia:taxDesdeBase(), asignaciones:{}, ediciones:{}, etiquetas:{},
@@ -102,6 +156,8 @@ function migrar(w){
 let WORK = load(LS_KEY, null);
 WORK = (WORK && (WORK.version===1||WORK.version===2) && Array.isArray(WORK.taxonomia))
   ? migrar(WORK) : nuevoTrabajo();
+// Al abrir, la bitácora se recorta a los dos últimos meses (ver BITACORA_DIAS).
+podarBitacora();
 
 let PERSIST = true;
 function persistir(){
@@ -774,13 +830,28 @@ async function traerCambiosSupabase(origen){
     p.foto=foto; p.etq=etq; p.prov=prov; p.mprov=mprov; cambios++;
   }
   PULL.estado='ok'; PULL.ultimo=new Date(); renderPullEstado();
+
+  /* Las categorías que otro creó entran al árbol. Va FUERA del `if (cambios)`
+     a propósito: un avance viejo puede tener los productos ya al día y aun así
+     no conocer la categoría (le pasó a "Placa"), y en ese caso `cambios` es 0 y
+     nunca se arreglaría solo. Es idempotente, así que repetirlo no cuesta. */
+  const catsNuevas = registrarCatsDeLaBase();
+  if (catsNuevas) bitacora(`${fmt(catsNuevas)} categoría(s) del equipo agregadas al árbol`);
+
   if (cambios){
     // La base en memoria ahora ES el estado vigente en línea: realinea el rastreo
     // de "sucios" (para no re-subir lo que ya está) y reaplica tus deltas encima.
     SB_BASE.clear();
     for (const p of DATA.productos) SB_BASE.set(p.cod, sbClave(p));
-    construirProductos(); calcularSugerencias(); renderAll();
-    aviso('⟲ '+fmt(cambios)+' producto(s) actualizados desde el equipo'+(origen==='auto'?' (auto)':''));
+  }
+  if (cambios || catsNuevas){
+    construirProductos(); calcularSugerencias(); persistir(); renderAll();
+  }
+  if (cambios){
+    aviso('⟲ '+fmt(cambios)+' producto(s) actualizados desde el equipo'+(origen==='auto'?' (auto)':'')
+      + (catsNuevas?` · ${fmt(catsNuevas)} categoría(s) nueva(s)`:''));
+  } else if (catsNuevas){
+    aviso('⟲ '+fmt(catsNuevas)+' categoría(s) del equipo agregadas al árbol');
   } else if (origen!=='auto'){
     aviso('Ya estás al día: sin cambios nuevos del equipo.');
   }
@@ -905,7 +976,8 @@ function aplicarCambiosRealtime(){
   RT_BUF.clear();
   RT.ultimo = new Date(); PULL.ultimo = RT.ultimo;
   if (!cambios){ renderPullEstado(); return; }
-  construirProductos(); calcularSugerencias(); renderAll();
+  registrarCatsDeLaBase();      // ver el comentario de la función: "Placa"
+  construirProductos(); calcularSugerencias(); persistir(); renderAll();
   const detalle = [altas && fmt(altas)+' nuevo(s)', bajas && fmt(bajas)+' eliminado(s)']
     .filter(Boolean).join(', ');
   aviso('● '+fmt(cambios)+' producto(s) actualizados por el equipo'+(detalle?' ('+detalle+')':''));
@@ -991,10 +1063,96 @@ function irA(cat, sub, sub2){ state.etq=null; state.cat=cat; state.sub=sub; stat
 /* Filtra por una marca de gestión (independiente de la categoría real) */
 function irAEtq(etqId){ state.etq=etqId; state.cat=null; state.sub=null; state.sub2=null; state.page=1; renderAll(); }
 
-/* ---------- bitácora / deshacer ---------- */
+/* ---------- bitácora / deshacer ----------
+   Guarda DOS MESES de cambios y quién hizo cada uno. Antes eran las últimas 400
+   entradas sin autor: con dos personas trabajando a la vez, «¿quién movió esto?»
+   no tenía respuesta, y 400 entradas se consumen en una tarde de reclasificar.
+
+   El historial es COMPARTIDO: cada entrada se sube a la tabla `bitacora` de
+   Supabase firmada con el correo de la sesión, y al abrir la bitácora se baja la
+   del equipo entero. Un registro que sólo viviera en este navegador no podría
+   responder "quién", porque cada quien vería nada más lo suyo.
+
+   La copia local se conserva igual: es lo que se ve sin conexión, y es donde
+   quedan los cambios hechos sin sesión — que no se suben porque no se pueden
+   firmar (y que, por lo mismo, tampoco llegan al catálogo de nadie). */
+function autorActual(){
+  return (SB && SB.user && SB.user.email) ? SB.user.email : '';
+}
 function bitacora(txt){
-  WORK.bitacora.push({ t:new Date().toISOString(), txt });
-  if (WORK.bitacora.length>400) WORK.bitacora.splice(0, WORK.bitacora.length-400);
+  const e = { t:new Date().toISOString(), txt, por:autorActual() };
+  WORK.bitacora.push(e);
+  podarBitacora();
+  if (e.por) encolarBitacoraSB(e);
+  return e;
+}
+/* Tira lo que pasó de dos meses. El tope por cantidad queda como red: recorta
+   sólo si aun dentro de la ventana hay demasiadas entradas.
+
+   Revisa TODAS las entradas en vez de cortar el principio del arreglo: la
+   bitácora casi siempre está en orden, pero no siempre —un avance importado de
+   otra máquina llega con sus propias fechas—, y una entrada vieja detrás de una
+   reciente sobrevivía para siempre. Con 5,000 entradas como tope, recorrerlas
+   no cuesta nada. Una fecha ilegible se conserva: preferimos una línea de más
+   que borrar historial por un dato roto. */
+function podarBitacora(){
+  const corte = Date.now() - BITACORA_MS;
+  const vivas = WORK.bitacora.filter(e=>{
+    const t = Date.parse(e && e.t);
+    return !Number.isFinite(t) || t >= corte;
+  });
+  if (vivas.length !== WORK.bitacora.length) WORK.bitacora = vivas;
+  const b = WORK.bitacora;
+  if (b.length>BITACORA_MAX) b.splice(0, b.length-BITACORA_MAX);
+}
+
+/* --- subida de la bitácora a Supabase ---
+   Se manda en lotes cada pocos segundos, no una petición por línea: reclasificar
+   una categoría entera genera decenas de entradas seguidas. Si falla, no se
+   reintenta a lo bruto ni se avisa: la bitácora es un registro, no el trabajo, y
+   ya quedó guardada localmente. */
+const BIT_COLA = [];
+let BIT_T = null, BIT_PURGADA = false;
+function encolarBitacoraSB(e){
+  // PERSIST=false es la autoprueba (?selftest=1): hace y deshace cambios de
+  // mentira, y esos no tienen por qué ensuciar la bitácora de todo el equipo.
+  if (!SBC || !PERSIST) return;
+  BIT_COLA.push({ t:e.t, texto:String(e.txt).slice(0,400), por:e.por, origen:SB_YO });
+  clearTimeout(BIT_T);
+  BIT_T = setTimeout(subirBitacora, 4000);
+}
+async function subirBitacora(){
+  if (!SBC || !SB.user || !BIT_COLA.length) return;
+  const lote = BIT_COLA.splice(0, BIT_COLA.length);
+  try{
+    const { error } = await SBC.from('bitacora').insert(lote);
+    if (error) throw error;
+    // Una purga por sesión basta para que la tabla no crezca sin fin.
+    if (!BIT_PURGADA){ BIT_PURGADA = true; SBC.rpc('purgar_bitacora').catch(()=>{}); }
+  }catch(e){
+    console.warn('[bitacora] no se pudo subir el lote:', e.message||e);
+  }
+}
+
+/* Baja la bitácora del equipo y la funde con la de este navegador. La clave de
+   deduplicación es "instante + texto": la misma entrada llega por los dos
+   caminos (se guardó local y se subió), y no debe verse dos veces. */
+async function bitacoraDelEquipo(){
+  if (!SBC || !SB.user) return [];
+  const desde = new Date(Date.now()-BITACORA_MS).toISOString();
+  const { data, error } = await SBC.from('bitacora')
+    .select('t,texto,por').gte('t', desde).order('t', { ascending:false }).limit(BITACORA_MAX);
+  if (error){ console.warn('[bitacora] no se pudo leer la del equipo:', error.message); return []; }
+  return (data||[]).map(r=>({ t:r.t, txt:r.texto, por:r.por||'' }));
+}
+function fundirBitacora(locales, remotas){
+  const vistas = new Set(), out = [];
+  for (const e of [...remotas, ...locales]){
+    const k = Math.round(Date.parse(e.t)/1000) + '|' + e.txt;
+    if (vistas.has(k)) continue;
+    vistas.add(k); out.push(e);
+  }
+  return out.sort((a,b)=> Date.parse(b.t) - Date.parse(a.t));
 }
 function pushUndo(a){ UNDO.push(a); if (UNDO.length>60) UNDO.shift(); actualizarBtnUndo(); }
 function actualizarBtnUndo(){ $('#btnUndo').disabled = !UNDO.length; $('#btnUndo').style.opacity = UNDO.length?'1':'.45'; }
@@ -1172,11 +1330,17 @@ function contar(){
   }
   const fantasmas = new Map();
   const etq = new Map(ETIQUETAS.map(e=>[e.id,0]));
-  let pendientes=0, modificados=0, conSug=0;
+  let pendientes=0, modificados=0, conSug=0, obsoletos=0, vivos=0;
   for (const p of PRODUCTOS){
+    // La cuenta de cada marca es lo único que sí incluye a los obsoletos: es la
+    // fila del árbol por la que se entra a verlos.
+    for (const t of etqDe(p)) if (etq.has(t)) etq.set(t, etq.get(t)+1);
+    /* Un obsoleto no cuenta en ningún otro lado: ni en el total de arriba, ni en
+       su categoría, ni como pendiente. Para el catálogo ya no existe. */
+    if (esObsoleto(p)){ obsoletos++; continue; }
+    vivos++;
     if (WORK.asignaciones[p.id] || WORK.ediciones[p.id]) modificados++;
     if (sugVisible(p)) conSug++;
-    for (const t of etqDe(p)) if (etq.has(t)) etq.set(t, etq.get(t)+1);
     if (p.cat===POR){ pendientes++; continue; }
     const c = cats.get(p.cat);
     if (!c){ fantasmas.set(p.cat,(fantasmas.get(p.cat)||0)+1); continue; }
@@ -1188,35 +1352,51 @@ function contar(){
     const s2 = p.sub2||'';
     se.subs2.set(s2,(se.subs2.get(s2)||0)+1);
   }
-  return { cats, fantasmas, etq, pendientes, modificados, conSug,
-    total:PRODUCTOS.length, clasificados:PRODUCTOS.length-pendientes };
+  return { cats, fantasmas, etq, pendientes, modificados, conSug, obsoletos,
+    total:vivos, clasificados:vivos-pendientes };
 }
 let CNT = null;
 
-/* ---------- filtro ---------- */
+/* ---------- filtro ----------
+   Escribir en el buscador SALE de la categoría en la que quedó parado el
+   usuario. Antes, teclear un código estando dentro de "Ferretería" no lo
+   encontraba si el producto vivía en otra categoría, y la lista se quedaba
+   vacía sin decir por qué. Ahora el término busca en todo el catálogo; el resto
+   de los filtros (proveedor, estado, marca de gestión) se siguen respetando,
+   porque ésos el usuario los eligió a propósito y no son "dónde estaba parado". */
 function filtered(){
   const q = norm(state.q);
+  const buscando = !!q;
   return PRODUCTOS.filter(p=>{
+    /* Los obsoletos existen SÓLO dentro de su marca: fuera de ella no salen ni
+       en "Todas las categorías", ni en su categoría real, ni al buscar. */
+    if (esObsoleto(p) && state.etq!==ETQ_OCULTA) return false;
     if (state.etq && !tieneEtq(p, state.etq)) return false;
-    if (state.cat && p.cat!==state.cat) return false;
-    if (state.sub!==null && state.sub!==undefined){
-      const sub = p.sub && p.sub!==p.cat ? p.sub : '';
-      if (sub!==state.sub) return false;
-      if (state.sub2!==null && state.sub2!==undefined){
-        if ((p.sub2||'')!==state.sub2) return false;
+    if (!buscando){
+      if (state.cat && p.cat!==state.cat) return false;
+      if (state.sub!==null && state.sub!==undefined){
+        const sub = p.sub && p.sub!==p.cat ? p.sub : '';
+        if (sub!==state.sub) return false;
+        if (state.sub2!==null && state.sub2!==undefined){
+          if ((p.sub2||'')!==state.sub2) return false;
+        }
       }
     }
     if (state.prov && p.prov!==state.prov) return false;
     if (state.estado==='pend' && p.cat!==POR) return false;
     if (state.estado==='sug' && !sugVisible(p)) return false;
     if (state.estado==='mod' && !WORK.asignaciones[p.id] && !WORK.ediciones[p.id]) return false;
-    if (q){
-      const hay = norm(p.nom)+' '+norm(p.cod)+' '+norm(p.sub)+' '+norm(p.sub2)+' '+norm(p.med)+' '+norm(p.prov);
+    if (buscando){
+      const hay = norm(p.nom)+' '+norm(p.cod)+' '+norm(p.cat)+' '+norm(p.sub)+' '+norm(p.sub2)+' '+norm(p.med)+' '+norm(p.prov);
       if (!hay.includes(q)) return false;
     }
     return true;
   });
 }
+/* ¿La lista de abajo está ignorando la categoría del árbol porque hay búsqueda?
+   La cabecera de la lista lo dice en voz alta: si no, el usuario cree que su
+   categoría contiene productos que en realidad están en otra. */
+const buscandoEnTodo = () => !!norm(state.q) && !!(state.cat || state.sub);
 
 /* ---------- acciones: asignación ---------- */
 function asignar(ids, cat, sub, sub2, origen){
@@ -1758,18 +1938,25 @@ async function cambiarCodigo(id){
 }
 
 /* Retirar ≠ eliminar. Lo normal es retirar: el producto sale del catálogo del
-   cliente pero sigue aquí, con su historia y su foto, y se puede devolver. */
+   cliente pero sigue aquí, con su historia y su foto, y se puede devolver.
+
+   Retirar pone la MARCA «Productos obsoletos», no mueve el producto a una
+   categoría de retiro. Antes hacía lo segundo, y tenía dos problemas: el
+   producto perdía la categoría que tanto costó decidirle, y devolverlo obligaba
+   a acordarse de cuál era. Con la marca, la clasificación se queda intacta y
+   volver es quitar una palomita. Los 13 que estaban en la categoría vieja se
+   migraron a la marca el 2026-08-04. */
 async function retirarProducto(id){
   const p = IDX.get(id); if (!p) return;
-  if (p.cat===CAT_OCULTA){
+  if (esObsoleto(p)){
     aviso('Este producto ya está retirado del catálogo.');
     return;
   }
   const ok = await dialogo({ titulo:'Retirar del catálogo',
-    texto:`«${p.nom}» dejará de verse en el catálogo de los clientes, pero seguirá aquí por si hay que devolverlo (queda en "${CAT_OCULTA}").`,
+    texto:`«${p.nom}» dejará de verse en el catálogo de los clientes y no contará en el total de arriba, pero seguirá aquí —en «Productos obsoletos»— con su categoría, su foto y su historia. Para devolverlo basta con quitarle esa marca.`,
     okTxt:'Retirar del catálogo' });
   if (!ok) return;
-  asignar([id], CAT_OCULTA, CAT_OCULTA, '', 'retiro');
+  marcarEtiqueta([id], ETQ_OCULTA, true, 'retiro');
   cerrarFicha();
 }
 
@@ -1973,9 +2160,11 @@ function renderTax(){
   root.appendChild(el('div','tax-title','Marcas de gestión'));
   for (const e of ETIQUETAS){
     root.appendChild(filaTax({
-      cls:'etq'+(state.etq===e.id?' on':''),
+      // La marca que esconde se pinta aparte (rojo óxido): mover algo ahí lo saca
+      // del catálogo, y eso no puede verse igual que "le falta la foto".
+      cls:'etq'+(e.oculta?' etq-oculta':'')+(state.etq===e.id?' on':''),
       nombre:e.label, n:(c.etq.get(e.id)||0),
-      title:'Marca de gestión: convive con la categoría real. Arrastra productos aquí para marcarlos.',
+      title: e.ayuda || 'Marca de gestión: convive con la categoría real. Arrastra productos aquí para marcarlos.',
       onSel:()=>irAEtq(e.id),
       dropEtq:e.id,
     }));
@@ -2132,7 +2321,19 @@ function pintarSeleccion(){
     row.draggable = on;
   }
   const lista = filtered();
-  $('#countTxt').textContent = `${fmt(lista.length)} productos` + (state.sel.size?` · ${fmt(state.sel.size)} seleccionados`:'');
+  pintarConteoLista(lista);
+}
+/* Cabecera de la lista. Dice cuántos hay y, cuando la búsqueda se salió de la
+   categoría del árbol, lo dice con todas sus letras: el usuario dejó marcada
+   "Ferretería" y está viendo resultados de otras categorías. */
+function pintarConteoLista(lista){
+  const c = $('#countTxt'); if (!c) return;
+  let txt = `${fmt(lista.length)} productos`;
+  if (state.sel.size) txt += ` · ${fmt(state.sel.size)} seleccionados`;
+  if (buscandoEnTodo()) txt += ' · buscando en TODO el catálogo';
+  else if (state.etq===ETQ_OCULTA) txt += ' · retirados del catálogo';
+  c.textContent = txt;
+  c.classList.toggle('cuenta-global', buscandoEnTodo());
 }
 function fila(p, idx){
   const seleccionado = state.sel.has(p.id);
@@ -2455,7 +2656,7 @@ function renderLista(){
   }
 
   const selVisibles = lista.filter(p=>state.sel.has(p.id)).length;
-  $('#countTxt').textContent = `${fmt(lista.length)} productos` + (state.sel.size?` · ${fmt(state.sel.size)} seleccionados`:'');
+  pintarConteoLista(lista);
   $('#selAll').checked = lista.length>0 && selVisibles===lista.length;
 
   const more = $('#btnMore');
@@ -2556,7 +2757,7 @@ function abrirFicha(id){
     </div>
     <div class="f-field"><label>Marcas de gestión (se aplican al instante)</label>
       <div class="f-etq">${ETIQUETAS.map(e=>
-        `<label class="f-etq-item"><input type="checkbox" data-etq="${e.id}"${tieneEtq(p,e.id)?' checked':''} /> ${esc(e.label)}</label>`
+        `<label class="f-etq-item${e.oculta?' f-etq-oculta':''}" title="${esc(e.ayuda||'')}"><input type="checkbox" data-etq="${e.id}"${tieneEtq(p,e.id)?' checked':''} /> ${esc(e.label)}</label>`
       ).join('')}</div>
     </div>
     ${s ? `<div class="f-sug">${s.aprox?'≈':'Regla:'} sugerencia <b>${esc(s.cat)}${s.sub&&s.sub!==s.cat?' › '+esc(s.sub):''}</b>
@@ -2570,7 +2771,7 @@ function abrirFicha(id){
     </div>
     <div class="f-acciones">
       <button type="button" class="btn-datos" id="fDuplicar" title="Crea otro producto copiando éste. Ideal para capturar la misma pieza en varias medidas.">⧉ Duplicar producto</button>
-      <button type="button" class="btn-datos" id="fRetirar" title="${p.cat===CAT_OCULTA?'Ya está retirado: muévelo a una categoría normal para devolverlo al catálogo.':'Deja de mostrarse al cliente, pero se conserva aquí y se puede devolver.'}"${p.cat===CAT_OCULTA?' disabled':''}>🚫 Retirar del catálogo</button>
+      <button type="button" class="btn-datos" id="fRetirar" title="${esObsoleto(p)?'Ya está retirado: quítale la marca «Productos obsoletos» de aquí abajo para devolverlo al catálogo.':'Deja de mostrarse al cliente y de contar en el total, pero conserva su categoría y se devuelve quitándole la marca.'}"${esObsoleto(p)?' disabled':''}>🚫 Retirar del catálogo</button>
       <button type="button" class="btn-datos btn-danger" id="fEliminar" title="Borra el producto de la base. Úsalo sólo para deshacer una captura equivocada.">🗑 Eliminar</button>
     </div>
     <div class="fname" style="font-size:11px;color:var(--gris);font-family:var(--mono);margin-top:12px">${
@@ -2737,18 +2938,86 @@ function cerrarDlg(valores){
   if (DLG_RESOLVE){ const r=DLG_RESOLVE; DLG_RESOLVE=null; r(valores); }
 }
 
-/* ---------- bitácora (modal) ---------- */
-function abrirLog(){
-  const body = $('#logBody'); body.innerHTML='';
-  const items = [...WORK.bitacora].reverse();
-  if (!items.length){ body.appendChild(el('div','log-empty','Aún no hay cambios registrados.')); }
+/* ---------- bitácora (modal) ----------
+   Dos meses de historial no se leen de corrido: se agrupa por día y se puede
+   filtrar por texto o por persona. Cada entrada dice QUIÉN la hizo; las de antes
+   de que se registrara el autor salen como «—», que es honesto: no lo sabemos. */
+function nombreCorto(correo){
+  if (!correo) return '';
+  const i = correo.indexOf('@');
+  return i>0 ? correo.slice(0,i) : correo;
+}
+function diaEtiqueta(d){
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const dd = new Date(d); dd.setHours(0,0,0,0);
+  const dias = Math.round((hoy-dd)/86400000);
+  const fecha = d.toLocaleDateString('es-MX',{weekday:'long', day:'2-digit', month:'long'});
+  if (dias===0) return 'Hoy · '+fecha;
+  if (dias===1) return 'Ayer · '+fecha;
+  return fecha + (d.getFullYear()!==hoy.getFullYear() ? ' de '+d.getFullYear() : '');
+}
+let LOG_Q = '', LOG_POR = '', LOG_ITEMS = [];
+function pintarLog(){
+  const body = $('#logBody'); if (!body) return;
+  body.innerHTML='';
+  const q = norm(LOG_Q);
+  const items = LOG_ITEMS.filter(it=>{
+    if (LOG_POR && (it.por||'')!==LOG_POR) return false;
+    if (q && !norm(it.txt+' '+(it.por||'')).includes(q)) return false;
+    return true;
+  });
+  if (!LOG_ITEMS.length){
+    body.appendChild(el('div','log-empty','Aún no hay cambios registrados.'));
+  } else if (!items.length){
+    body.appendChild(el('div','log-empty','Ningún cambio coincide con ese filtro.'));
+  }
+  let diaActual = '';
   for (const it of items){
     const d = new Date(it.t);
-    const ts = d.toLocaleString('es-MX',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const row = el('div','log-item',`<time>${ts}</time><span>${esc(it.txt)}</span>`);
+    const dia = diaEtiqueta(d);
+    if (dia!==diaActual){ diaActual = dia; body.appendChild(el('div','log-dia', esc(dia))); }
+    const hora = d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    const quien = it.por ? esc(nombreCorto(it.por)) : '—';
+    const row = el('div','log-item',
+      `<time title="${esc(d.toLocaleString('es-MX'))}">${hora}</time>` +
+      `<span>${esc(it.txt)}</span>` +
+      `<b class="log-por" title="${it.por?esc(it.por):'Cambio hecho sin sesión iniciada: no quedó registrado quién fue.'}">${quien}</b>`);
     body.appendChild(row);
   }
+}
+function pintarFiltrosLog(){
+  const cab = $('#logFiltros'); if (!cab) return;
+  const autores = [...new Set(LOG_ITEMS.map(it=>it.por).filter(Boolean))].sort(alfa);
+  cab.innerHTML =
+    `<input id="logQ" type="search" placeholder="Buscar en la bitácora…" value="${esc(LOG_Q)}" />` +
+    `<select id="logPor"><option value="">Todas las personas</option>` +
+    autores.map(a=>`<option value="${esc(a)}"${a===LOG_POR?' selected':''}>${esc(a)}</option>`).join('') +
+    `</select>`;
+  $('#logQ').oninput = (e)=>{ LOG_Q = e.target.value; pintarLog(); };
+  $('#logPor').onchange = (e)=>{ LOG_POR = e.target.value; pintarLog(); };
+}
+function pintarPieLog(cargando){
+  const pie = $('#logPie'); if (!pie) return;
+  const base = `se guardan los últimos ${BITACORA_DIAS} días`;
+  if (cargando){ pie.textContent = 'Trayendo la bitácora del equipo… · '+base; return; }
+  pie.textContent = LOG_ITEMS.length
+    ? `${fmt(LOG_ITEMS.length)} cambios · ${base}` +
+      (SB.user ? ' · incluye lo que hizo el equipo' : ' · sólo esta computadora (inicia sesión para ver la del equipo)')
+    : `Se guardan los últimos ${BITACORA_DIAS} días de cambios.`;
+}
+/* Abre primero con lo local —para que nunca se vea vacía mientras carga— y en
+   cuanto llega la del equipo la refunde y vuelve a pintar. */
+async function abrirLog(){
+  podarBitacora();
+  await subirBitacora();                 // que lo recién hecho salga en la lista
+  LOG_ITEMS = fundirBitacora(WORK.bitacora, []);
+  pintarFiltrosLog(); pintarLog(); pintarPieLog(!!SB.user);
   $('#modalLog').hidden=false;
+  if (!SB.user) return;
+  const remotas = await bitacoraDelEquipo();
+  if ($('#modalLog').hidden) return;     // la cerró antes de que llegara
+  LOG_ITEMS = fundirBitacora(WORK.bitacora, remotas);
+  pintarFiltrosLog(); pintarLog(); pintarPieLog(false);
 }
 
 /* ---------- exportadores ---------- */
@@ -3214,6 +3483,72 @@ function selfTest(){
     delete WORK.ediciones[idNuevo]; delete WORK.asignaciones[idNuevo]; delete WORK.etiquetas[idNuevo];
     construirProductos();
     t('la prueba no deja rastro', PRODUCTOS.length===totalAntes && !IDX.has(idNuevo));
+
+    /* --- marca «Productos obsoletos»: tiene que ESCONDER, no sólo etiquetar --- */
+    t('existe la marca obsoleto', ETQ_OCULTA==='obsoleto' && ETQMAP.has('obsoleto'));
+    const est = {q:state.q, cat:state.cat, sub:state.sub, sub2:state.sub2, etq:state.etq, prov:state.prov, estado:state.estado};
+    const po = PRODUCTOS.find(x=>!esObsoleto(x));
+    const prevEtqO = WORK.etiquetas[po.id] ? WORK.etiquetas[po.id].slice() : null;
+    const cntAntes = contar();
+    state.q=''; state.cat=null; state.sub=null; state.sub2=null; state.etq=null; state.prov=''; state.estado='todos';
+    const visibleAntes = filtered().some(x=>x.id===po.id);
+    WORK.etiquetas[po.id] = [...etqDe(po), 'obsoleto'];
+    construirProductos();
+    const cntDespues = contar();
+    t('obsoleto sale de Todas las categorías', visibleAntes && !filtered().some(x=>x.id===po.id));
+    t('obsoleto no cuenta en el total', cntDespues.total===cntAntes.total-1);
+    t('obsoleto no cuenta en su categoría',
+      (cntDespues.cats.get(po.cat)?.n ?? 0) === (cntAntes.cats.get(po.cat)?.n ?? 0) - (po.cat===POR?0:1));
+    state.etq = 'obsoleto';
+    t('obsoleto sí se ve en su marca', filtered().some(x=>x.id===po.id));
+    t('la marca lo cuenta', (cntDespues.etq.get('obsoleto')||0) === (cntAntes.etq.get('obsoleto')||0)+1);
+    state.etq = null; state.q = po.cod;
+    t('obsoleto tampoco sale al buscar su código', !filtered().some(x=>x.id===po.id));
+    if (prevEtqO) WORK.etiquetas[po.id] = prevEtqO; else delete WORK.etiquetas[po.id];
+    construirProductos();
+
+    /* --- buscar sale de la categoría donde quedó parado el usuario --- */
+    const pb = PRODUCTOS.find(x=>x.cat && x.cat!==POR && !esObsoleto(x));
+    const otraCat = WORK.taxonomia.map(c=>c.nombre).find(n=>n!==pb.cat && n!==CAT_OCULTA);
+    state.q=''; state.cat=otraCat; state.sub=null; state.sub2=null; state.etq=null;
+    t('sin buscar, la categoría manda', !filtered().some(x=>x.id===pb.id));
+    state.q = pb.cod;
+    t('buscando, aparece aunque esté en otra categoría', filtered().some(x=>x.id===pb.id));
+    t('la cabecera avisa que se salió de la categoría', buscandoEnTodo()===true);
+    state.prov = ' sin-proveedor-posible ';
+    t('buscar no anula el filtro de proveedor', filtered().length===0);
+    Object.assign(state, est);
+    construirProductos();
+
+    /* --- categorías que llegan de la base ("Placa") --- */
+    const catInventada = 'PRUEBA-CAT-DE-LA-BASE';
+    const pc = DATA.productos[0], catOrig = pc.cat, subOrig = pc.sub;
+    pc.cat = catInventada; pc.sub = 'PRUEBA-SUB-BASE';
+    t('categoría de la base no estaba en el árbol', !WORK.taxonomia.some(c=>c.nombre===catInventada));
+    const nuevasCats = registrarCatsDeLaBase();
+    t('registrarCatsDeLaBase la agrega', nuevasCats>=1 && WORK.taxonomia.some(c=>c.nombre===catInventada));
+    t('y registra también su subcategoría',
+      (WORK.taxonomia.find(c=>c.nombre===catInventada)?.subs||[]).some(s=>s.nombre==='PRUEBA-SUB-BASE'));
+    t('repetirlo no duplica', registrarCatsDeLaBase()===0);
+    pc.cat = catOrig; pc.sub = subOrig;
+    construirProductos();
+
+    /* --- bitácora: dos meses y autor --- */
+    t('la bitácora guarda 60 días', BITACORA_DIAS===60);
+    const bitAntes = WORK.bitacora.length;
+    WORK.bitacora.push({ t:new Date(Date.now()-61*24*3600*1000).toISOString(), txt:'viejo', por:'x@y.z' });
+    WORK.bitacora.push({ t:new Date(Date.now()-2*24*3600*1000).toISOString(), txt:'reciente', por:'x@y.z' });
+    podarBitacora();
+    t('poda lo de más de 60 días', !WORK.bitacora.some(b=>b.txt==='viejo'));
+    t('conserva lo reciente', WORK.bitacora.some(b=>b.txt==='reciente'));
+    WORK.bitacora.length = bitAntes;
+    const fus = fundirBitacora(
+      [{t:'2026-08-01T10:00:00.000Z', txt:'igual', por:''}],
+      [{t:'2026-08-01T10:00:00.400Z', txt:'igual', por:'a@b.c'},
+       {t:'2026-08-01T11:00:00.000Z', txt:'sólo del equipo', por:'a@b.c'}]);
+    t('fundir no duplica la misma entrada', fus.filter(x=>x.txt==='igual').length===1);
+    t('fundir conserva el autor del equipo', fus.find(x=>x.txt==='igual')?.por==='a@b.c');
+    t('fundir ordena de lo nuevo a lo viejo', fus[0].txt==='sólo del equipo');
   }catch(e){
     res.push('FAIL excepción: '+e.message);
   }

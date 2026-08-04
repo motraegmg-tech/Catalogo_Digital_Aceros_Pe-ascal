@@ -1,5 +1,5 @@
 import { fetchCatalogo, agruparCategorias } from '../core/catalogService.js';
-import { state, DATA, setCatalogData, cargarFotosManifest, CAT_OCULTA } from '../core/store.js';
+import { state, DATA, setCatalogData, cargarFotosManifest, CAT_OCULTA, ETQ_OBSOLETO } from '../core/store.js';
 import { addToCartLogic, addManyToCartLogic, setQtyLogic, buildWhatsAppUrl, getCartItems } from '../core/cartService.js';
 import { cargarFamilias, indexarFamilias } from '../core/familiaService.js';
 import { AJUSTES, cargarAjustes } from '../core/ajustesService.js';
@@ -203,9 +203,11 @@ async function init() {
       // productos. Aquí se respeta el mismo interruptor que aplica la vista de
       // Supabase, para que el respaldo nunca publique lo que la base oculta.
       // Y se descartan los descontinuados: la vista de Supabase ya los filtra,
-      // así que el respaldo no puede ser la vía por la que se cuelen.
+      // así que el respaldo no puede ser la vía por la que se cuelen. Lo mismo
+      // con la marca de gestión «obsoleto», que es la forma nueva de retirar un
+      // producto sin perder la categoría en la que estaba clasificado.
       const productos = local.productos
-        .filter(p => p.cat !== CAT_OCULTA)
+        .filter(p => p.cat !== CAT_OCULTA && !(Array.isArray(p.etq) && p.etq.includes(ETQ_OBSOLETO)))
         .map(p => Object.assign({}, p, { prov: p.mprov ? (p.prov || '') : '' }));
       datos = { productos, categorias: agruparCategorias(productos), total: productos.length };
     }

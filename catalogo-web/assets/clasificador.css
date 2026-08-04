@@ -5,6 +5,8 @@
   --plata:#C4CBD0; --acero:#A6AFB6; --acero-2:#869099; --gris:#646E76;
   --gris-claro:#9AA4AC; --carbon:#363D43; --grafito:#23292E; --negro:#13171A;
   --oxido:#921A2A; --oxido-2:#B23145;
+  /* Tonos del rojo óxido para la barra superior del clasificador (ver .topbar) */
+  --oxido-oscuro:#5E101B; --oxido-tenue:#7A1523; --oxido-claro:#E8B9C0;
   --aqua:#0E7E8C; --aqua-2:#0B6470; --aqua-3:#159FB0;
   --zintro:#4E9A51; --zintro-2:#3E7E41; --zintro-aqua:#3FA67B;
   --verde:#2F3D2C; --arena:#D9C9A8;
@@ -25,28 +27,35 @@ button{font-family:inherit;cursor:pointer}
 select,input{font-family:inherit}
 code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1px 5px;border-radius:4px}
 
-/* ===== Topbar ===== */
+/* ===== Topbar =====
+   Rojo óxido de Aceros Peñascal (--oxido), no el gris carbón del catálogo del
+   cliente. El clasificador y el catálogo se abren en pestañas contiguas y se
+   confundían de un vistazo: quien edita tiene que saber SIEMPRE en cuál de los
+   dos está antes de tocar nada. El color es la señal más barata para eso. */
 .topbar{
   position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:18px;
-  padding:10px 18px;background:linear-gradient(180deg,var(--carbon),var(--negro));
-  color:var(--platino);border-bottom:3px solid var(--aqua);
+  padding:10px 18px;background:linear-gradient(180deg,var(--oxido-2),var(--oxido));
+  color:#F6E9EB;border-bottom:3px solid var(--oxido-oscuro);
 }
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-logo{height:40px;width:auto;background:#fff;border-radius:7px;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,.28)}
 .brand-text{display:flex;flex-direction:column;line-height:1.1}
 .brand-text strong{font-size:13px;letter-spacing:1.4px}
-.brand-text span{font-size:10px;letter-spacing:1.6px;color:var(--gris-claro);text-transform:uppercase}
+.brand-text span{font-size:10px;letter-spacing:1.6px;color:var(--oxido-claro);text-transform:uppercase}
 
 .progress-block{flex:1;min-width:140px;max-width:520px;margin:0 auto}
-.progress-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--plata);margin-bottom:4px;gap:10px;flex-wrap:wrap}
+.progress-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--oxido-claro);margin-bottom:4px;gap:10px;flex-wrap:wrap}
 .progress-nums b{color:#fff}
-.progress-nums .pend{color:#F0B75B;font-weight:700}
-.progress-bar{height:9px;border-radius:99px;background:#0f1316;border:1px solid #2c343a;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--aqua-3),var(--zintro-aqua));border-radius:99px;transition:width .35s ease}
+/* Los pendientes iban en ámbar sobre carbón; sobre el rojo óxido ese ámbar se
+   pierde, así que van en blanco hueso y se distinguen por el peso. */
+.progress-nums .pend{color:var(--arena);font-weight:700}
+.progress-bar{height:9px;border-radius:99px;background:var(--oxido-oscuro);border:1px solid rgba(0,0,0,.28);overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--arena),#FFFFFF);border-radius:99px;transition:width .35s ease}
 
 .topbar-actions{display:flex;align-items:center;gap:8px}
-.btn-ghost{background:transparent;color:var(--platino);border:1px solid #3a434a;border-radius:8px;padding:8px 12px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-.btn-ghost:hover{border-color:var(--acero-2);background:#1d2327}
+.btn-ghost{background:rgba(0,0,0,.12);color:#FFF;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:8px 12px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-ghost:hover{border-color:#fff;background:rgba(0,0,0,.30)}
+.btn-ghost:disabled{opacity:.5}
 .btn-primary{background:var(--aqua);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600;font-size:12.5px}
 .btn-primary:hover{background:var(--aqua-3)}
 
@@ -100,6 +109,15 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .tax-row.etq .n{background:#d5e4f4;color:#1d4b7a}
 .tax-row.etq.on{background:var(--aqua);border-color:var(--aqua);color:#fff}
 .tax-row.etq.on .n{background:rgba(255,255,255,.22);color:#fff}
+/* «Productos obsoletos» no es una marca más: lo que cae ahí SALE del catálogo.
+   Va en rojo óxido para que arrastrar algo por error se vea antes de soltarlo. */
+.tax-row.etq.etq-oculta{background:#f7e8ea;border-color:#d9a3ab;color:var(--oxido)}
+.tax-row.etq.etq-oculta:hover{background:#f2dade}
+.tax-row.etq.etq-oculta .n{background:#e8ccd1;color:var(--oxido)}
+.tax-row.etq.etq-oculta.on{background:var(--oxido);border-color:var(--oxido);color:#fff}
+.f-etq-item.f-etq-oculta{color:var(--oxido);font-weight:600}
+/* La cabecera avisa cuando el buscador se salió de la categoría del árbol. */
+.cuenta-global{color:var(--oxido);font-weight:700}
 .tagetq{display:inline-block;font-size:10.5px;line-height:1.5;padding:1px 7px;margin-left:5px;
   border-radius:999px;background:#e2edf8;color:#1d4b7a;border:1px solid #a9c4e3;white-space:nowrap}
 .f-etq{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:1px solid var(--line);
@@ -298,10 +316,22 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .f-nav button:hover{border-color:var(--aqua)}
 
 /* Bitácora */
-.log-body{max-height:56vh;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.log-body{max-height:52vh;overflow:auto;display:flex;flex-direction:column;gap:2px}
 .log-item{display:flex;gap:10px;font-size:12.3px;padding:7px 4px;border-bottom:1px solid var(--gris-50)}
-.log-item time{flex:0 0 118px;color:var(--gris-claro);font-family:var(--mono);font-size:10.5px;padding-top:1px}
+.log-item time{flex:0 0 46px;color:var(--gris-claro);font-family:var(--mono);font-size:10.5px;padding-top:1px}
+.log-item span{flex:1;min-width:0}
 .log-empty{color:var(--gris);font-size:13px;padding:24px 0;text-align:center}
+/* Bitácora de dos meses: encabezado por día, autor a la derecha y filtros arriba. */
+.log-dia{position:sticky;top:0;background:var(--blanco);z-index:1;
+  font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gris);
+  font-weight:700;padding:12px 4px 5px;border-bottom:1px solid var(--platino)}
+.log-por{flex:0 0 auto;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10.5px;font-weight:600;color:var(--aqua-2);background:#e6f2f4;
+  border-radius:999px;padding:1px 8px;align-self:flex-start}
+.log-filtros{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.log-filtros input,.log-filtros select{flex:1;min-width:140px;padding:7px 10px;font-size:12.5px;
+  border:1px solid var(--line);border-radius:8px;background:var(--blanco);color:var(--negro)}
+.log-pie{margin-top:10px;font-size:11.5px;color:var(--gris);text-align:right}
 
 /* Datos */
 .datos-stats{font-size:12px;color:var(--gris);background:var(--hueso);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:6px;line-height:1.6}
@@ -352,8 +382,10 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
   align-items:flex-start;gap:1px;white-space:nowrap;line-height:1.15}
 .tab small{font-size:9.5px;font-weight:400;color:var(--gris-claro);letter-spacing:.02em}
 .tab:hover{color:#fff;background:rgba(255,255,255,.05)}
-.tab.on{color:#fff;border-bottom-color:var(--aqua-3);background:rgba(21,159,176,.14)}
-.tab.on small{color:#a9dde5}
+/* La pestaña activa se acentúa en rojo óxido, igual que la barra de arriba: las
+   dos franjas se leen como un solo encabezado y no como dos herramientas. */
+.tab.on{color:#fff;border-bottom-color:var(--oxido-2);background:rgba(178,49,69,.20)}
+.tab.on small{color:var(--oxido-claro)}
 
 .btn-alta{background:var(--zintro)}
 .btn-alta:hover{background:var(--zintro-aqua)}

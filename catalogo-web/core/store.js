@@ -16,6 +16,12 @@ export const CONFIG = {
    también el respaldo local, que es el otro camino por el que podrían colarse. */
 export const CAT_OCULTA = 'Productos Descontinuados / Ocultos';
 
+/* Marca de gestión «Productos obsoletos»: lo que la tienda dejó de vender. Es la
+   forma nueva de retirar un producto —conserva su categoría real, así que se
+   puede devolver quitándole la marca— y la vista `catalogo_publico` ya la
+   filtra. Aquí sólo se repite el identificador para tapar el respaldo local. */
+export const ETQ_OBSOLETO = 'obsoleto';
+
 export const LS_CART = 'ap_cart';
 export const LS_OVR = 'ap_overrides';
 export const LS_VIEW = 'ap_view';

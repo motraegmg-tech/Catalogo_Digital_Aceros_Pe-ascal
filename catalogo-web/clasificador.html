@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="theme-color" content="#15191C" />
+<!-- Rojo óxido: el mismo de la barra superior, para que el navegador y el móvil
+     pinten el clasificador distinto del catálogo del cliente. -->
+<meta name="theme-color" content="#921A2A" />
 <title>Clasificador · Aceros Peñascal</title>
 <link rel="icon" href="assets/logo-ap.jpg" />
 <link rel="stylesheet" href="assets/clasificador.css" />
@@ -41,7 +43,11 @@
     <button id="btnLog" class="btn-ghost" title="Historial de cambios">Bitácora</button>
     <button id="btnPull" class="btn-ghost" title="Trae la clasificación y fotos más recientes de Supabase: lo que tu equipo cambió desde otra máquina. Tus cambios locales no se pisan.">⟲ Traer del equipo</button>
     <button id="btnDatos" class="btn-ghost" title="Guardar avance, importar y exportar">Guardar / Exportar</button>
-    <a href="index.html" target="_blank" class="btn-ghost btn-link" title="Abre el catálogo público (muestra los datos exportados, no el avance en vivo)">Ver catálogo ↗</a>
+    <!-- El catálogo PUBLICADO (Vercel), no la copia local del repositorio: es el
+         que ve el cliente y el único que sirve para comprobar un cambio de
+         verdad. Abre en pestaña aparte para no perder el avance del clasificador. -->
+    <a href="https://catalogo-digital-aceros-penascal.vercel.app" target="_blank" rel="noopener"
+       class="btn-ghost btn-link" title="Abre el catálogo publicado, tal como lo ve el cliente. Los datos que edites aquí aparecen al refrescarlo.">Ver catálogo ↗</a>
   </div>
 </header>
 
@@ -271,7 +277,10 @@
   <div class="modal-card modal-slim">
     <button class="modal-close" id="logClose" aria-label="Cerrar">×</button>
     <h3 class="modal-title">Bitácora de cambios</h3>
+    <!-- Con dos meses de historial hace falta poder buscar y filtrar por persona. -->
+    <div id="logFiltros" class="log-filtros"></div>
     <div id="logBody" class="log-body"></div>
+    <div id="logPie" class="log-pie"></div>
   </div>
 </div>
 

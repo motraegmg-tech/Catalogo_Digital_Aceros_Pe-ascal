@@ -954,7 +954,9 @@ function pintarSelector(){
   const q = norm(PICK.q);
   /* Sin nada escrito se muestra la categoría sugerida (la de la agrupación):
      así se empieza viendo lo que probablemente se busca, no los 3,222. */
-  let lista = PRODUCTOS.filter(p=>!PICK.excluir.has(p.cod));
+  // Un obsoleto no se puede meter a una agrupación ni a los destacados: ya no se
+  // vende, y colarlo por aquí lo devolvería al catálogo por la puerta de atrás.
+  let lista = PRODUCTOS.filter(p=>!PICK.excluir.has(p.cod) && !esObsoleto(p));
   if (q){
     lista = lista.filter(p=>norm(p.nom+' '+p.cod+' '+p.med+' '+p.sub).includes(q));
   } else if (PICK.cat){
@@ -1514,10 +1516,15 @@ function renderGuia(){
           <b>«⧉ Duplicar producto»</b> once veces: sólo cambias código y medida.</li>
       <li><b>Corregir:</b> haz clic en el nombre de cualquier producto para abrir su ficha. Se puede
           cambiar nombre, medida, proveedor, categoría y foto.</li>
-      <li><b>Dejar de venderlo:</b> <b>«🚫 Retirar del catálogo»</b>. Desaparece para el cliente pero
-          se conserva aquí por si vuelve. <b>«🗑 Eliminar»</b> es sólo para deshacer una captura mal hecha.</li>
+      <li><b>Dejar de venderlo:</b> arrástralo a <b>«Productos obsoletos»</b>, en el panel izquierdo
+          (o marca esa casilla en su ficha). Desaparece de todas las listas, del catálogo del cliente
+          y del conteo de arriba, pero <b>conserva su categoría</b>: para devolverlo basta con quitarle
+          la marca. <b>«🗑 Eliminar»</b> es otra cosa: sólo para deshacer una captura mal hecha.</li>
       <li><b>Mover muchos a la vez:</b> selecciónalos (clic, o mantén el clic y arrastra sobre la lista)
           y usa la barra de abajo, o arrástralos a la categoría del panel izquierdo.</li>
+      <li><b>Buscar:</b> el buscador de arriba mira <b>todo el catálogo</b>, no sólo la categoría en la
+          que estés parado. Si escribes un código y el producto está en otra categoría, igual sale
+          — la cabecera de la lista te avisa que se salió de la categoría.</li>
     </ol>
 
     <h3>🗂 Agrupaciones — que veinte soleras no ocupen veinte tarjetas</h3>
@@ -1597,10 +1604,12 @@ function renderGuia(){
     <h3>¿Y si me equivoco?</h3>
     <ul>
       <li><b>↩ Deshacer</b> (o Ctrl+Z) revierte el último cambio.</li>
-      <li><b>Bitácora</b> guarda todo lo que se hizo y cuándo.</li>
+      <li><b>Bitácora</b> guarda <b>dos meses</b> de cambios y dice <b>quién</b> hizo cada uno, incluido
+          lo que hizo tu compañero desde su computadora. Se puede buscar y filtrar por persona.
+          (Los cambios hechos <b>sin sesión</b> salen sin nombre: no hay forma de saber de quién fueron.)</li>
       <li>Eliminar una agrupación <b>no borra productos</b>: sólo dejan de mostrarse juntos.</li>
-      <li>Retirar un producto <b>no lo borra</b>: queda en «Productos Descontinuados / Ocultos» y se
-          puede devolver moviéndolo a su categoría.</li>
+      <li>Marcar un producto como <b>obsoleto no lo borra</b>: sigue aquí, dentro de esa marca, y
+          vuelve al catálogo en cuanto se la quitas.</li>
     </ul>
 
     <h3>Cuando termines de trabajar</h3>

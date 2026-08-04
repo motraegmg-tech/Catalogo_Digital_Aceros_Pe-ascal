@@ -106,15 +106,20 @@ export function filteredProducts() {
 
 
 /* ===== Agrupación en fichas de familia =====
-   Decisión de Gonzalo (2026-07-31): la agrupación NO sustituye la vista actual,
-   convive con ella. Solo entra al bajar a una categoría, que es donde estorba el
-   ruido de veinte soleras seguidas. En "Todas las categorías" y en la búsqueda
-   el catálogo sigue mostrando producto por producto. */
+   Decisión de Gonzalo (2026-08-04, revisa la del 2026-07-31): el producto se
+   encuentra AGRUPADO en todas partes —también en "Todas las categorías"—, no
+   sólo al bajar a una categoría. Veinte soleras seguidas estorban igual en la
+   portada que dentro de "Perfiles Macizos", y quien recorre el catálogo espera
+   ver "Solera" una vez, no treinta y dos.
+
+   La búsqueda sigue siendo la excepción, y a propósito: quien teclea un código o
+   una medida exacta busca ESE producto, y tiene que salirle su ficha suelta
+   —fuera de su agrupación y de su categoría— no la tarjeta de la familia. */
 
 // Con una sola medida no hay nada que elegir: ese producto va como ficha suelta.
 const MIN_EN_FICHA = 2;
 
-export const agrupando = () => !!state.cat && !state.q.trim() && hayFamilias();
+export const agrupando = () => !state.q.trim() && hayFamilias();
 
 /** El nombre con el que una tarjeta se ordena y se lee, sea de familia o de producto. */
 export const rotulo = (e) => e.tipo === 'familia' ? e.fam.nombre : e.p.nom;
@@ -137,11 +142,16 @@ export function filteredEntries() {
 
   for (const p of lista) {
     const f = familiaDe(p);
-    /* La ficha se muestra en la categoría donde de verdad están sus productos
-       (catPrincipalDe), no en la que declara el campo `cat`. Ese campo lo elige
-       una persona al crearla y se queda atrás en cuanto algo se reclasifica; si
-       se le hace caso, la ficha desaparece de las dos categorías a la vez. */
-    if (!f || catPrincipalDe(f.id) !== state.cat || fichas.has(f.id) || descartadas.has(f.id)) continue;
+    if (!f || fichas.has(f.id) || descartadas.has(f.id)) continue;
+    /* Dentro de una categoría, la ficha se muestra en la que de verdad están sus
+       productos (catPrincipalDe), no en la que declara el campo `cat`: ese campo
+       lo elige una persona al crearla y se queda atrás en cuanto algo se
+       reclasifica. Así una familia repartida entre dos categorías sale completa
+       en una sola y no partida en las dos.
+
+       En "Todas las categorías" no hay con qué comparar y tampoco hace falta:
+       cada familia aparece una vez, que es justo lo que se busca. */
+    if (state.cat && catPrincipalDe(f.id) !== state.cat) continue;
     // El chip de subcategoría se aplica dentro de la ficha: si el usuario pidió
     // "Soleras", la ficha muestra soleras y su conteo dice la verdad.
     const dentro = productosDeFamilia(f.id).filter(x => !state.sub || x.sub === state.sub);
