@@ -65,7 +65,11 @@
   <!-- Buscador + controles. En teléfono/tableta bajan a una 2a fila de la barra. -->
   <div class="topbar-tools">
     <div class="search">
-      <input id="q" type="search" placeholder="Buscar por nombre, código, medida…" autocomplete="off" />
+      <!-- Igual que en el clasificador: se le dice a los gestores de contraseñas
+           que este campo no es un usuario. Aquí no hay login, pero el navegador
+           rellena por dominio y los dos comparten el de Vercel. -->
+      <input id="q" type="search" name="buscar-producto" placeholder="Buscar por nombre, código, medida…"
+             autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true" data-bwignore />
     </div>
 
     <button id="btnCats" class="btn-tool" aria-controls="sidebarWrap" aria-expanded="false">

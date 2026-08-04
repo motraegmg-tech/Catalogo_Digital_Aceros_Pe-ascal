@@ -10,11 +10,18 @@
 <link rel="icon" href="assets/logo-ap.jpg" />
 <link rel="stylesheet" href="assets/clasificador.css" />
 <style>
-  /* Sincronización en línea (Supabase) */
+  /* Sincronización en línea (Supabase).
+     Estos campos nacieron pensados para un fondo oscuro: el borde y el fondo
+     eran blancos translúcidos. Al vivir dentro del modal —que es blanco— se
+     quedaban en blanco sobre blanco, y el encargado tenía que adivinar dónde
+     escribir su correo y su contraseña. Van con el mismo borde que el resto de
+     los campos del panel. */
   .sb-input{ flex:1; min-width:130px; padding:8px 10px; border-radius:8px;
-    border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06);
-    color:inherit; font:inherit; }
-  .sb-input:focus{ outline:none; border-color:var(--zintro-2,#57ad30); }
+    border:1px solid var(--line,#D6DBDE); background:#fff;
+    color:var(--negro,#13171A); font:inherit; }
+  .sb-input::placeholder{ color:var(--gris-claro,#9AA4AC); }
+  .sb-input:focus{ outline:none; border-color:var(--zintro-2,#3E7E41);
+    box-shadow:0 0 0 3px rgba(62,126,65,.15); }
   .sb-head{ opacity:.9; }
   .pull-auto{ display:inline-flex; align-items:center; gap:4px; cursor:pointer; opacity:.9; user-select:none; }
   .pull-auto input{ accent-color:var(--zintro-2,#57ad30); margin:0; }
@@ -92,7 +99,13 @@
   <!-- Lista de productos -->
   <main class="main">
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Buscar por nombre, código, medida…  ( / )" autocomplete="off" />
+      <!-- Este campo NO es un correo ni un usuario, por mucho que el navegador
+           se empeñe. `autocomplete="off"` no basta —Chrome lo ignora a propósito
+           para credenciales—, así que además se le dice a los gestores de
+           contraseñas que pasen de largo (1Password, LastPass, Bitwarden) y se
+           le pone un `name` que no se parece a nada de una cuenta. -->
+      <input id="q" type="search" name="buscar-producto" placeholder="Buscar por nombre, código, medida…  ( / )"
+             autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true" data-bwignore />
       <select id="fProv" title="Filtrar por proveedor"></select>
       <div class="chips" id="chipsEstado"></div>
       <button id="btnVista" class="btn-vista" title="Alternar entre lista de trabajo y vista previa del catálogo">🗂 Vista catálogo</button>
@@ -131,7 +144,8 @@
     </div>
   </div>
   <div class="panel-tools">
-    <input id="famQ" type="search" placeholder="Buscar agrupación por nombre, categoría o producto…" autocomplete="off" />
+    <input id="famQ" type="search" name="buscar-agrupacion" placeholder="Buscar agrupación por nombre, categoría o producto…"
+           autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true" data-bwignore />
     <select id="famCat" title="Filtrar por categoría"></select>
     <select id="famCrit" title="Filtrar por tipo de agrupación"></select>
     <span id="famEstado" class="panel-estado"></span>
@@ -243,7 +257,8 @@
   <div class="modal-card modal-slim">
     <button class="modal-close" id="pickClose" aria-label="Cerrar">×</button>
     <h3 class="modal-title" id="pickTitulo">Elegir productos</h3>
-    <input id="pickQ" type="search" placeholder="Buscar por nombre, código o medida…" autocomplete="off" />
+    <input id="pickQ" type="search" name="buscar-para-agrupar" placeholder="Buscar por nombre, código o medida…"
+           autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true" data-bwignore />
     <div id="pickLista" class="pick-lista"></div>
     <div class="dlg-foot">
       <span id="pickN" class="fam-aviso"></span>
@@ -301,12 +316,21 @@
     </div>
     <div class="datos-sec">Sincronización en línea (Supabase)</div>
     <div id="sbEstadoTxt" class="datos-stats"></div>
-    <div id="sbLoginRow" class="datos-row" style="flex-wrap:wrap">
-      <input id="sbEmail" class="sb-input" type="email" placeholder="correo" autocomplete="username" />
-      <input id="sbPass" class="sb-input" type="password" placeholder="contraseña" autocomplete="current-password" />
-      <button id="sbLogin" class="btn-datos">🔐 Iniciar sesión</button>
-      <button id="sbCrear" class="btn-datos" title="¿Primera vez? Crea tu cuenta con el PIN que te dé el responsable">＋ Crear mi cuenta</button>
-    </div>
+    <!-- Los campos de correo y contraseña van DENTRO de un <form> a propósito.
+         Sin él, el navegador trata toda la página como un formulario y su gestor
+         de contraseñas acaba escribiendo el correo guardado en el primer campo
+         de texto que encuentra — que era el buscador de productos, y aparecía
+         relleno en cada recarga. Con el formulario acotado, Chrome ancla ahí el
+         autocompletado y deja en paz al resto de la página.
+         `onsubmit` devuelve false porque no hay envío que hacer: la sesión la
+         abre sbLogin por JavaScript, y sin esto un Enter recargaría la página y
+         se perdería el avance sin guardar. -->
+    <form id="sbLoginRow" class="datos-row" style="flex-wrap:wrap" onsubmit="return false">
+      <input id="sbEmail" class="sb-input" type="email" name="correo" placeholder="correo" autocomplete="username" />
+      <input id="sbPass" class="sb-input" type="password" name="clave" placeholder="contraseña" autocomplete="current-password" />
+      <button id="sbLogin" type="submit" class="btn-datos">🔐 Iniciar sesión</button>
+      <button id="sbCrear" type="button" class="btn-datos" title="¿Primera vez? Crea tu cuenta con el PIN que te dé el responsable">＋ Crear mi cuenta</button>
+    </form>
 
     <!-- ===== Alta de cuenta con PIN del responsable =====
          El PIN NO le llega al que pide entrar: le llega al responsable, que
@@ -321,23 +345,23 @@
       <div id="altaPaso1">
         <p class="alta-txt">Escribe tu nombre y tu correo. Le mandaremos un <b>PIN al responsable
            del catálogo</b>; pídeselo a él y con eso terminas tu registro.</p>
-        <div class="datos-row" style="flex-wrap:wrap">
-          <input id="altaNombre" class="sb-input" type="text" placeholder="tu nombre" autocomplete="name" />
-          <input id="altaCorreo" class="sb-input" type="email" placeholder="tu correo" autocomplete="username" />
-          <button id="altaPedir" class="btn-asignar">Pedir PIN al responsable</button>
-        </div>
+        <form class="datos-row" style="flex-wrap:wrap" onsubmit="return false">
+          <input id="altaNombre" class="sb-input" type="text" name="nombre" placeholder="tu nombre" autocomplete="name" />
+          <input id="altaCorreo" class="sb-input" type="email" name="correo" placeholder="tu correo" autocomplete="username" />
+          <button id="altaPedir" type="submit" class="btn-asignar">Pedir PIN al responsable</button>
+        </form>
       </div>
 
       <div id="altaPaso2" hidden>
         <p class="alta-txt" id="altaAviso"></p>
-        <div class="datos-row" style="flex-wrap:wrap">
-          <input id="altaPin" class="sb-input" type="text" inputmode="numeric" maxlength="6"
+        <form class="datos-row" style="flex-wrap:wrap" onsubmit="return false">
+          <input id="altaPin" class="sb-input" type="text" inputmode="numeric" maxlength="6" name="pin"
                  placeholder="PIN de 6 números" autocomplete="one-time-code" />
-          <input id="altaPass" class="sb-input" type="password" placeholder="tu nueva contraseña (8 o más)" autocomplete="new-password" />
-          <input id="altaPass2" class="sb-input" type="password" placeholder="repite la contraseña" autocomplete="new-password" />
-          <button id="altaCrear" class="btn-asignar">Crear mi cuenta</button>
-          <button id="altaVolver" class="btn-datos">← No tengo el PIN</button>
-        </div>
+          <input id="altaPass" class="sb-input" type="password" name="clave-nueva" placeholder="tu nueva contraseña (8 o más)" autocomplete="new-password" />
+          <input id="altaPass2" class="sb-input" type="password" name="clave-repetir" placeholder="repite la contraseña" autocomplete="new-password" />
+          <button id="altaCrear" type="submit" class="btn-asignar">Crear mi cuenta</button>
+          <button id="altaVolver" type="button" class="btn-datos">← No tengo el PIN</button>
+        </form>
       </div>
 
       <div id="altaEstado" class="alta-estado"></div>
