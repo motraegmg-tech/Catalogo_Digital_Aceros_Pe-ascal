@@ -3,10 +3,11 @@ import { state, DATA, setCatalogData, cargarFotosManifest, CAT_OCULTA, ETQ_OBSOL
 import { addToCartLogic, addManyToCartLogic, setQtyLogic, buildWhatsAppUrl, getCartItems } from '../core/cartService.js';
 import { cargarFamilias, indexarFamilias } from '../core/familiaService.js';
 import { AJUSTES, cargarAjustes } from '../core/ajustesService.js';
+import { descuentoDe, etiquetaDescuento, textoDescuento } from '../core/descuentosService.js';
 import { setSinonimos } from '../core/searchService.js';
 import { registrarVista, registrarAgregado, registrarPedido, registrarBusqueda } from '../core/metricsService.js';
 import { supabase } from '../core/supabaseClient.js';
-import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, buildFichaFamilia, PIN_SVG, getSearchResults } from './ui.js';
+import { $, renderGrid, renderSidebar, renderSubchips, refreshCartUI, applyView, setView, openCart, closeCart, closeCats, toggleCats, pulseCart, toggleAdminUI, esMovil, el, esc, thumb, trasElegirCat, buildFichaFamilia, PIN_SVG, getSearchResults, estampaDescuento, esBajoPedido } from './ui.js';
 
 // --- Orquestador Principal de UI ---
 function renderAllUI() {
@@ -62,19 +63,26 @@ function handleViewProduct(p) {
   const photo = el('div','modal-photo');
   const ph = thumb(p); ph.style.cursor = 'default';
   photo.appendChild(ph);
-  
+  // La estampa de descuento va sobre la foto, arriba a la derecha: el mismo
+  // sitio que en la tarjeta, para que se reconozca al abrir la ficha.
+  const desc = descuentoDe(p.cod);
+  const est = estampaDescuento(desc);
+  if (est) photo.appendChild(est);
+
   const info = el('div','modal-info');
   const ovrName = state.edit ? ' editable' : '';
   info.innerHTML = `
     <div class="modal-cat">${esc(p.cat)}</div>
     <div class="modal-name${ovrName}">${esc(p.nom)}</div>
+    ${desc ? `<div class="ficha-desc"><b>${esc(etiquetaDescuento(desc))}</b><span>${esc(textoDescuento(desc))}${desc.nota ? ' · '+esc(desc.nota) : ''}</span></div>` : ''}
+    ${esBajoPedido(p) ? `<div class="ficha-pedido"><b>Volumen bajo pedido</b><span>Este producto se surte por encargo: al recibir tu pedido te confirmamos tiempo de entrega y volumen mínimo.</span></div>` : ''}
     <div class="spec"><b>Código</b><span>${esc(p.cod)}</span></div>
     <div class="spec"><b>Tipo</b><span class="${ovrName}">${esc(p.sub||'—')}</span></div>
     <div class="spec spec-med"><b>Medida</b><span class="${ovrName}">${esc(p.med||'—')}</span></div>
     ${p.prov ? `<div class="spec"><b>Proveedor</b><span>${esc(p.prov)}</span></div>` : ''}
     ${state.edit ? `<div class="fname">Foto esperada: fotos/${p.id}.webp</div>` : ''}
     <div class="modal-cta"><button class="btn-quote" id="mQuote">Agregar al pedido y cotizar</button></div>`;
-  
+
   b.append(photo, info);
   $('#mQuote').onclick = () => { handleAddToCart(p); $('#modal').hidden=true; openCart(); };
   abrirModal(false);
@@ -225,6 +233,7 @@ async function init() {
     // El diccionario de búsqueda tiene que estar puesto ANTES del primer render:
     // si alguien llega con una búsqueda ya escrita, debe traducirse igual.
     console.log(`[busqueda] ${setSinonimos(AJUSTES.sinonimos)} traducción(es) activas.`);
+    console.log(`[descuentos] ${AJUSTES.descuentos} producto(s) con descuento vigente.`);
     renderAllUI();
   }
 

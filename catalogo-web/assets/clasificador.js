@@ -37,6 +37,17 @@ const ETIQUETAS = [
      entrando a esta marca. Ver ETQ_OCULTA. */
   { id:'obsoleto', label:'Productos obsoletos', corto:'Obsoleto',
     oculta:true, ayuda:'Ya no se venden. No aparecen en ninguna otra lista ni en el catálogo del cliente, ni cuentan en el total de arriba. Quítales la marca para devolverlos.' },
+
+  /* Lo que la empresa SÍ vende pero no tiene en mostrador: se surte por encargo
+     y por volumen. A diferencia de «obsoleto», esta marca no esconde nada — el
+     producto sigue en su categoría, en el catálogo y en el total.
+
+     Es la PRIMERA marca que ve el cliente final (`publica:true`): el catálogo la
+     pinta en la tarjeta y en la ficha del producto. Por eso su texto está
+     escrito para él y no para quien clasifica. El resto de las marcas son
+     andamiaje interno y el catálogo no las mira. */
+  { id:'volumen-bajo-pedido', label:'Volumen bajo pedido', corto:'Bajo pedido',
+    publica:true, ayuda:'Se surte por encargo, no de existencia en mostrador. El catálogo se lo avisa al cliente en la tarjeta y en la ficha del producto, antes de que arme el pedido.' },
 ];
 
 /* ---------- marcas retiradas del panel (2026-08-04, decisión de Gonzalo) ----
@@ -60,6 +71,9 @@ const ETQMAP = new Map(ETIQUETAS.map(e=>[e.id,e]));
    se resuelve desde ETIQUETAS para que agregar otra en el futuro no obligue a
    perseguir cadenas sueltas por el archivo. */
 const ETQ_OCULTA = (ETIQUETAS.find(e=>e.oculta)||{}).id || null;
+/* Las marcas que el catálogo del cliente SÍ pinta. La vista previa de aquí las
+   enseña igual, para que lo que se ve en el panel sea lo que verá el cliente. */
+const ETQ_PUBLICAS = ETIQUETAS.filter(e=>e.publica);
 function etqDe(p){ return Array.isArray(p.etq) ? p.etq : []; }
 function tieneEtq(p,id){ return etqDe(p).includes(id); }
 function etqKey(p){ return etqDe(p).slice().sort().join(','); }
@@ -2567,16 +2581,58 @@ function fila(p, idx){
 }
 
 /* ---------- fotos: Storage (en línea) con respaldo a los archivos locales ----------
-   Si el producto tiene una foto subida desde el clasificador, el campo `foto`
-   guarda su URL pública de Supabase Storage y ésa manda. Si no, se usa la
-   convención histórica fotos/<id>.<ext> que ya vive en el repositorio. */
+   El campo `foto` guarda TRES cosas distintas y las tres tienen que resolverse:
+
+     · una URL de Supabase Storage — la que sube este mismo clasificador;
+     · el NOMBRE de un archivo de fotos/, que puede ser el de OTRO producto: así
+       es como los productos de una misma agrupación comparten una foto
+       («unificar fotos por agrupación», 2026-08-04);
+     · nada, y entonces vale la convención histórica fotos/<id>.<ext>.
+
+   El del medio faltaba, aquí y en el catálogo: 347 productos apuntaban a la
+   foto común de su agrupación y las dos partes seguían pintando
+   fotos/<id>.webp — o el hueco, o la foto vieja del producto.
+
+   Esta función es GEMELA de fuentesFoto() en assets/ui.js. Están duplicadas a
+   propósito (el clasificador corre sin módulos), pero tienen que cambiar juntas
+   o el panel y el catálogo vuelven a enseñar imágenes distintas. */
 function esUrlFoto(f){ return typeof f==='string' && /^https?:\/\//i.test(f); }
+function rutaFoto(f){
+  const s = typeof f==='string' ? f.trim() : '';
+  if (!s) return '';
+  if (esUrlFoto(s)) return s;
+  return /^fotos\//i.test(s) ? s : 'fotos/'+s.replace(/^\/+/,'');
+}
 function fuentesFoto(p){
   const out = [];
-  if (esUrlFoto(p.foto)) out.push(p.foto);
+  const r = rutaFoto(p.foto);
+  if (r) out.push(r);
   for (const e of FOTO_EXTS) out.push(`fotos/${p.id}.${e}`);
   return out;
 }
+
+/* Qué archivos hay de verdad en la carpeta fotos/ del repositorio.
+   Lo usa la foto prestada de una agrupación (fotoEfectivaFamilia, en
+   clasificador-plus.js) para poder ver lo mismo que ve el catálogo: un producto
+   puede no tener nada escrito en `foto` y aun así tener su archivo
+   fotos/<id>.webp, y el catálogo sí lo encuentra porque carga este manifiesto.
+   Sin esto, el panel decía «ninguno tiene foto» mientras el cliente veía una.
+
+   Es opcional por diseño: bajo file:// (doble clic) el fetch falla, el conjunto
+   se queda vacío y sólo se pierde ese respaldo. Nunca debe frenar el arranque. */
+const FOTOS_LOCALES = new Set();
+const tieneFotoLocal = (p) => FOTOS_LOCALES.size > 0 && FOTOS_LOCALES.has(p.id);
+/* La guardia no sobra: esto corre al cargar el archivo. Si `fetch` no existiera
+   —o lanzara en vez de rechazar— se caería clasificador.js entero y el panel no
+   abriría, por un respaldo que es opcional. */
+try{
+  if (typeof fetch === 'function'){
+    fetch('data/fotos-manifest.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(a => { if (Array.isArray(a)) a.forEach(s=>FOTOS_LOCALES.add(s)); })
+      .catch(()=>{});
+  }
+}catch{}
 
 /* Sube una imagen al bucket `fotos`, apunta la columna `foto` del producto a su
    URL pública y refleja el cambio en el trabajo local (y por tanto en data/). */
@@ -2770,11 +2826,23 @@ function clasifTag(p){
 function pcard(p){
   const c = el('div','pcard');
   c.appendChild(thumbEl(p));
+  /* Vista catálogo = lo que verá el cliente, así que también su estrella de
+     descuento. La lista vive en clasificador-plus.js, que se carga DESPUÉS de
+     este archivo: por eso se pregunta por `window` y con guardia. */
+  const desc = (typeof window.plusDescuentoDe === 'function') ? window.plusDescuentoDe(p.cod) : null;
+  if (desc){
+    const est = el('span','estampa-desc'+(String(desc.valor).length>3?' larga':''),
+      `<b>${esc(desc.tipo==='$' ? '-$'+desc.valor : '-'+desc.valor+'%')}</b>`);
+    est.title = 'Descuento publicado';
+    c.appendChild(est);
+  }
   const body = el('div','pcard-body');
   body.appendChild(el('div','pcard-name', esc(p.nom)));
   const meta = el('div','pcard-meta');
   const cl = clasifTag(p);
   meta.appendChild(el('span','tag '+(cl.pend?'pend':'sub'), esc(cl.txt)));
+  // Las marcas que el cliente ve (hoy, «Volumen bajo pedido»).
+  for (const e of ETQ_PUBLICAS) if (tieneEtq(p, e.id)) meta.appendChild(el('span','tag pedido', esc(e.label)));
   if (p.sub2) meta.appendChild(el('span','tag sub', esc(p.sub2)));
   if (p.med) meta.appendChild(el('span','med-box','<i>Medida</i><b>'+esc(p.med)+'</b>'));
   body.appendChild(meta);
@@ -2904,7 +2972,7 @@ function abrirFicha(id){
     </div>
     <div class="f-field"><label>Marcas de gestión (se aplican al instante)</label>
       <div class="f-etq">${ETIQUETAS.map(e=>
-        `<label class="f-etq-item${e.oculta?' f-etq-oculta':''}" title="${esc(e.ayuda||'')}"><input type="checkbox" data-etq="${e.id}"${tieneEtq(p,e.id)?' checked':''} /> ${esc(e.label)}</label>`
+        `<label class="f-etq-item${e.oculta?' f-etq-oculta':''}${e.publica?' f-etq-publica':''}" title="${esc(e.ayuda||'')}"><input type="checkbox" data-etq="${e.id}"${tieneEtq(p,e.id)?' checked':''} /> ${esc(e.label)}</label>`
       ).join('')}</div>
     </div>
     ${s ? `<div class="f-sug">${s.aprox?'≈':'Regla:'} sugerencia <b>${esc(s.cat)}${s.sub&&s.sub!==s.cat?' › '+esc(s.sub):''}</b>
@@ -3552,14 +3620,54 @@ function selfTest(){
        que la sincronización dejara de arrastrarlas y se perdieran solas. */
     t('las marcas retiradas ya no están en el panel',
       ETIQUETAS_RETIRADAS.every(x=>!ETQMAP.has(x)));
-    t('sólo queda la marca de obsoletos',
-      ETIQUETAS.length===1 && ETIQUETAS[0].id==='obsoleto');
+    /* Dos marcas y sólo dos, con papeles opuestos: `obsoleto` esconde y
+       `volumen-bajo-pedido` avisa. Confundirlas sería sacar del catálogo lo que
+       sólo había que rotular, así que se comprueban por separado. */
+    t('las marcas del panel son las dos previstas',
+      ETIQUETAS.length===2 && ETQMAP.has('obsoleto') && ETQMAP.has('volumen-bajo-pedido'));
+    t('bajo pedido NO esconde el producto',
+      ETQMAP.get('volumen-bajo-pedido').oculta !== true && ETQ_OCULTA==='obsoleto');
+    t('bajo pedido es la marca que ve el cliente',
+      ETQ_PUBLICAS.length===1 && ETQ_PUBLICAS[0].id==='volumen-bajo-pedido');
+    t('obsoleto no se publica al cliente',
+      !ETQMAP.get('obsoleto').publica);
+    t('marcar bajo pedido no saca al producto de su categoría', (()=>{
+      const p = PRODUCTOS.find(x=>!esObsoleto(x) && !tieneEtq(x,'volumen-bajo-pedido'));
+      if (!p) return true;
+      const cat = p.cat, n = contar().total;
+      marcarEtiqueta([p.id], 'volumen-bajo-pedido', true, 'selftest');
+      const q = IDX.get(p.id);
+      // Sigue en su categoría, sigue contando en el total y NO queda escondido.
+      const ok = q.cat===cat && contar().total===n && !esObsoleto(q);
+      undo();
+      return ok && !tieneEtq(IDX.get(p.id), 'volumen-bajo-pedido');
+    })());
     t('una marca retirada sobrevive en el producto', (()=>{
       const x = PRODUCTOS.find(y=>etqDe(y).includes('sin-foto'));
       return !x || etqKey(x).includes('sin-foto');     // etqKey es lo que se sube
     })());
     t('el conteo no inventa filas para las retiradas',
       ETIQUETAS_RETIRADAS.every(x=>!contar().etq.has(x)));
+
+    /* ---- de dónde sale la imagen de un producto ----
+       El campo `foto` puede traer el NOMBRE del archivo de OTRO producto: así
+       comparten foto los de una misma agrupación. Ese caso se ignoraba y el
+       panel y el catálogo acababan pintando imágenes distintas. */
+    t('una URL de Storage se usa tal cual',
+      rutaFoto('https://x.co/a.webp')==='https://x.co/a.webp');
+    t('un nombre de archivo apunta a fotos/',
+      rutaFoto('032A.webp')==='fotos/032A.webp');
+    t('un nombre que ya trae fotos/ no se duplica',
+      rutaFoto('fotos/032A.webp')==='fotos/032A.webp');
+    t('sin foto no se inventa ruta', rutaFoto('')==='' && rutaFoto(null)==='');
+    t('la foto compartida gana a la convención por id', (()=>{
+      const f = fuentesFoto({ id:'023A', foto:'032A.webp' });
+      return f[0]==='fotos/032A.webp' && f.includes('fotos/023A.webp');
+    })());
+    t('sin foto propia queda la convención por id', (()=>{
+      const f = fuentesFoto({ id:'023A', foto:'' });
+      return f[0]==='fotos/023A.webp';
+    })());
     // La clave de sync debe distinguir cada campo que se sube, o no viajaría.
     // Ojo: sbClave() devuelve un objeto {g,f}, así que hay que comparar sus
     // partes — con !== se compararían referencias y la prueba pasaría siempre.

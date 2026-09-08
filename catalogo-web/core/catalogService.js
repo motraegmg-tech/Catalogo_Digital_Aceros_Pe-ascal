@@ -59,6 +59,11 @@ export const fetchCatalogo = async () => {
     sub: p.subcategoria,
     med: p.medidas,
     foto: p.foto,
+    /* Marcas de gestión. La mayoría son andamiaje interno y NO se pintan; la
+       ficha sólo mira las que el clasificador declaró públicas (hoy, «Volumen
+       bajo pedido»). Viajaban ya en la vista `catalogo_publico`: lo que faltaba
+       era traerlas al objeto que usa la interfaz. */
+    etq: Array.isArray(p.etiquetas) ? p.etiquetas : [],
     // La vista sólo entrega `proveedor` cuando el clasificador lo publicó
     // (mostrar_proveedor = true); si no, llega NULL y la ficha no lo muestra.
     prov: p.mostrar_proveedor ? (p.proveedor || '') : ''

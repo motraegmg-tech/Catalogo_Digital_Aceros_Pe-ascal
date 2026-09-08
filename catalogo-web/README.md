@@ -160,6 +160,21 @@ dato guardado al aprobarla—, y la ficha abre con la ruta **Categoría › Subc
 14 familias que traen subgrupos de verdad (Discos → Corte · Desbaste · Diamante…) los
 muestran como secciones dentro de la tabla.
 
+
+### 🖼 Mostrar fotos (dentro de la ficha)
+
+La tabla de medidas es rápida de leer **cuando ya sabes cuál quieres**. Cuando no —perfiles
+ornamentales, chapas, puntas—, la medida no basta y hay que ver la pieza.
+
+Por eso toda ficha de agrupación trae el botón **«🖼 Mostrar fotos»**, que cambia la tabla por
+**una tarjeta con la foto de cada uno** de sus productos: foto, medida, nombre, código y su
+contador. Sin tope de filas: pedir las fotos es pedir verlos **todos**, y cortar en doce sería
+deshacer lo que el cliente acaba de pedir.
+
+Las dos vistas son **el mismo pedido**: lo que se elige con las fotos sigue elegido al volver a
+la tabla, porque las dos escriben en el mismo contador. El botón vuelve con **«☰ Ver como
+lista»**.
+
 ### En qué categoría aparece la ficha
 
 **En la que están sus productos, no en la que dice el campo `cat`.** La calcula
@@ -202,6 +217,37 @@ aqua**; las que la toman prestada, borde gris. Así se ve de un vistazo qué fal
 
 > La foto se sube a Storage al recortarla, pero la fila **sólo cambia al pulsar «Guardar
 > agrupación»** — como todo lo demás del editor, para que *Cancelar* siga significando cancelar.
+
+#### La foto prestada: una sola regla para el panel y para el catálogo
+
+**Corregido el 2026-09-01.** Hasta esa fecha el clasificador y el catálogo enseñaban fotos
+**distintas** en la misma agrupación, y nada lo avisaba. En «Discos», el panel mostraba el
+disco de corte de madera y el cliente veía el de desbaste de metal.
+
+Eran dos fallos encadenados:
+
+1. **Órdenes distintos.** El clasificador recorría los códigos *en el orden en que están
+   guardados en la agrupación*; `portadaDe()` del catálogo los recorría *ya ordenados por
+   medida*. Dos listas, dos «primer producto con foto», dos fotos.
+2. **`foto` con nombre de archivo.** El campo `foto` guarda tres cosas: una URL de Storage, el
+   **nombre de un archivo de `fotos/`** (así comparten foto los productos de una misma
+   agrupación, ver *Unificar fotos por agrupación*) o nada. Las dos partes ignoraban el caso
+   del medio y pintaban `fotos/<id>.webp`: **347 productos** apuntaban a la foto común de su
+   agrupación y salían con la foto vieja, o con el hueco «Sin foto».
+
+La regla, ahora idéntica en `assets/ui.js` (`fuentesFoto`, `portadaDe`) y en
+`assets/clasificador.js` + `clasificador-plus.js` (`rutaFoto`, `fuentesFoto`,
+`fotoEfectivaFamilia`):
+
+1. la foto propia de la agrupación, si la tiene;
+2. si no, el **primer producto con algo en `foto`**, en el orden de la agrupación;
+3. si tampoco, el primero cuyo archivo `fotos/<id>.<ext>` exista de verdad — el catálogo lo
+   sabe por `data/fotos-manifest.json`, y el clasificador lo carga ahora también (bajo
+   `file://` el fetch falla sin consecuencias y sólo se pierde este tercer respaldo).
+
+Comprobado contra las **175 agrupaciones de la base**: las dos partes eligen la misma imagen en
+todas. Hay pruebas de la regla en las dos autopruebas; si alguien vuelve a cambiar el orden en
+un lado y no en el otro, se caen.
 
 ### Dónde viven y cómo se editan
 
@@ -251,7 +297,7 @@ Está dividido en **cinco pestañas**, una por tipo de trabajo:
 |---|---|
 | 📦 **Productos** | Dar de alta, corregir, poner foto, clasificar y retirar productos |
 | 🗂 **Agrupaciones** | Qué productos se muestran juntos en una tarjeta y **con qué criterio** |
-| ⭐ **Destacados** | Qué sale primero en la portada, con la cuenta real de lo que piden los clientes |
+| ⭐ **Destacados** | Qué sale primero en la portada, la cuenta real de lo que piden los clientes y los **descuentos** |
 | 🏬 **Sucursales y textos** | Direcciones, WhatsApp, rótulos del catálogo y tipos de agrupación |
 | ❓ **Cómo se usa** | La guía paso a paso, dentro de la propia herramienta |
 
@@ -266,11 +312,19 @@ Está dividido en **cinco pestañas**, una por tipo de trabajo:
   crearlo se abre su ficha para ponerle foto.
 - **⧉ Duplicar producto** (en la ficha): capturar la misma pieza en doce medidas dejaría de
   ser trabajo humano — duplicar deja todo puesto y sólo hay que cambiar código y medida.
-- **✎ cambiar** (junto al código, sólo en productos capturados aquí): corrige un código mal
-  escrito. Por dentro es una baja y un alta, porque el código *es* la identidad de la fila en
-  Supabase; se conservan nombre, medida, categoría y proveedor, y hay que volver a subir la foto.
-- **🚫 Retirar del catálogo**: deja de verse para el cliente pero **no se pierde** (queda en
-  «Productos Descontinuados / Ocultos» y se devuelve moviéndolo a su categoría). Es la baja normal.
+- **✎ cambiar** (junto al código, en la ficha): corrige un código mal escrito. Es un
+  **renombrado real** (`update productos set codigo=… where id=…`), no una baja y un alta: el
+  `id` no cambia, así que conserva foto y clasificación, y las agrupaciones que lo mencionan se
+  reescriben solas.
+- **🚫 Retirar del catálogo**: le pone la marca de gestión **«Productos obsoletos»**. Sale de
+  todas las listas, del conteo de arriba y del catálogo del cliente, pero **conserva su
+  categoría**: se devuelve quitándole la marca. Es la baja normal. (La categoría
+  «Productos Descontinuados / Ocultos» quedó **jubilada** el 2026-08-04.)
+- **Volumen bajo pedido**: la otra marca de gestión, y la **única que ve el cliente**. No
+  esconde nada — el producto sigue en su categoría, en el catálogo y en el total—, pero el
+  catálogo avisa **en la tarjeta y en la ficha** que se surte por encargo y no de existencia en
+  mostrador. Se pone desde la ficha o arrastrando varios a esa fila del árbol. Una avisa, la
+  otra retira: no hay que confundirlas.
 - **🗑 Eliminar**: borrado de verdad en la base. Sólo para deshacer una captura equivocada;
   el diálogo lo dice con todas sus letras cuando el producto viene del catálogo original.
 - Los productos capturados aquí se distinguen en la lista por una **franja verde** a la izquierda.
@@ -304,6 +358,34 @@ Está dividido en **cinco pestañas**, una por tipo de trabajo:
   dato más accionable de todo el catálogo. Y después, lo que más se busca en general.
 - Requiere sesión (los datos de pedidos no son públicos). Al principio estará vacío: se
   llena solo conforme el catálogo se usa.
+
+
+### 🏷 Descuentos — la estrella roja
+Vive **en la misma pestaña de Destacados**, debajo. Es la otra palanca sobre qué se vende, así
+que comparte sitio con lo que sale primero.
+
+- **＋ Agregar productos** (selector de siempre) o **＋ Agregar una agrupación completa**, que
+  mete de golpe las 32 medidas de una solera sin llenar 32 renglones a mano.
+- Por renglón: **tipo** (% o pesos), **cuánto**, **hasta qué día** (vacío = hasta que se quite)
+  y una **nota** opcional que el cliente ve en la ficha («comprando 10 o más»).
+- Barra superior **«Aplicar a todos»**: el mismo descuento a toda la lista de un golpe.
+- La columna derecha dice si está **corriendo**, **terminado** o **programado**. Lo que no corre
+  se pinta en gris: el cliente no lo ve.
+- **☁ Publicar descuentos** los sube a `ajustes.descuentos`. Al publicar, lo que esté a medio
+  llenar (sin valor, o con un porcentaje mayor que 99) **no se sube**, y se avisa cuántos y por
+  qué — antes que dejar al encargado creyendo que publicó una promoción que nadie ve.
+
+En el catálogo, un producto con descuento vigente sale con una **estrella roja en la esquina
+superior derecha de su foto** (`-15%` / `-$250`), y con el detalle completo dentro de su ficha.
+La tarjeta de una **agrupación** enseña el mejor descuento de la ficha, y dice **«hasta»**
+cuando no lo llevan todos sus productos: agrupar es la vista por defecto, así que sin esto una
+promoción dentro de «Solera» no la vería nadie.
+
+> **Aquí no se escriben precios, y es a propósito.** La regla de Fase 1 sigue en pie: el
+> catálogo dice cuánto se descuenta, nunca de cuánto se parte. El precio se cotiza por WhatsApp.
+
+> Quitar una promoción es **quitar el renglón (o poner la fecha de fin) y volver a publicar**.
+> Que haya pasado la fecha en la cabeza de alguien no la apaga.
 
 ### 🏬 Sucursales y textos
 - Nombre, WhatsApp, dirección, orden y visibilidad de cada sucursal, con enlaces para
@@ -389,11 +471,12 @@ sólo puede confundir.
   la altura a la lista y **vuelve en cuanto empiezas a subir**. Nunca se esconde
   mientras escribes en ella (el atajo `/` la trae de vuelta sola).
 - Atajos: `/` buscar · `Esc` cerrar/deseleccionar · `Ctrl+Z` deshacer · `←/→` navegar fichas.
-- Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie). Son **59
+- Autoprueba: abrir `clasificador.html?selftest=1` (franja PASS/FAIL al pie). Son **125
   comprobaciones**: reglas de sugerencia, exportadores, proveedores, claves de
-  sincronización, altas y bajas de producto, y criterios, fotos y estructura de las
-  agrupaciones. Las últimas 17 las añade `clasificador-plus.js` al final de la franja, porque
-  se carga después de que corre la autoprueba principal.
+  sincronización, altas y bajas de producto, marcas de gestión, de dónde sale la foto de cada
+  producto, descuentos, y criterios, fotos y estructura de las agrupaciones. Las últimas 39 las
+  añade `clasificador-plus.js` al final de la franja, porque se carga después de que corre la
+  autoprueba principal.
 
 ### Trabajo en paralelo (dos o más personas a la vez)
 
@@ -473,7 +556,7 @@ código indicado en `..\datos\plantilla_fotos.csv` (`.webp/.jpg/.png`). Aparecen
 |---|---|---|
 | `productos` | los 3,222 + los que dé de alta el encargado | Clasificador → Productos |
 | `familias` | qué códigos van juntos, con qué criterio y en qué subgrupos | Clasificador → Agrupaciones |
-| `ajustes` | `destacados`, `textos_catalogo`, `criterios_agrupacion`, `sinonimos_busqueda` | Clasificador → Destacados / Sucursales y textos |
+| `ajustes` | `destacados`, `descuentos`, `textos_catalogo`, `criterios_agrupacion`, `sinonimos_busqueda` | Clasificador → Destacados / Sucursales y textos |
 | `sucursales` | nombre, WhatsApp, dirección, orden, visibilidad | Clasificador → Sucursales y textos |
 | `eventos_catalogo` | uso real del catálogo (ver / agregar / pedir / buscar) | lo escribe el catálogo público |
 | `editores` | quién puede escribir. Estar autenticado NO basta | Supabase, o el alta con PIN |

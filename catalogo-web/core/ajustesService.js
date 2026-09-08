@@ -13,6 +13,7 @@
  */
 import { supabase } from './supabaseClient.js';
 import { CONFIG } from './store.js';
+import { cargarDescuentos } from './descuentosService.js';
 
 /* Textos por defecto: los mismos que siembra la migración. Si `ajustes` no
    responde, el catálogo se lee igual de bien. */
@@ -43,6 +44,7 @@ export const AJUSTES = {
   sucursales: CONFIG.sucursales,     // arranca con las de config.js
   textos: { ...TEXTOS_BASE },
   destacados: [],                    // [{t:'p'|'f', c:'código o id'}]
+  descuentos: 0,                     // cuántos hay vigentes (la lista vive en descuentosService)
   criterios: CRITERIOS_BASE,
   sinonimos: SINONIMOS_BASE,         // [{de:'ptr', a:'tubular cuadrado'}]
   enLinea: false,                    // ¿se pudo leer de la base?
@@ -85,6 +87,9 @@ export async function cargarAjustes() {
       if (t && typeof t === 'object') AJUSTES.textos = { ...TEXTOS_BASE, ...t };
       const d = mapa.get('destacados');
       if (Array.isArray(d)) AJUSTES.destacados = d.filter(x => x && x.c);
+      /* Descuentos: se guardan en su propio módulo ya normalizados y con la
+         vigencia resuelta, porque cada tarjeta los consulta por código. */
+      AJUSTES.descuentos = cargarDescuentos(mapa.get('descuentos'));
       const c = mapa.get('criterios_agrupacion');
       if (Array.isArray(c) && c.length) AJUSTES.criterios = c;
       // El diccionario de la base SE SUMA al de arranque, no lo reemplaza: las

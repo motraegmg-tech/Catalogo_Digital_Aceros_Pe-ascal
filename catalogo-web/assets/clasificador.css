@@ -116,6 +116,9 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
 .tax-row.etq.etq-oculta .n{background:#e8ccd1;color:var(--oxido)}
 .tax-row.etq.etq-oculta.on{background:var(--oxido);border-color:var(--oxido);color:#fff}
 .f-etq-item.f-etq-oculta{color:var(--oxido);font-weight:600}
+/* La marca que SÍ ve el cliente final: se distingue de las internas. */
+.f-etq-item.f-etq-publica{color:#8a4b14;font-weight:600}
+.f-etq-item.f-etq-publica::after{content:"lo ve el cliente";font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#fdf0e2;border:1px solid #e6bc8e;border-radius:5px;padding:1px 6px}
 /* La cabecera avisa cuando el buscador se salió de la categoría del árbol. */
 .cuenta-global{color:var(--oxido);font-weight:700}
 .tagetq{display:inline-block;font-size:10.5px;line-height:1.5;padding:1px 7px;margin-left:5px;
@@ -595,6 +598,63 @@ code{font-family:var(--mono);font-size:.92em;background:var(--gris-50);padding:1
   background:#fdf3e3;border:1px solid #e3c98e;border-radius:9px;padding:6px 10px}
 .bus-term{font-weight:700;font-size:12.5px;color:var(--carbon);flex:1;min-width:90px}
 .bus-n{font-size:10.5px;color:#8a6414}
+
+/* ===== Descuentos (pestaña Destacados) =====
+   Cada fila es un producto en promoción. La estrella roja de la izquierda es la
+   misma que verá el cliente en el catálogo, para que no haya que imaginársela. */
+.panel-acts-sec{margin:0 0 10px}
+.desc-lista{max-height:60vh;overflow:auto}
+.desc-masivo{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  background:var(--gris-50);border:1px solid var(--line);border-radius:9px;
+  padding:8px 10px;margin-bottom:10px}
+.desc-masivo-tit{font-size:11.5px;font-weight:700;color:var(--grafito)}
+.desc-resumen{font-size:11.5px;color:var(--gris);margin:0 0 6px}
+.desc-resumen b{color:var(--grafito)}
+
+.desc-fila{display:grid;grid-template-columns:60px minmax(130px,1.4fr) auto minmax(90px,.7fr) auto;
+  gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--gris-50);font-size:12.5px}
+/* Un descuento apagado (sin valor, terminado o todavía por empezar) no lo ve el
+   cliente: la fila se atenúa para que no se confunda con los que sí corren. */
+.desc-fila.apagado{background:#fbfbfc;color:var(--gris)}
+.desc-fila.huerfano{background:#fdf3e3}
+.desc-sello{display:inline-flex;align-items:center;justify-content:center;
+  background:var(--oxido);color:#fff;border-radius:6px;padding:4px 6px;
+  font-size:12px;font-weight:800;letter-spacing:-.02em}
+.desc-fila.apagado .desc-sello{background:var(--acero)}
+.desc-nom{min-width:0;overflow:hidden}
+.desc-nom i{display:block;font-style:normal;font-size:10.5px;color:var(--gris);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.desc-campos{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.desc-tipo,.desc-valor,.desc-fecha,.desc-nota{
+  padding:6px 8px;border:1px solid var(--acero);border-radius:7px;
+  background:#fff;color:var(--negro);font:inherit;font-size:12px}
+.desc-valor{width:82px}
+.desc-fecha{width:140px}
+.desc-nota{width:190px}
+.desc-tipo:focus,.desc-valor:focus,.desc-fecha:focus,.desc-nota:focus{
+  outline:none;border-color:var(--aqua);box-shadow:0 0 0 3px rgba(14,126,140,.14)}
+.desc-estado{font-size:10.5px;color:var(--gris);line-height:1.3}
+.desc-estado.ok{color:var(--zintro-2);font-weight:700}
+
+/* La estrella de la vista previa del catálogo, dentro del clasificador. Misma
+   forma y mismo rojo que en assets/styles.css: si aquí se ve distinta, el
+   encargado no puede fiarse de la vista previa. */
+.pcard{position:relative}
+.estampa-desc{
+  position:absolute;top:6px;right:6px;z-index:3;pointer-events:none;
+  width:54px;height:54px;display:flex;align-items:center;justify-content:center;
+  text-align:center;background:var(--oxido);color:#fff;line-height:1;
+  clip-path:polygon(50% 0%,61% 17%,80% 10%,80% 31%,98% 35%,86% 50%,98% 65%,
+    80% 69%,80% 90%,61% 83%,50% 100%,39% 83%,20% 90%,20% 69%,2% 65%,14% 50%,
+    2% 35%,20% 31%,20% 10%,39% 17%);
+  filter:drop-shadow(0 2px 6px rgba(19,23,26,.42));
+}
+.estampa-desc b{font-size:13px;font-weight:800;letter-spacing:-.02em}
+.estampa-desc.larga b{font-size:10px}
+
+/* Marca «Volumen bajo pedido»: es un aviso al cliente, no una clasificación. */
+.tag.pedido{background:#fdf0e2;color:#8a4b14;border:1px solid #e6bc8e;font-weight:700}
+
 
 /* Campo de foto dentro de un diálogo (alta y duplicado de producto).
    El editor de recorte se abre ENCIMA del diálogo, así que necesita más z-index

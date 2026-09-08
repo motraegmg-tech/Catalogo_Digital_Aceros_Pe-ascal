@@ -1,4 +1,5 @@
-import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet } from '../core/store.js';
+import { state, DATA, CONFIG, saveLS, LS_OVR, LS_VIEW, fotosSet, ETQ_BAJO_PEDIDO } from '../core/store.js';
+import { descuentoDe, etiquetaDescuento, textoDescuento, mejorDescuento } from '../core/descuentosService.js';
 import { getCartItems, cantidadEnCarrito } from '../core/cartService.js';
 import { searchAndSortProducts, normalize, alfa } from '../core/searchService.js';
 import { hayFamilias, familiaDe, subgrupoDe, productosDeFamilia, ordenSubgrupos, ordenarPorMedida, familiaPorId, columnaDe, catPrincipalDe } from '../core/familiaService.js';
@@ -45,9 +46,25 @@ export function clasifLabelFamilia(fam, productos) {
   return { txt: 'Por clasificar', pend: true };
 }
 
+/* De dónde puede salir la imagen de un producto, en orden de preferencia.
+   El campo `foto` guarda TRES cosas distintas y las tres tienen que funcionar:
+
+     · una URL de Supabase Storage — la que sube el clasificador;
+     · el NOMBRE de un archivo de fotos/, que puede ser el de OTRO producto:
+       así es como los productos de una misma agrupación comparten una sola foto
+       («unificar fotos por agrupación», 2026-08-04);
+     · nada, y entonces vale la convención histórica fotos/<id>.<ext>.
+
+   El caso del nombre de archivo era el que faltaba, y no era un detalle: 347
+   productos apuntaban a la foto común de su agrupación y el catálogo seguía
+   pintando fotos/<id>.webp — que o no existía (hueco «Sin foto») o era la foto
+   vieja del producto, es decir, una imagen DISTINTA de la que se ve en el
+   clasificador. */
 function fuentesFoto(p) {
   const out = [];
-  if (typeof p.foto === 'string' && /^https?:\/\//i.test(p.foto)) out.push(p.foto);
+  const f = typeof p.foto === 'string' ? p.foto.trim() : '';
+  if (/^https?:\/\//i.test(f)) out.push(f);
+  else if (f) out.push(/^fotos\//i.test(f) ? f : 'fotos/' + f.replace(/^\/+/, ''));
   CONFIG.fotoExts.forEach(e => out.push(`fotos/${p.id}.${e}`));
   return out;
 }
@@ -80,6 +97,45 @@ function tienefoto(p) {
   // p.id es el mismo valor que fuentesFoto() usa para construir fotos/{p.id}.webp
   const stemFoto = typeof p.foto === 'string' ? p.foto.replace(/\.[^.]+$/, '') : '';
   return fotosSet.has(p.id) || (stemFoto !== '' && fotosSet.has(stemFoto));
+}
+
+/* ===== Avisos que el cliente ve en el producto =====
+   Dos cosas que decide el encargado desde el clasificador y que tienen que
+   llegar a la tarjeta y a la ficha:
+
+     · «Volumen bajo pedido» — marca de gestión del producto. No esconde nada:
+       el producto se vende, pero por encargo y no de existencia en mostrador.
+       Vale la pena decirlo ANTES de que arme el pedido, no después.
+     · el descuento — estampa roja en forma de estrella, arriba a la derecha.
+
+   Del resto de marcas de gestión no se pinta ninguna: son andamiaje interno
+   (`sin-foto` y compañía) y no significan nada para quien compra. */
+
+export const esBajoPedido = (p) => Array.isArray(p.etq) && p.etq.includes(ETQ_BAJO_PEDIDO);
+
+/** El sello «Bajo pedido» de una tarjeta o de una fila. */
+export const chipBajoPedido = () =>
+  el('span', 'tag pedido', 'Volumen bajo pedido');
+
+/**
+ * La estampa de descuento: estrella roja, esquina superior derecha.
+ * `pref` la usa la tarjeta de una agrupación para decir «hasta -15%» cuando no
+ * todos sus productos llevan el mismo descuento — prometer «-15%» a secas sería
+ * mentir en las medidas que no lo tienen.
+ */
+export function estampaDescuento(d, pref) {
+  if (!d) return null;
+  const txt = etiquetaDescuento(d);
+  const s = el('span', 'estampa-desc' + (txt.length > 5 ? ' larga' : ''),
+    (pref ? `<i>${esc(pref)}</i>` : '') + `<b>${esc(txt)}</b>`);
+  s.title = (pref ? pref + ' ' : '') + textoDescuento(d) + (d.nota ? ` · ${d.nota}` : '');
+  return s;
+}
+
+/** Pone la estampa sobre la foto de un producto suelto, si tiene descuento. */
+function ponerEstampaProducto(caja, p) {
+  const est = estampaDescuento(descuentoDe(p.cod));
+  if (est) caja.appendChild(est);
 }
 
 /** Orden alfabético A→Z aplicado al nombre de un producto (ver `alfa`). */
@@ -222,10 +278,34 @@ function entradasNavegando(lista) {
  * La prestada es una emergencia razonable, pero una ficha «Solera» se vende
  * mejor con la foto del producto genérico que con la de la medida que
  * casualmente quedó primera — por eso la propia gana siempre.
+ *
+ * ---- Por qué la prestada se busca EN EL ORDEN EN QUE SE GUARDÓ LA AGRUPACIÓN
+ * Ésta es la regla que hace que el clasificador y el catálogo enseñen la misma
+ * foto, y hasta el 2026-09-01 no coincidían. El clasificador recorría los
+ * códigos tal como están guardados en los subgrupos; aquí se recorría la lista
+ * YA ORDENADA POR MEDIDA, que es otro orden. Resultado: en «Discos» el panel
+ * enseñaba el disco de corte de madera y el catálogo el de desbaste de metal, y
+ * nada avisaba de la diferencia.
+ *
+ * Ahora las dos partes hacen exactamente las mismas dos vueltas sobre la misma
+ * lista y en el mismo orden —el de la agrupación—: primero buscan un producto
+ * con algo en `foto`; si ninguno tiene, uno cuyo archivo `fotos/<id>.<ext>`
+ * exista de verdad. El clasificador carga el mismo manifiesto de fotos para
+ * poder responder igual (ver fotoEfectivaFamilia en clasificador-plus.js).
  */
 function portadaDe(fam, productos) {
   if (fam && fam.foto) return { id: 'fam-' + fam.id, foto: fam.foto, nom: fam.nombre };
-  return productos.find(tienefoto) || productos[Math.floor(productos.length / 2)];
+  /* La ficha puede venir recortada (buscando sólo muestra lo que coincidió),
+     pero la portada de una familia es la misma siempre: se resuelve contra la
+     agrupación completa. */
+  const todos = (fam && productosDeFamilia(fam.id).length) ? productosDeFamilia(fam.id) : productos;
+  /* Segunda vuelta con el manifiesto: un producto puede no tener nada escrito
+     en `foto` y aun así tener su archivo fotos/<id>.webp en el repositorio. Va
+     sobre la MISMA lista y en el MISMO orden que la primera —el de la
+     agrupación— porque el clasificador hace exactamente estas dos vueltas. */
+  return todos.find(p => p.foto)
+      || todos.find(tienefoto)
+      || productos[Math.floor(productos.length / 2)];
 }
 
 export function conteoPorCategoria(lista) {
@@ -298,6 +378,7 @@ export function renderSubchips(onCatSelect, onSubSelect) {
 function cardProducto(p, onAdd, onView) {
   const c = el('div', 'card');
   c.appendChild(thumb(p, onView));
+  ponerEstampaProducto(c, p);
   const body = el('div', 'card-body');
   const name = el('div', 'card-name', esc(p.nom)); name.onclick = () => onView(p);
   body.appendChild(name);
@@ -305,6 +386,7 @@ function cardProducto(p, onAdd, onView) {
   const meta = el('div', 'card-meta');
   const cl = clasifLabel(p);
   meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
+  if (esBajoPedido(p)) meta.appendChild(chipBajoPedido());
   // La medida es el dato que más se consulta al cotizar: va en su propio
   // recuadro, rotulado y a tamaño legible, no como una etiqueta más.
   if (p.med) meta.appendChild(el('span', 'med-box', '<i>Medida</i><b>' + esc(p.med) + '</b>'));
@@ -324,6 +406,11 @@ function cardFamilia(entry, onViewFam) {
   const c = el('div', 'card card-fam');
   c.appendChild(thumb(portadaDe(fam, productos), abrir));
   c.appendChild(el('span', 'fam-badge', `${productos.length} productos`));
+  /* Agrupar es la vista por defecto del catálogo: si la estampa sólo saliera en
+     los productos sueltos, un descuento dentro de «Solera» no lo vería nadie.
+     Se enseña el mejor de la ficha, y se dice «hasta» cuando no lo llevan todos. */
+  const mejor = mejorDescuento(productos);
+  if (mejor) c.appendChild(estampaDescuento(mejor.d, mejor.todos ? '' : 'hasta'));
 
   const body = el('div', 'card-body');
   const name = el('div', 'card-name', esc(fam.nombre)); name.onclick = abrir;
@@ -334,6 +421,10 @@ function cardFamilia(entry, onViewFam) {
   // la ficha. La categoría ya la sabe el cliente, que está parado en ella.
   const cl = clasifLabelFamilia(fam, productos);
   meta.appendChild(el('span', 'tag ' + (cl.pend ? 'pend' : 'sub'), esc(cl.txt)));
+  /* Sólo si TODA la ficha es bajo pedido. Si lo fueran unas medidas sí y otras
+     no, la tarjeta estaría prometiendo lo que no puede: el aviso va entonces en
+     la fila de cada medida, dentro de la ficha. */
+  if (productos.every(esBajoPedido)) meta.appendChild(chipBajoPedido());
   /* El rótulo lo pone el criterio con el que se agrupó (Medida, Calibre,
      Modelo…): si estas láminas se juntaron por calibre, prometer "medidas"
      mandaría al cliente a buscar lo que no va a encontrar. */
@@ -445,6 +536,13 @@ export function buildFichaFamilia(entry, onAgregar) {
   const pend = Object.create(null);   // cod -> cuánto se va a agregar
   const abiertos = new Set();         // subgrupos desplegados por completo
   let filtro = '';
+  /* Dos formas de recorrer la misma ficha:
+       · 'lista' — la tabla de medidas: rápida de leer cuando ya sabes cuál quieres.
+       · 'fotos' — una tarjeta con foto por cada producto de la agrupación, para
+         cuando la medida no basta y hay que VER la pieza (perfiles ornamentales,
+         chapas, puntas). Es el mismo pedido: lo que elijas en una vista sigue
+         elegido en la otra, porque las dos escriben en `pend`. */
+  let vista = 'lista';
 
   const root = el('div', 'fam');
 
@@ -465,12 +563,25 @@ export function buildFichaFamilia(entry, onAgregar) {
     <h2 class="fam-name">${esc(fam.nombre)}</h2>
     ${fam.descripcion ? `<p class="fam-desc">${esc(fam.descripcion)}</p>` : ''}
     <p class="fam-meta">${productos.length} productos${grupos.length > 1 ? ` · ${grupos.length} grupos` : ''} · elige ${esc(rot.toLowerCase())} y cantidad</p>`);
+  /* Si el cliente entró aquí por la estrella de la tarjeta, la ficha tiene que
+     confirmársela: dentro puede haber 115 filas y la promoción no siempre las
+     alcanza a todas. Se dice cuántas, para que no busque a ciegas. */
+  const mejorFicha = mejorDescuento(productos);
+  if (mejorFicha) {
+    const n = productos.filter(p => descuentoDe(p.cod)).length;
+    txt.appendChild(el('p', 'fam-promo',
+      `<b>${esc(etiquetaDescuento(mejorFicha.d))}</b><span>${mejorFicha.todos
+        ? 'de descuento en toda esta ficha'
+        : `de descuento en ${n} de los ${productos.length} · míralo en cada renglón`}</span>`));
+  }
   head.append(foto, txt);
   root.appendChild(head);
 
-  // --- Buscador dentro de la familia (solo si hay bastantes medidas)
+  // --- Herramientas de la ficha: buscador y cambio de vista
+  const tools = el('div', 'fam-tools');
+
+  // El buscador sólo cuando hay bastantes medidas: con seis filas estorba.
   if (productos.length > UMBRAL_FILTRO) {
-    const tools = el('div', 'fam-tools');
     const inp = el('input', 'fam-filtro');
     inp.type = 'search';
     inp.placeholder = `Filtrar por ${rot.toLowerCase()}, código o nombre…`;
@@ -480,8 +591,27 @@ export function buildFichaFamilia(entry, onAgregar) {
       t = setTimeout(() => { filtro = inp.value; pintar(); }, 120);
     });
     tools.appendChild(inp);
-    root.appendChild(tools);
   }
+
+  /* «Mostrar fotos»: la ficha entera con la imagen de cada producto. Va en TODAS
+     las agrupaciones —también en las de pocas medidas—, porque el cliente que
+     no sabe cómo se llama la pieza sólo la reconoce viéndola. */
+  const btnVista = el('button', 'fam-vista');
+  const pintarBtnVista = () => {
+    const fotos = vista === 'fotos';
+    btnVista.classList.toggle('on', fotos);
+    btnVista.innerHTML = fotos
+      ? '<span aria-hidden="true">☰</span> Ver como lista'
+      : '<span aria-hidden="true">🖼</span> Mostrar fotos';
+    btnVista.title = fotos
+      ? 'Vuelve a la tabla de medidas'
+      : `Enseña la foto de cada uno de los ${productos.length} productos de esta agrupación`;
+    btnVista.setAttribute('aria-pressed', fotos ? 'true' : 'false');
+  };
+  btnVista.onclick = () => { vista = vista === 'fotos' ? 'lista' : 'fotos'; pintarBtnVista(); pintar(); };
+  pintarBtnVista();
+  tools.appendChild(btnVista);
+  root.appendChild(tools);
 
   const cuerpo = el('div', 'fam-body');
   root.appendChild(cuerpo);
@@ -512,22 +642,17 @@ export function buildFichaFamilia(entry, onAgregar) {
       : 'Agregar al pedido';
   }
 
-  function fila(p) {
-    const row = el('div', 'fam-row');
-    row.appendChild(el('span', 'fam-med', esc(p.med || '—')));
-
-    const info = el('span', 'fam-prod', `<b>${esc(p.nom)}</b><i>${esc(p.cod)}</i>`);
-    const ya = cantidadEnCarrito(p.id);
-    if (ya) info.appendChild(el('em', 'fam-ya', `Ya en tu pedido: ${ya}`));
-    row.appendChild(info);
-
-    const qty = el('div', 'qty fam-qty');
+  /* El − 0 + de un producto. Lo comparten la fila de la tabla y la tarjeta con
+     foto: las dos escriben en el mismo `pend`, así que cambiar de vista no
+     pierde lo que el cliente ya llevaba elegido. */
+  function contador(p, cls, alCambiar) {
+    const qty = el('div', 'qty ' + cls);
     const val = el('span', null, String(pend[p.cod] || 0));
     const mover = (d) => {
       const n = Math.max(0, (pend[p.cod] || 0) + d);
       if (n) pend[p.cod] = n; else delete pend[p.cod];
       val.textContent = String(n);
-      row.classList.toggle('on', n > 0);
+      alCambiar(n);
       actualizar();
     };
     const menos = el('button', null, '−'); menos.onclick = () => mover(-1);
@@ -535,9 +660,57 @@ export function buildFichaFamilia(entry, onAgregar) {
     const mas = el('button', null, '+'); mas.onclick = () => mover(1);
     mas.setAttribute('aria-label', `Agregar uno de ${p.cod}`);
     qty.append(menos, val, mas);
-    row.appendChild(qty);
+    return qty;
+  }
+
+  /** Los avisos que acompañan a un producto dentro de la ficha. */
+  function marcasDe(p) {
+    const caja = el('span', 'fam-marcas');
+    const d = descuentoDe(p.cod);
+    if (d) caja.appendChild(el('span', 'fam-desc', esc(etiquetaDescuento(d))));
+    if (esBajoPedido(p)) caja.appendChild(el('span', 'tag pedido', 'Bajo pedido'));
+    return caja.children.length ? caja : null;
+  }
+
+  function fila(p) {
+    const row = el('div', 'fam-row');
+    row.appendChild(el('span', 'fam-med', esc(p.med || '—')));
+
+    const info = el('span', 'fam-prod', `<b>${esc(p.nom)}</b><i>${esc(p.cod)}</i>`);
+    const marcas = marcasDe(p);
+    if (marcas) info.appendChild(marcas);
+    const ya = cantidadEnCarrito(p.id);
+    if (ya) info.appendChild(el('em', 'fam-ya', `Ya en tu pedido: ${ya}`));
+    row.appendChild(info);
+
+    row.appendChild(contador(p, 'fam-qty', (n) => row.classList.toggle('on', n > 0)));
     row.classList.toggle('on', (pend[p.cod] || 0) > 0);
     return row;
+  }
+
+  /* La misma información que la fila, pero con la foto delante. Se apoya en el
+     mismo `thumb()` del resto del catálogo, así que hereda la cadena de
+     respaldos de la imagen y el hueco «Sin foto» cuando no hay ninguna. */
+  function tarjeta(p) {
+    const c = el('div', 'fam-tarjeta');
+    const foto = el('div', 'fam-tarjeta-foto');
+    const ph = thumb(p); ph.style.cursor = 'default';
+    foto.appendChild(ph);
+    const d = descuentoDe(p.cod);
+    if (d) foto.appendChild(estampaDescuento(d));
+    c.appendChild(foto);
+
+    const body = el('div', 'fam-tarjeta-body');
+    if (p.med) body.appendChild(el('div', 'fam-tarjeta-med', esc(p.med)));
+    body.appendChild(el('div', 'fam-tarjeta-nom', esc(p.nom)));
+    body.appendChild(el('div', 'fam-tarjeta-cod', esc(p.cod)));
+    if (esBajoPedido(p)) body.appendChild(chipBajoPedido());
+    const ya = cantidadEnCarrito(p.id);
+    if (ya) body.appendChild(el('em', 'fam-ya', `Ya en tu pedido: ${ya}`));
+    body.appendChild(contador(p, 'fam-tarjeta-qty', (n) => c.classList.toggle('on', n > 0)));
+    c.appendChild(body);
+    c.classList.toggle('on', (pend[p.cod] || 0) > 0);
+    return c;
   }
 
   function pintar() {
@@ -566,6 +739,17 @@ export function buildFichaFamilia(entry, onAgregar) {
       const filas = porGrupo.get(g);
       const sec = el('section', 'fam-grupo');
       if (nombres.length > 1) sec.appendChild(el('h3', 'fam-grupo-tit', `${esc(g === '—' ? rot : g)}<span>${filas.length}</span>`));
+
+      if (vista === 'fotos') {
+        /* Sin tope: «Mostrar fotos» es justamente pedir ver TODOS los productos
+           de la agrupación. Cortar en doce y obligar a pulsar «ver las
+           restantes» sería deshacer lo que el cliente acaba de pedir. */
+        const galeria = el('div', 'fam-galeria');
+        filas.forEach(p => galeria.appendChild(tarjeta(p)));
+        sec.appendChild(galeria);
+        cuerpo.appendChild(sec);
+        return;
+      }
 
       const tabla = el('div', 'fam-tabla');
       tabla.appendChild(el('div', 'fam-row fam-row-head', `<span>${esc(rot)}</span><span>Producto</span><span>Cantidad</span>`));

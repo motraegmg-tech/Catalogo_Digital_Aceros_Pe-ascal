@@ -22,6 +22,12 @@ export const CAT_OCULTA = 'Productos Descontinuados / Ocultos';
    filtra. Aquí sólo se repite el identificador para tapar el respaldo local. */
 export const ETQ_OBSOLETO = 'obsoleto';
 
+/* Marca de gestión «Volumen bajo pedido»: el producto SÍ se vende y sigue en su
+   categoría, pero se surte por encargo y no de existencia en mostrador. Es la
+   única marca que el cliente ve, y por eso vive aquí: la ficha la busca por
+   nombre en `p.etq`, sin pintar el resto de las marcas —que son internas. */
+export const ETQ_BAJO_PEDIDO = 'volumen-bajo-pedido';
+
 export const LS_CART = 'ap_cart';
 export const LS_OVR = 'ap_overrides';
 export const LS_VIEW = 'ap_view';

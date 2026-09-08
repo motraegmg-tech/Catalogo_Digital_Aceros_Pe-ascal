@@ -27,6 +27,11 @@ let POPU = [];                   // filas de productos_populares
 let BUSQ = [];                   // filas de busquedas_populares
 let SOLICITUDES = [];            // quién está pidiendo acceso al panel
 let DESTACADOS = [];             // [{t:'p'|'f', c:'código o id'}]
+/* Descuentos publicados: [{c:'código', tipo:'%'|'$', valor, nota, desde, hasta}].
+   Viven en `ajustes.descuentos` y los lee core/descuentosService.js del catálogo.
+   Se editan en memoria y sólo llegan al cliente al pulsar «Publicar descuentos»,
+   igual que los destacados: media promoción a medio escribir no debe salir. */
+let DESCUENTOS = [];
 
 const PLUS = { panel:'productos', cargado:false, famQ:'', famCat:'', famCrit:'', popRango:'90' };
 
@@ -165,6 +170,8 @@ async function cargarEnLinea(silencioso){
       aj.data.forEach(r=>AJUSTES.set(r.clave, r.valor));
       const d = AJUSTES.get('destacados');
       DESTACADOS = Array.isArray(d) ? d.filter(x=>x && x.c) : [];
+      const de = AJUSTES.get('descuentos');
+      DESCUENTOS = (Array.isArray(de) ? de : []).map(normalizarDescuento).filter(Boolean);
     }
     if (!suc.error && suc.data) SUCS = suc.data.map(s=>Object.assign({}, s));
     PLUS.cargado = true;
@@ -621,12 +628,32 @@ function pintarEditorFamilia(){
    (modalFoto en clasificador.js): se le pasa qué hacer con el recorte y él se
    encarga del encuadre, el zoom, el formato y el peso. */
 
-/** Qué foto se ve hoy en la tarjeta: la propia o, si no hay, la prestada. */
+/** Qué foto se ve hoy en la tarjeta: la propia o, si no hay, la prestada.
+ *
+ * Ésta es la MISMA regla que aplica portadaDe() en assets/ui.js, y hasta el
+ * 2026-09-01 no lo era. Aquí se recorrían los códigos en el orden en que están
+ * guardados en la agrupación; el catálogo los recorría ya ordenados por medida,
+ * que es otro orden. En «Discos» el panel enseñaba el disco de corte de madera
+ * y el catálogo el de desbaste de metal — y nada avisaba de la diferencia.
+ *
+ * Se conserva el orden de la agrupación, que es el que el encargado ve y
+ * controla en el editor, y ahora el catálogo hace exactamente estas dos mismas
+ * vueltas sobre la misma lista: primero un producto con algo en `foto`, y si
+ * ninguno tiene, uno cuyo archivo `fotos/<id>.<ext>` exista de verdad.
+ */
 function fotoEfectivaFamilia(f){
-  if (f.foto) return { url:f.foto, propia:true, de:null };
+  if (f.foto) return { url:rutaFoto(f.foto), propia:true, de:null };
   for (const cod of codsDe(f)){
     const p = prodDe(cod);
-    if (p && p.foto) return { url:esUrlFoto(p.foto) ? p.foto : ('fotos/'+p.id+'.webp'), propia:false, de:p };
+    if (p && p.foto) return { url:rutaFoto(p.foto), propia:false, de:p };
+  }
+  /* Segunda vuelta: un producto puede no tener nada escrito en `foto` y aun así
+     tener su archivo fotos/<id>.webp en el repositorio. El catálogo lo
+     encuentra (carga el manifiesto de fotos), así que aquí hay que mirarlo
+     también o el panel diría «ninguno tiene foto» mientras el cliente ve una. */
+  for (const cod of codsDe(f)){
+    const p = prodDe(cod);
+    if (p && tieneFotoLocal(p)) return { url:'fotos/'+p.id+'.webp', propia:false, de:p };
   }
   return { url:'', propia:false, de:null };
 }
@@ -1062,6 +1089,7 @@ function renderDestacados(){
   });
 
   renderPopulares();
+  renderDescuentos();
 }
 
 function renderPopulares(){
@@ -1167,6 +1195,208 @@ async function publicarDestacados(){
   if (await guardarAjuste('destacados', DESTACADOS)){
     bitacora(`Destacados de la portada publicados (${DESTACADOS.length})`);
     aviso('✓ Destacados publicados: el catálogo los muestra al refrescar');
+  }
+}
+
+/* ===========================================================================
+   DESCUENTOS  (mismo panel que los destacados)
+   ---------------------------------------------------------------------------
+   Lo que se publica aquí le pinta al producto una estrella roja en la esquina
+   de su foto, en el catálogo del cliente, con lo que se le rebaja.
+
+   NO hay precios de por medio, y no es un descuido: la regla de Fase 1 sigue en
+   pie. Un descuento dice cuánto se rebaja, no de cuánto se parte — el precio se
+   sigue cotizando por WhatsApp.
+
+   `normalizarDescuento` y las fechas están duplicadas respecto de
+   core/descuentosService.js a propósito (el clasificador corre sin módulos),
+   pero tienen que cambiar juntas: si el panel deja pasar algo que el catálogo
+   descarta, el encargado publica una promoción que nadie ve y nada se lo dice.
+   =========================================================================== */
+const DESC_TIPOS = [
+  { v:'%', t:'% de descuento' },
+  { v:'$', t:'$ de descuento (pesos)' },
+];
+
+const esFechaISO = (s) => typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+/* Fecha LOCAL, no UTC — y por eso NO se reutiliza hoyISO() de clasificador.js,
+   que usa toISOString(). En México (UTC-6) eso ya cuenta como el día siguiente a
+   partir de las 18:00: una promoción se vería «terminada» aquí media tarde antes
+   de tiempo mientras el catálogo la sigue mostrando, porque él sí usa fecha
+   local (core/descuentosService.js). */
+function hoyLocalISO(){
+  const d = new Date(), p = (n)=>String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+}
+
+function normalizarDescuento(d){
+  if (!d || !d.c) return null;
+  const tipo = d.tipo === '$' ? '$' : '%';
+  const valor = Number(d.valor);
+  if (!isFinite(valor) || valor <= 0) return null;
+  if (tipo === '%' && valor > 99) return null;      // un 120 % es un dedo que resbaló
+  return {
+    c: String(d.c), tipo,
+    valor: tipo==='%' ? Math.round(valor) : Math.round(valor*100)/100,
+    nota: typeof d.nota==='string' ? d.nota.trim() : '',
+    desde: esFechaISO(d.desde) ? d.desde : '',
+    hasta: esFechaISO(d.hasta) ? d.hasta : '',
+  };
+}
+
+const etiquetaDescuento = (d) => !d ? ''
+  : (d.tipo==='$' ? '-$'+Number(d.valor).toLocaleString('es-MX',{maximumFractionDigits:2})
+                  : '-'+d.valor+'%');
+
+/** ¿Está corriendo hoy? Es lo que decide si el cliente ve la estrella. */
+function descuentoVigente(d){
+  if (!d) return false;
+  const h = hoyLocalISO();
+  if (d.desde && h < d.desde) return false;
+  if (d.hasta && h > d.hasta) return false;
+  return true;
+}
+
+/** Por qué un descuento no se está viendo, dicho para quien no programa. */
+function estadoDescuento(d){
+  const n = normalizarDescuento(d);
+  if (!n) return { ok:false, txt:'Sin valor: pon cuánto se descuenta o quítalo de la lista.' };
+  const h = hoyLocalISO();
+  if (n.desde && h < n.desde) return { ok:false, txt:'Programado: empieza el '+n.desde };
+  if (n.hasta && h > n.hasta) return { ok:false, txt:'Terminado el '+n.hasta+': el cliente ya no lo ve.' };
+  return { ok:true, txt: n.hasta ? 'Corriendo · termina el '+n.hasta : 'Corriendo' };
+}
+
+/* Lo que consulta la vista previa del catálogo dentro del clasificador (pcard,
+   en clasificador.js), para que el encargado vea la estrella donde la verá el
+   cliente. Va por `window` porque clasificador.js se carga ANTES que este
+   archivo y no puede depender de él directamente. */
+window.plusDescuentoDe = function(cod){
+  const d = DESCUENTOS.find(x=>x.c===cod);
+  return d && descuentoVigente(d) ? d : null;
+};
+
+function agregarDescuentos(cods){
+  let n = 0;
+  for (const c of cods){
+    if (DESCUENTOS.some(d=>d.c===c)) continue;      // ya tenía uno: no se pisa
+    DESCUENTOS.push({ c, tipo:'%', valor:10, nota:'', desde:'', hasta:'' });
+    n++;
+  }
+  renderDescuentos();
+  if (n) aviso(`✓ ${fmt(n)} producto(s) agregados · ponles cuánto se descuenta y publica`);
+  else aviso('Esos productos ya estaban en la lista.');
+}
+
+function renderDescuentos(){
+  const cont = $('#descLista'); if (!cont) return;
+  cont.innerHTML = '';
+
+  if (!DESCUENTOS.length){
+    cont.appendChild(el('div','vacio','Ningún producto tiene descuento. Agrega los que traigan promoción: el catálogo les pondrá la estrella roja.'));
+    return;
+  }
+
+  /* Aplicar lo mismo a todos: una promoción suele ser «10 % en toda la
+     tornillería», no diez decisiones distintas. Sin esto, poner el mismo
+     descuento a las 32 medidas de una solera son 32 campos a mano. */
+  const masivo = el('div','desc-masivo');
+  masivo.appendChild(el('span','desc-masivo-tit', `Aplicar a los ${fmt(DESCUENTOS.length)} de la lista:`));
+  const mTipo = el('select','desc-tipo');
+  DESC_TIPOS.forEach(t=>{ const o=el('option',null,t.t); o.value=t.v; mTipo.appendChild(o); });
+  const mVal = el('input','desc-valor'); mVal.type='number'; mVal.min='0'; mVal.step='0.01'; mVal.placeholder='10';
+  const mBtn = el('button','btn-datos','Aplicar a todos');
+  mBtn.onclick = ()=>{
+    const v = Number(mVal.value);
+    if (!isFinite(v) || v<=0){ aviso('⚠ Escribe cuánto se descuenta.'); return; }
+    if (mTipo.value==='%' && v>99){ aviso('⚠ Un porcentaje de descuento no puede pasar de 99 %.'); return; }
+    DESCUENTOS = DESCUENTOS.map(d=>Object.assign({}, d, {tipo:mTipo.value, valor:v}));
+    renderDescuentos();
+    aviso(`✓ ${etiquetaDescuento({tipo:mTipo.value, valor:v})} aplicado a ${fmt(DESCUENTOS.length)} producto(s)`);
+  };
+  const mLimpiar = el('button','btn-datos btn-danger','Vaciar la lista');
+  mLimpiar.title = 'Quita el descuento a todos. Hay que publicar para que el cliente deje de verlos.';
+  mLimpiar.onclick = async ()=>{
+    const ok = await dialogo({ titulo:'Quitar todos los descuentos',
+      texto:`Se quitan los ${fmt(DESCUENTOS.length)} descuentos de la lista. Los productos no se tocan: sólo dejan de tener promoción. Hay que pulsar «Publicar descuentos» para que el cliente deje de verlos.`,
+      okTxt:'Quitar todos' });
+    if (!ok) return;
+    DESCUENTOS = []; renderDescuentos();
+  };
+  masivo.append(mTipo, mVal, mBtn, mLimpiar);
+  cont.appendChild(masivo);
+
+  const vigentes = DESCUENTOS.filter(d=>descuentoVigente(normalizarDescuento(d)||{})).length;
+  cont.appendChild(el('div','desc-resumen',
+    `<b>${fmt(DESCUENTOS.length)}</b> producto(s) con descuento · <b>${fmt(vigentes)}</b> corriendo hoy`));
+
+  DESCUENTOS.forEach((d, i)=>{
+    const p = prodDe(d.c);
+    const est = estadoDescuento(d);
+    const fila = el('div','desc-fila'+(est.ok?'':' apagado')+(p?'':' huerfano'));
+
+    fila.appendChild(el('span','desc-sello', esc(etiquetaDescuento(normalizarDescuento(d)||d) || '—')));
+    fila.appendChild(el('span','desc-nom',
+      `${esc(p ? p.nom : d.c)}<i>${esc(d.c)}${p ? ' · '+esc(p.cat)+(p.med?' · '+esc(p.med):'') : ' · este producto ya no existe'}</i>`));
+
+    const campos = el('span','desc-campos');
+
+    const sTipo = el('select','desc-tipo');
+    DESC_TIPOS.forEach(t=>{ const o=el('option',null,t.t); o.value=t.v; sTipo.appendChild(o); });
+    sTipo.value = d.tipo || '%';
+    sTipo.onchange = ()=>{ d.tipo = sTipo.value; renderDescuentos(); };
+
+    const iVal = el('input','desc-valor');
+    iVal.type='number'; iVal.min='0'; iVal.step='0.01'; iVal.value = d.valor==null ? '' : d.valor;
+    iVal.title = 'Cuánto se descuenta';
+    iVal.oninput = ()=>{ d.valor = iVal.value; };
+    iVal.onchange = ()=>renderDescuentos();
+
+    const iHasta = el('input','desc-fecha');
+    iHasta.type='date'; iHasta.value = d.hasta || '';
+    iHasta.title = 'Último día de la promoción. Vacío = hasta que lo quites.';
+    iHasta.onchange = ()=>{ d.hasta = iHasta.value; renderDescuentos(); };
+
+    const iNota = el('input','desc-nota');
+    iNota.type='text'; iNota.value = d.nota || ''; iNota.maxLength = 60;
+    iNota.placeholder = 'nota para el cliente (opcional)';
+    iNota.title = 'Sale en la ficha del producto, junto al descuento. Ej.: «comprando 10 o más».';
+    iNota.oninput = ()=>{ d.nota = iNota.value; };
+
+    campos.append(sTipo, iVal, iHasta, iNota);
+    fila.appendChild(campos);
+
+    fila.appendChild(el('span','desc-estado'+(est.ok?' ok':''), esc(est.txt)));
+
+    const quita = el('button','fed-mini danger','✕');
+    quita.title = 'Quitar el descuento de este producto';
+    quita.onclick = ()=>{ DESCUENTOS.splice(i,1); renderDescuentos(); };
+    fila.appendChild(quita);
+
+    cont.appendChild(fila);
+  });
+}
+
+async function publicarDescuentos(){
+  if (!requiereSesion('publicar los descuentos')) return;
+  /* Se publica NORMALIZADO: lo que el catálogo descartaría por estar a medio
+     llenar no llega a la base. Si algo se cae, se dice cuál y por qué — antes
+     que dejar al encargado creyendo que publicó una promoción que nadie ve. */
+  const limpios = DESCUENTOS.map(normalizarDescuento).filter(Boolean);
+  const caidos = DESCUENTOS.length - limpios.length;
+  if (caidos){
+    const ok = await dialogo({ titulo:'Hay descuentos sin valor',
+      texto:`${fmt(caidos)} de los ${fmt(DESCUENTOS.length)} no tienen cuánto se descuenta (o el porcentaje pasa de 99). Ésos NO se publican; el resto sí.`,
+      okTxt:`Publicar los ${fmt(limpios.length)} completos` });
+    if (!ok) return;
+  }
+  if (await guardarAjuste('descuentos', limpios)){
+    DESCUENTOS = limpios;
+    bitacora(`Descuentos publicados (${limpios.length} producto(s))`);
+    aviso('✓ Descuentos publicados: el catálogo los muestra al refrescar');
+    renderDescuentos();
+    renderAll();      // la vista previa del catálogo repinta sus estrellas
   }
 }
 
@@ -1535,6 +1765,11 @@ function renderGuia(){
           (o marca esa casilla en su ficha). Desaparece de todas las listas, del catálogo del cliente
           y del conteo de arriba, pero <b>conserva su categoría</b>: para devolverlo basta con quitarle
           la marca. <b>«🗑 Eliminar»</b> es otra cosa: sólo para deshacer una captura mal hecha.</li>
+      <li><b>Lo que se surte por encargo:</b> marca <b>«Volumen bajo pedido»</b> en su ficha (o
+          arrastra varios a esa marca en el panel izquierdo). El producto <b>no se esconde</b>:
+          sigue en su categoría y en el catálogo, pero el cliente ve el aviso <b>en la tarjeta y en
+          la ficha</b>, antes de armar su pedido. Es lo contrario de «Productos obsoletos»: una
+          avisa, la otra retira.</li>
       <li><b>Mover muchos a la vez:</b> selecciónalos (clic, o mantén el clic y arrastra sobre la lista)
           y usa la barra de abajo, o arrástralos a la categoría del panel izquierdo.</li>
       <li><b>Buscar:</b> el buscador de arriba mira <b>todo el catálogo</b>, no sólo la categoría en la
@@ -1552,22 +1787,28 @@ function renderGuia(){
       <li>Ese criterio no es un adorno: <b>cambia el rótulo de la columna</b> donde el cliente elige.
           Si agrupas láminas por calibre, la columna dirá «Calibre» y no «Medida».</li>
       <li><b>Ponle su propia foto</b> (arriba a la izquierda del editor). Si no le pones ninguna,
-          la tarjeta toma prestada la de alguno de sus productos — y esa suele ser la de la medida
-          que quedó primera, no la que mejor vende. En la lista, las que ya tienen foto propia
-          llevan el recuadro con borde azul.</li>
+          la tarjeta toma prestada la del <b>primer producto de la lista que tenga foto</b> — que
+          casi nunca es la que mejor vende. En la lista, las que ya tienen foto propia llevan el
+          recuadro con borde azul. <b>La foto que ves aquí es la que verá el cliente</b>: si no
+          coinciden, avísanos, es un error.</li>
+      <li><b>El cliente puede ver las fotos de todos:</b> dentro de la tarjeta hay un botón
+          <b>«🖼 Mostrar fotos»</b> que cambia la tabla de medidas por la foto de cada producto de
+          la agrupación. Por eso vale la pena que los productos de dentro tengan buena foto, no
+          sólo la agrupación.</li>
       <li>Agrega los productos con <b>«＋ Agregar productos»</b>. Si dentro hay familias distintas
           (discos de corte, de desbaste, de diamante), usa <b>«⑂ Dividir en grupos»</b>.</li>
       <li>Abajo del editor tienes la <b>vista previa</b>: así queda en el catálogo.</li>
     </ol>
     <p class="guia-aviso"><b>¿La creaste y no aparece en el catálogo?</b> Casi siempre es una
        de estas dos:
-       <br>1. <b>Estás viendo «Todas las categorías»</b>. Las agrupaciones sólo se ven al
-       <b>entrar a una categoría</b> — en la lista general el catálogo muestra producto por
-       producto, a propósito.
+       <br>1. <b>Está oculta</b> (botón «🚫 Ocultar» de su tarjeta), o le quedan <b>menos de 2
+       productos</b> publicados. Con uno solo no hay nada que elegir y el catálogo lo saca suelto.
        <br>2. <b>La categoría no cuadra.</b> La ficha aparece donde están sus productos, no
        donde dice la agrupación. Si no coinciden, el editor te lo marca en ámbar con un botón
        para cuadrarlo, y también te pregunta al guardar.
-       <br>Y recuerda que necesita <b>al menos 2 productos</b> que sigan publicados.</p>
+       <br>El catálogo agrupa <b>en todas partes</b>: en la portada, dentro de una categoría y
+       también al buscar. Buscando, la tarjeta enseña <b>sólo lo que coincidió</b> — quien escribe
+       «solera 1/8» no quiere ver las 32 medidas.</p>
     <p class="guia-tip">Atajo: selecciona productos en la pestaña <b>Productos</b> y pulsa
        <b>«＋ Con lo seleccionado»</b> en Agrupaciones — llegan ya puestos.</p>
 
@@ -1578,6 +1819,28 @@ function renderGuia(){
           pedido que se manda por WhatsApp. Al principio estará vacío; se llena solo con el uso.</li>
       <li>Pulsa <b>«☁ Publicar destacados»</b> para que aparezcan en la portada.</li>
     </ol>
+
+    <h3>🏷 Descuentos — la estrella roja</h3>
+    <p>Está <b>en la misma pestaña de Destacados</b>, más abajo. Los productos que pongas ahí
+       salen en el catálogo con una <b>estrella roja en la esquina de su foto</b> diciendo cuánto
+       se rebaja, y con el detalle completo dentro de la ficha.</p>
+    <ol>
+      <li><b>«＋ Agregar productos»</b> para elegirlos uno por uno, o
+          <b>«＋ Agregar una agrupación completa»</b> para poner en promoción, de golpe, todas las
+          medidas de una solera o de un tubo.</li>
+      <li>En cada renglón dices <b>qué</b> (% o pesos), <b>cuánto</b>, hasta <b>qué día</b> (vacío =
+          hasta que lo quites) y una <b>nota</b> opcional que el cliente ve en la ficha
+          («comprando 10 o más»).</li>
+      <li>¿El mismo descuento para toda la lista? Usa la barra de arriba: <b>«Aplicar a todos»</b>.</li>
+      <li>La columna de la derecha te dice si está <b>corriendo</b>, si <b>ya terminó</b> o si está
+          <b>programado</b> para más adelante. Los que no corren se ven en gris: el cliente no los ve.</li>
+      <li>Pulsa <b>«☁ Publicar descuentos»</b>. Hasta que no lo pulses, no sale nada.</li>
+    </ol>
+    <p class="guia-aviso"><b>Aquí no se escriben precios, y es a propósito.</b> El catálogo dice
+       cuánto se descuenta, nunca de cuánto se parte: el precio se sigue cotizando por WhatsApp,
+       igual que todo lo demás.
+       <br><b>Para quitar una promoción no basta con que pase la fecha en tu cabeza</b>: quita el
+       renglón (o pon la fecha de fin) <b>y vuelve a publicar</b>.</p>
 
     <h3>🏬 Sucursales y textos</h3>
     <p>Nombre, WhatsApp y dirección de cada sucursal. La dirección es la que el cliente ve en su
@@ -1708,6 +1971,68 @@ function plusSelfTest(){
     fotoEfectivaFamilia({foto:'', subgrupos:[{nombre:'—', cods:['NO-EXISTE']}]}).url === '');
   t('normalizar conserva la foto', normalizarFamilia({id:'f',nombre:'F',cat:'C',foto:'u'}).foto === 'u');
 
+  /* ---- la foto de la agrupación tiene que ser LA MISMA aquí y en el catálogo ----
+     Es el fallo del que salió esta prueba: aquí se recorrían los códigos en el
+     orden en que están guardados y el catálogo los recorría ordenados por
+     medida, así que «Discos» enseñaba una foto en el panel y otra al cliente.
+     La regla acordada es la de abajo: el PRIMER código de la agrupación que
+     tenga algo en `foto`. Si alguien vuelve a cambiar el orden aquí sin
+     cambiarlo en portadaDe() de ui.js, esto se cae. */
+  t('la foto prestada sale del primer código de la agrupación', (()=>{
+    const con = PRODUCTOS.filter(x=>x.foto).slice(0,2);
+    const sin = PRODUCTOS.find(x=>!x.foto);
+    if (con.length<2 || !sin) return true;             // catálogo sin datos que probar
+    // El de en medio no tiene foto: se salta, pero no se reordena la lista.
+    const f = {foto:'', subgrupos:[{nombre:'—', cods:[sin.cod, con[0].cod, con[1].cod]}]};
+    return fotoEfectivaFamilia(f).de === con[0];
+  })());
+  t('la foto compartida de la agrupación resuelve a fotos/', (()=>{
+    const r = fotoEfectivaFamilia({foto:'familia-x.webp', subgrupos:[]});
+    return r.propia === true && r.url === 'fotos/familia-x.webp';
+  })());
+
+  /* ---- descuentos ---- */
+  t('un descuento sin valor no se publica', normalizarDescuento({c:'A'})===null
+    && normalizarDescuento({c:'A', valor:0})===null);
+  t('un descuento sin producto no se publica', normalizarDescuento({valor:10})===null);
+  t('un porcentaje imposible se rechaza', normalizarDescuento({c:'A', tipo:'%', valor:120})===null);
+  t('una cantidad en pesos grande sí vale',
+    (normalizarDescuento({c:'A', tipo:'$', valor:1200})||{}).valor===1200);
+  t('el porcentaje se redondea a entero',
+    (normalizarDescuento({c:'A', tipo:'%', valor:12.6})||{}).valor===13);
+  t('un tipo raro cae a porcentaje',
+    (normalizarDescuento({c:'A', tipo:'€', valor:10})||{}).tipo==='%');
+  t('la fecha mal escrita se ignora en vez de romper',
+    (normalizarDescuento({c:'A', valor:10, hasta:'mañana'})||{}).hasta==='');
+  t('etiqueta de porcentaje', etiquetaDescuento({tipo:'%', valor:15})==='-15%');
+  t('etiqueta en pesos', etiquetaDescuento({tipo:'$', valor:250})==='-$250');
+  /* La vigencia se mide con fecha LOCAL. Con toISOString() —que es lo que usa el
+     resto del panel— en México a partir de las 18:00 ya sería el día siguiente, y
+     una promoción se apagaría aquí media tarde antes que en el catálogo. */
+  t('la vigencia usa fecha local, no UTC', (()=>{
+    const d = new Date(), p = (n)=>String(n).padStart(2,'0');
+    return hoyLocalISO() === d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  })());
+  t('un descuento sin fechas corre siempre', descuentoVigente({c:'A',valor:10})===true);
+  t('un descuento terminado ya no corre',
+    descuentoVigente({c:'A', valor:10, hasta:'2000-01-01'})===false);
+  t('un descuento programado todavía no corre',
+    descuentoVigente({c:'A', valor:10, desde:'2999-01-01'})===false);
+  t('el panel dice por qué un descuento no se ve',
+    estadoDescuento({c:'A', valor:10, hasta:'2000-01-01'}).ok===false
+    && estadoDescuento({c:'A', valor:10}).ok===true);
+  t('la vista previa consulta los descuentos publicados',
+    typeof window.plusDescuentoDe === 'function');
+  t('agregar dos veces el mismo producto no lo duplica', (()=>{
+    const antes = DESCUENTOS;
+    DESCUENTOS = [];
+    agregarDescuentos(['ZZZ-PRUEBA','ZZZ-PRUEBA']);
+    const n = DESCUENTOS.length;
+    DESCUENTOS = antes;
+    renderDescuentos();          // la prueba no puede dejar su fila en pantalla
+    return n === 1;
+  })());
+
   // Un producto en dos agrupaciones dejaría al catálogo sin saber cuál mostrar
   t('detecta código repetido en otra agrupación', (()=>{
     const antes = FAMS.get('__test__');
@@ -1804,6 +2129,26 @@ function initPlus(){
     renderDestacados();
   };
   $('#desGuardar').onclick = publicarDestacados;
+
+  // Descuentos
+  $('#descAgregar').onclick = ()=>abrirSelector({
+    titulo:'Poner descuento a estos productos',
+    excluir: DESCUENTOS.map(d=>d.c),
+    onOk:(cods)=>agregarDescuentos(cods),
+  });
+  $('#descAgregarFam').onclick = async ()=>{
+    const lista = [...FAMS.values()].filter(f=>nProductosDe(f)).sort((a,b)=>alfa(a.nombre,b.nombre));
+    if (!lista.length){ aviso('Todavía no hay agrupaciones con productos.'); return; }
+    const v = await dialogo({ titulo:'Poner descuento a una agrupación completa',
+      texto:'Se pone el mismo descuento a todos los productos de la agrupación. Después puedes cambiar el de cualquiera, uno por uno.',
+      campos:[{id:'id', label:'Agrupación', tipo:'select',
+        opciones:lista.map(f=>({v:f.id, t:`${f.nombre} — ${f.cat} (${nProductosDe(f)})`}))}],
+      okTxt:'Agregar sus productos' });
+    if (!v) return;
+    const f = FAMS.get(v.id); if (!f) return;
+    agregarDescuentos(codsDe(f).filter(c=>prodDe(c)));
+  };
+  $('#descGuardar').onclick = publicarDescuentos;
   $('#popRango').onchange = (e)=>{ PLUS.popRango = e.target.value; renderPopulares(); };
   $('#popRefrescar').onclick = ()=>cargarPopulares(true);
   $('#popUsar').onclick = async ()=>{

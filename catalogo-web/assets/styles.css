@@ -103,7 +103,7 @@ select,input{font-family:inherit}
 .chip.on{background:var(--aqua);color:#fff;border-color:var(--aqua)}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:14px}
-.card{background:#fff;border:3px solid var(--aqua);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .08s,box-shadow .08s,border-color .08s}
+.card{position:relative;background:#fff;border:3px solid var(--aqua);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .08s,box-shadow .08s,border-color .08s}
 .card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(14,126,140,.20);border-color:var(--aqua-2)}
 .thumb{position:relative;aspect-ratio:4/3;background:
   repeating-linear-gradient(45deg,#eef0f2,#eef0f2 10px,#e9ecee 10px,#e9ecee 20px);
@@ -149,7 +149,7 @@ select,input{font-family:inherit}
 .modal-card{background:#fff;border:3px solid var(--aqua);border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.35)}
 .modal-close{position:absolute;top:10px;right:12px;background:#fff;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;font-size:20px;line-height:1;color:var(--gris)}
 .modal-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.modal-photo{aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#eef0f2,#eef0f2 12px,#e9ecee 12px,#e9ecee 24px);display:flex;align-items:center;justify-content:center}
+.modal-photo{position:relative;aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#eef0f2,#eef0f2 12px,#e9ecee 12px,#e9ecee 24px);display:flex;align-items:center;justify-content:center}
 .modal-photo img{width:100%;height:100%;object-fit:cover}
 .modal-info{padding:26px 24px}
 .modal-cat{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--oxido);font-weight:700}
@@ -215,6 +215,83 @@ select,input{font-family:inherit}
 .fam-resumen{flex:1;min-width:0;font-size:12.5px;color:var(--gris)}
 .fam-foot .btn-quote{flex:0 0 auto}
 .fam-foot .btn-quote:disabled{background:var(--acero);cursor:default}
+
+/* ===== Descuentos y avisos del producto =====
+   Dos cosas que el encargado publica desde el clasificador y que el cliente
+   tiene que ver SIN abrir la ficha: la promoción y el «bajo pedido». */
+
+/* Estampa de descuento: estrella roja en la esquina superior derecha de la foto.
+   `pointer-events:none` a propósito — se apoya encima de la miniatura, que es
+   la que abre la ficha; si robara el clic, el centro de la tarjeta dejaría de
+   responder. La estrella se recorta con clip-path para no cargar una imagen. */
+.estampa-desc{
+  position:absolute;top:7px;right:7px;z-index:3;pointer-events:none;
+  width:62px;height:62px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;text-align:center;
+  background:var(--oxido);color:#fff;line-height:1;
+  clip-path:polygon(50% 0%,61% 17%,80% 10%,80% 31%,98% 35%,86% 50%,98% 65%,
+    80% 69%,80% 90%,61% 83%,50% 100%,39% 83%,20% 90%,20% 69%,2% 65%,14% 50%,
+    2% 35%,20% 31%,20% 10%,39% 17%);
+  filter:drop-shadow(0 2px 6px rgba(19,23,26,.42));
+}
+.estampa-desc b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.estampa-desc i{font-style:normal;font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.92}
+/* «-$1,250» no cabe al mismo cuerpo que «-15%». */
+.estampa-desc.larga b{font-size:11.5px}
+
+/* Marca «Volumen bajo pedido»: se lee como aviso, no como categoría, así que
+   usa el ámbar de lo pendiente y no el verde de las subcategorías. */
+.tag.pedido{background:#fdf0e2;color:#8a4b14;border:1px solid #e6bc8e;font-weight:700}
+
+/* En la ficha del producto los dos avisos van completos, arriba del todo:
+   son lo que cambia la decisión de pedir. */
+.ficha-desc,.ficha-pedido{
+  display:flex;align-items:baseline;gap:10px;margin:10px 0 4px;
+  border-radius:9px;padding:9px 12px;font-size:12.5px;line-height:1.35;
+}
+.ficha-desc{background:#fbe9ec;border:1.5px solid #e3a9b3;border-left:4px solid var(--oxido);color:#6d1420}
+.ficha-desc b{font-size:17px;font-weight:800;color:var(--oxido);flex:none}
+.ficha-pedido{background:#fdf3e6;border:1.5px solid #e6c79b;border-left:4px solid #C97A22;color:#6b4415;flex-direction:column;gap:2px}
+.ficha-pedido b{font-size:12.5px;letter-spacing:.04em;text-transform:uppercase}
+
+/* ===== Ficha de familia · vista con fotos =====
+   El botón «Mostrar fotos» cambia la tabla de medidas por una tarjeta con la
+   imagen de cada producto de la agrupación. Es la misma ficha y el mismo
+   pedido: lo elegido en una vista sigue elegido en la otra. */
+.fam-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fam-tools .fam-filtro{flex:1;min-width:180px;width:auto}
+.fam-vista{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+  background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--carbon);
+}
+.fam-vista:hover{border-color:var(--aqua);color:var(--aqua-2)}
+.fam-vista.on{background:var(--aqua);border-color:var(--aqua);color:#fff}
+
+.fam-galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+.fam-tarjeta{background:#fff;border:1.5px solid var(--line);border-radius:11px;overflow:hidden;display:flex;flex-direction:column}
+.fam-tarjeta.on{border-color:var(--aqua);box-shadow:0 0 0 2px rgba(14,126,140,.18)}
+.fam-tarjeta-foto{position:relative}
+.fam-tarjeta-foto .thumb{aspect-ratio:1/1;cursor:default}
+/* La estrella de una tarjeta de galería es más chica: la foto también lo es. */
+.fam-tarjeta-foto .estampa-desc{width:48px;height:48px;top:5px;right:5px}
+.fam-tarjeta-foto .estampa-desc b{font-size:12px}
+.fam-tarjeta-foto .estampa-desc.larga b{font-size:9px}
+.fam-tarjeta-body{padding:9px 10px 10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.fam-tarjeta-med{font-size:14.5px;font-weight:700;color:var(--aqua-2);line-height:1.15;overflow-wrap:anywhere}
+.fam-tarjeta-nom{font-size:11.5px;line-height:1.3;color:var(--carbon);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fam-tarjeta-cod{font-size:10.5px;color:var(--gris-claro);font-family:'Consolas',monospace}
+.fam-tarjeta-qty{margin-top:auto;padding-top:6px;justify-content:center}
+
+/* Las marcas dentro de una fila de la tabla (descuento y bajo pedido). */
+/* La promoción, repetida dentro de la ficha: el cliente entró por la estrella
+   de la tarjeta y aquí tiene que encontrarla confirmada. */
+.fam-promo{display:flex;align-items:baseline;gap:8px;margin:6px 0 0;
+  background:#fbe9ec;border:1px solid #e3a9b3;border-left:3px solid var(--oxido);
+  border-radius:8px;padding:5px 10px;font-size:11.5px;color:#6d1420;line-height:1.3}
+.fam-promo b{font-size:14px;font-weight:800;color:var(--oxido);flex:none}
+.fam-marcas{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.fam-desc{background:var(--oxido);color:#fff;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800}
 
 /* ===== Carrito ===== */
 .overlay{position:fixed;inset:0;background:rgba(21,25,28,.45);z-index:55}
@@ -350,6 +427,12 @@ select,input{font-family:inherit}
   .grid.view-list .card-body{padding:9px 11px}
   .grid.view-list .card-name{min-height:0;font-size:13.5px}
   .grid.view-list .btn-add{flex:0 0 auto;padding:8px 18px}
+  /* En lista la tarjeta es una franja horizontal: la estrella se queda sobre la
+     miniatura, que es su sitio natural, en vez de taparle el nombre. */
+  .grid.view-list .estampa-desc{width:44px;height:44px;top:4px;right:auto;left:54px}
+  .grid.view-list .estampa-desc b{font-size:11px}
+  .grid.view-list .estampa-desc.larga b{font-size:8.5px}
+  .grid.view-list .estampa-desc i{display:none}
 
   /* --- Ficha --- */
   .modal{padding:10px}
@@ -372,6 +455,8 @@ select,input{font-family:inherit}
   /* La fila se dobla: medida y producto en una columna, el contador al lado. */
   .fam-row{grid-template-columns:1fr auto;gap:4px 10px;padding:10px}
   .fam-row-head{display:none}
+  .fam-galeria{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px}
+  .fam-vista{padding:10px 13px;font-size:13px}
   .fam-med{grid-column:1;grid-row:1}
   .fam-prod{grid-column:1;grid-row:2}
   .fam-qty{grid-column:2;grid-row:1/span 2}
