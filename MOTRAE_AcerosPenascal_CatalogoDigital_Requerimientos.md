@@ -311,7 +311,7 @@ Todas se presupuestan y contratan por separado mediante Control de Cambios.
 | **Proveedor** | MOTRAE México |
 | **Cliente** | Aceros Peñascal · Xalapa, Veracruz |
 | **Proyecto** | Ecosistema de Catálogo Comercial Digital (Fase 1) |
-| **Equipo MOTRAE** | Gonzalo Jácome (CEO · Producto y Tecnología) · Gerson Rivera (CEO · Estrategia y Desarrollo Comercial) |
+| **Equipo MOTRAE** | Gonzalo Jácome (CEO · Producto y Tecnología) · Gerson Rivera (CEO · Estrategia, Desarrollo Comercial y Operaciones) |
 | **Email** | motrae.gmg@gmail.com |
 | **Teléfono** | 228 353 6911 |
 

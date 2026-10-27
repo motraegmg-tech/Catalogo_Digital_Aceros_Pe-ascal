@@ -134,7 +134,7 @@ Logo real AP = azul marino + rojo carmín. Tipografía y guía de uso multicanal
 - **Spec / requerimientos:** [`MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md`](MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md) (en este repo) · `.docx` en la carpeta del cliente.
 - **Contrato / SOW:** `MOTRAE_SOW_CatalogoDigital_AcerosPenascal` — Fase 1, $50,000 MXN + IVA, 25–35 días hábiles, pago 50/50 (carpeta del cliente).
 - **Proveedor:** MOTRAE México · motrae.gmg@gmail.com · 228 353 6911.
-- **Equipo:** Gonzalo Jácome (CEO · Producto y Tecnología) · Gerson Rivera (CEO · Comercial).
+- **Equipo:** Gonzalo Jácome (CEO · Producto y Tecnología) · Gerson Rivera (CEO · Comercial y Operaciones).
 
 ---
 
