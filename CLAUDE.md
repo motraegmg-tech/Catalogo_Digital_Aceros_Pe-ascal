@@ -3,7 +3,7 @@
 **Lee primero [`README.md`](README.md): es el contexto completo del proyecto.** Luego la spec [`MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md`](MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md) y la [`Taxonomia_Catalogo_AcerosPenascal.md`](Taxonomia_Catalogo_AcerosPenascal.md).
 
 ## Lo esencial para no equivocarse
-- Proyecto de **MOTRAE** para **Aceros Peñascal** (Xalapa). CEO de MOTRAE: **Gonzalo** — empieza tus respuestas llamándolo por su nombre.
+- Proyecto de **MOTRAE** para **Aceros Peñascal** (Xalapa). CEOs: **Gonzalo Jácome** (producto, arquitectura y tecnología) y **Gerson Rivera** (líder comercial y de operaciones de MotRest y de todos los productos). La cuenta de Claude es compartida: empieza tus respuestas llamando por su nombre a quien escribe y, si no sabes quién es, pregúntalo.
 - Alcance = **solo el Catálogo Comercial Digital** (Fase 1). No prometer SaaS completo ni DELTA OPS.
 - Catálogo público = **código + descripción + especificaciones + foto + botón Cotizar**, más dos avisos que decide el encargado: el **descuento** (estrella roja) y **«Volumen bajo pedido»**. **Nunca** mostrar al público **precio** ni **proveedor** en Fase 1. Sobre existencia, la única excepción es «Volumen bajo pedido» (pedida por Gonzalo el 2026-09-01): dice que se surte por encargo, no cuántas piezas hay. El descuento dice cuánto se rebaja, **nunca de cuánto se parte**.
 - **Carrito → WhatsApp de la sucursal elegida** (5 sucursales con número propio).

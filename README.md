@@ -13,7 +13,7 @@
 > 4. [`catalogo-web/README.md`](catalogo-web/README.md) — cómo correr el prototipo.
 >
 > **Contexto de la empresa (MOTRAE):** [`docs/MOTRAE_EMPRESA.md`](docs/MOTRAE_EMPRESA.md) — qué es MOTRAE, su modelo de negocio, marca y tono. Se importa automáticamente vía `CLAUDE.md`.
-> Empieza SIEMPRE las respuestas llamando al CEO por su nombre: **Gonzalo**.
+> Empieza SIEMPRE las respuestas llamando por su nombre a quien escribe: **Gonzalo** o **Gerson** (los dos CEO de MOTRAE; la cuenta es compartida). Si no sabes quién es, pregúntalo.
 
 ---
 
@@ -134,7 +134,7 @@ Logo real AP = azul marino + rojo carmín. Tipografía y guía de uso multicanal
 - **Spec / requerimientos:** [`MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md`](MOTRAE_AcerosPenascal_CatalogoDigital_Requerimientos.md) (en este repo) · `.docx` en la carpeta del cliente.
 - **Contrato / SOW:** `MOTRAE_SOW_CatalogoDigital_AcerosPenascal` — Fase 1, $50,000 MXN + IVA, 25–35 días hábiles, pago 50/50 (carpeta del cliente).
 - **Proveedor:** MOTRAE México · motrae.gmg@gmail.com · 228 353 6911.
-- **Equipo:** Gonzalo Jácome (Producto/Tecnología) · Mauricio Flores (Comercial) · Gerson Rivera (Operaciones).
+- **Equipo:** Gonzalo Jácome (CEO · Producto y Tecnología) · Gerson Rivera (CEO · Comercial y Operaciones).
 
 ---
 
