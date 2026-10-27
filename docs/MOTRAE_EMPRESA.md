@@ -243,12 +243,12 @@ Sistema operativo empresarial construido en **cuatro capas técnicas integradas*
 
 ## Equipo y liderazgo
 
-Equipo fundador a tiempo completo con roles complementarios:
+MOTRAE la dirigen sus dos CEO, socios fundadores a tiempo completo con roles complementarios:
 
-| Área | Responsable |
+| Persona | Cargo y área |
 |---|---|
-| Producto, Arquitectura y Operación Técnica y Tecnológica | **Gonzalo Jácome** |
-| Operaciones, Ejecución de Campo y Desarrollo Comercial | **Gerson Rivera** |
+| **Gonzalo Jácome** | CEO · Producto, arquitectura y operación técnica y tecnológica |
+| **Gerson Rivera** | CEO · Líder comercial de MotRest y de todos los productos de MOTRAE |
 
 El equipo combina arquitectura tecnológica, ejecución operativa en campo y desarrollo de negocio.
 
